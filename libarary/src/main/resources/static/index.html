@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book</title>
+    <link rel="stylesheet" type="text/css"href="css/index.css">
+    <!--element-ui的样式-->
+    <link rel="stylesheet" href="plugins/element-ui/index.css"/>
+</head>
+<body>
+<div id="root">
+<h1 align="center">欢迎使用图书推荐系统</h1>
+    <p id="info-p">你好，{{user.name}}</p>
+<div id="login-div">
+  <form action="/user/login" method="post">
+      <p>账号: <input type="text" name="username"/></p>
+      <p>密码: <input type="password" name="password"/></p>
+      <input type="submit" value="登录" class="login"/>
+<!--      <a href="page/logon.html" >注册</a>-->
+  </form>
+    <button id="add" title="register" @clike="regs">注册</button>
+</div>
+</div>
+
+
+<script type="text/javascript" src="js/vue.js"></script>
+<script type="text/javascript" src="plugins/element-ui/index.js"></script>
+<script>
+new Vue({
+        el:'#root',
+        data:{
+            user:{
+                name:'zhangsan',
+                age:18,
+                sex:'男'
+            }
+        },
+        methods:{
+            regs(){
+                console.log(123)
+                window.location.href = 'page/logon.html'
+            }
+        }
+    })
+</script>
+</body>
+</html>

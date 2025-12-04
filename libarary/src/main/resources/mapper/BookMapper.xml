@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wkc.library.mapper.BookMapper">
+    
+    <insert id="insertBook" parameterType="com.wkc.library.entity.Book">
+        insert into book(book_id,book_name,book_public,book_author) values(#{book_id},#{book.bookName},#{book.bookPublic},#{book.bookAuthor})
+    </insert>
+    
+    <delete id="deleteByBookId" parameterType="int">
+        delete from book where book_id = #{bookId}
+    </delete>
+    
+    <update id="updateByBookId" parameterType="com.wkc.library.entity.Book">
+        update book set book_name = #{book.bookName},book_price = #{book.bookPrice},book_public = #{book.bookPublic},book_classify = #{book.bookClassify},book_imge = #{book.bookImge},book_description = #{book.bookDescription},book_num = #{book.bookNum} where book_id = #{book.bookId}
+    </update>
+
+</mapper>

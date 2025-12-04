@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript" src="../js/vue.js"></script>
+    <script type="text/css">
+        #root{
+            text-align: center;
+        color: #8cc5ff;
+        }
+    </script>
+</head>
+<body>
+<div id="root">
+    <h1 align="center">{{username}}成功登录界面</h1>
+</div>
+</body>
+
+<script type="text/javascript">
+
+    new Vue({
+        el:"#root",
+        data:{
+            username:'小鸟'
+        }
+    })
+</script>
+</html>

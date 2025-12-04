@@ -1,0 +1,39 @@
+body {
+    background-image: url("../img/1.jpeg");
+    background-position: center center;
+    /* 背景图不平铺 */
+    background-repeat: no-repeat;
+    /* 当内容高度大于图片高度时，背景图像的位置相对于viewport固定 */
+    background-attachment: fixed;
+    /* 让背景图基于容器大小伸缩 */
+    background-size: cover;
+}
+
+#info-p {
+    text-align: right;
+}
+
+button {
+    width: 50px;
+    height: 30px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+
+#login-div {
+    width: 600px;
+    height: 250px;
+    background-color: rgba(74,25,6,0.55);
+    position: absolute;
+    margin: auto;
+    text-align: center;
+    border:1px solid black;
+    top:0;
+    right:0;
+    bottom:0;
+    left:0;
+}
+
+
+
