@@ -38,8 +38,9 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     @Override
     public boolean updateByBookId(Book book) {
         int i =  bookMapper.updateByBookId(book);
-        if(i > 0)
+        if(i > 0) {
             return true;
+        }
         return false;
     }
 
