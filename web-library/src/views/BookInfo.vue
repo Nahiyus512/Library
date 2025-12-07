@@ -20,8 +20,6 @@
               style="width: 90px;height: 90px" />
           </template>
         </el-table-column>
-
-        </el-table-column>
         <el-table-column prop="bookDescription" label="描述" width="200" />
         <el-table-column prop="bookNum" label="数量" width="100" />
         <el-table-column fixed="right" label="操作" width="120">
@@ -59,8 +57,20 @@
         </el-select>
       </el-form-item>
       <el-form-item label="图片" :label-width="formLabelWidth">
-        <el-input v-model="form.bookImage" autocomplete="off" />
+        <el-upload
+            class="avatar-uploader"
+            action="http://localhost:8080/common/upload?module=imageUrl"
+            :headers="headers"
+            :show-file-list="false"
+            :on-success="handleEditAvatarSuccess"
+        >
+          <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+          <el-icon v-else class="avatar-uploader-icon">
+            <Plus />
+          </el-icon>
+        </el-upload>
       </el-form-item>
+
       <el-form-item label="描述" :label-width="formLabelWidth">
         <el-input v-model="form.bookDesc" autocomplete="off" />
       </el-form-item>
@@ -95,9 +105,6 @@
           <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
             :disabled="item.disabled" />
         </el-select>
-      </el-form-item>
-      <el-form-item label="图片地址" :label-width="formLabelWidth">
-        <el-input v-model="addForm.bookImage" autocomplete="off" />
       </el-form-item>
       <el-form-item label="图片" :label-width="formLabelWidth">
         <el-upload class="avatar-uploader" action="http://localhost:8080/common/upload?module=imageUrl"
@@ -162,6 +169,18 @@ const options = [
   {
     value: '恐怖',
     label: '恐怖',
+  },
+  {
+    value: '工业',
+    label: '工业',
+  },
+  {
+    value: '科普',
+    label: '科普',
+  },
+  {
+    value: '知识',
+    label: '知识',
   }
 
 ]
@@ -177,7 +196,7 @@ const small = ref(false)
 const background = ref(false)
 const disabled = ref(false)
 const headSearchInput = ref('')
-const imageUrl = ref('')
+let imageUrl = ref('')
 
 const headers = ref({ "token": setHeardToken() });
 
@@ -190,7 +209,7 @@ const form = reactive({
   bookClassify: '',
   bookImage: '',
   bookDesc: '',
-  bookNum: ''
+  bookNum: '',
 })
 
 const addImgForm = reactive({
@@ -275,6 +294,12 @@ const changeBook = (row) => {
   form.bookImage = row.bookImge
   form.bookDesc = row.bookDescription
   form.bookNum = row.bookNum
+  // ✅【关键：这里必须同步设置 imageUrl 才能回显图片】
+  if (row.bookImge) {
+    imageUrl.value = `http://localhost:8080/common/download?name=${row.bookImge}`
+  } else {
+    imageUrl.value = ''
+  }
 }
 
 const deleteBook = (row) => {
@@ -386,6 +411,21 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (
   console.log(imageUrl.value)
   instance?.proxy?.$forceUpdate()
 }
+
+// ✅ 修改书本时图片上传成功
+const handleEditAvatarSuccess: UploadProps['onSuccess'] = (
+    response,
+    uploadFile
+) => {
+  // 保存给修改用
+  form.bookImage = response.data
+
+  // 预览用
+  imageUrl.value = `http://localhost:8080/common/download?name=${response.data}`
+
+  console.log("修改图片成功 =>", imageUrl.value)
+}
+
 
 
 </script>

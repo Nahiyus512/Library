@@ -6,5 +6,9 @@ mybatis-plus:
 
 spring:thymeleaf:cache: false
 
+spring:
+  profiles:
+    active: rong
+
 
 
