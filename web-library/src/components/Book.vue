@@ -3,7 +3,7 @@
     <div class="book-contain" style="background-color: #c0d5d3">
       <div class="book-info" v-for="book in tableData" :key="book.bookId" @click="clickBook(book)">
        <div class="book-image">
-          <img :src="book.bookImge" alt="image" width="160px" height="170px">
+          <img :src="'http://localhost:8080/common/download?name=' +book.bookImge" alt="image" width="160px" height="170px">
        </div>
        <span style="display: flex;justify-content: center">{{book.bookName}}</span>
       </div>

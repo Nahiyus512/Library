@@ -157,33 +157,8 @@ import { useCookies } from '@vueuse/integrations/useCookies'
 const cookie = useCookies()
 
 const selectValue = ref('')
-const options = [
-  {
-    value: '自然',
-    label: '自然',
-  },
-  {
-    value: '计算机',
-    label: '计算机',
-  },
-  {
-    value: '恐怖',
-    label: '恐怖',
-  },
-  {
-    value: '工业',
-    label: '工业',
-  },
-  {
-    value: '科普',
-    label: '科普',
-  },
-  {
-    value: '知识',
-    label: '知识',
-  }
+const options = ref<any[]>([])
 
-]
 
 
 const uploadRef = ref<UploadInstance>()
@@ -239,7 +214,8 @@ const dataInfo = reactive({
 
 onMounted(() => {
   //console.log("onmount")
-  getBook();
+  getBook()
+  getBookClass()
 })
 
 //接收的书本数组
@@ -426,6 +402,23 @@ const handleEditAvatarSuccess: UploadProps['onSuccess'] = (
   console.log("修改图片成功 =>", imageUrl.value)
 }
 
+const getBookClass = async () => {
+  try {
+    const res = await myAxios.get('http://localhost:8080/class/get')
+
+    // 假设后端返回格式是：
+    // { code: 200, data: [ { className: '自然' }, ... ] }
+
+    if (res.data.code === 200) {
+      options.value = res.data.data.map((item: any) => ({
+        value: item.classify,
+        label: item.classify
+      }))
+    }
+  } catch (error) {
+    console.error("获取分类失败：", error)
+  }
+}
 
 
 </script>

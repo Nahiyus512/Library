@@ -14,6 +14,7 @@ import UserInfo from "../views/UserInfo.vue"
 import SystemInfo from "../views/SystemInfo.vue"
 import BookBorrowInfo from "../views/BookBorrowInfo.vue"
 import Advice from "../views/Advice.vue"
+import BookClass from "../views/BookClass.vue";
 
 
 const router = createRouter({
@@ -40,6 +41,7 @@ const router = createRouter({
                     name: "book",
                     component: Book
                 },
+
                 {
                     path: "/bookRecommend",
                     name: "bookRecommend",
@@ -72,6 +74,11 @@ const router = createRouter({
                     path:"/bookInfo",
                     name:"bookInfo",
                     component:BookInfo
+                },
+                {
+                    path: "/bookClass",
+                    name: "bookClass",
+                    component: BookClass
                 },
                 {
                     path:"/sysInfo",

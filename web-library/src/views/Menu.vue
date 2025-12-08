@@ -22,18 +22,24 @@
           </span>
         </el-menu-item>
         <el-menu-item index="3">
+          <el-icon><icon-menu /></el-icon>
+          <span>
+            <RouterLink :to="{path:'/bookClass'}" active-class="active">书本分类管理</RouterLink>
+          </span>
+        </el-menu-item>
+        <el-menu-item index=4>
           <el-icon><document /></el-icon>
           <span>
             <RouterLink :to="{path:'/bookBorrowInfo'}" active-class="active">书本借阅管理</RouterLink>
           </span>
         </el-menu-item>
-        <el-menu-item index="4">
+        <el-menu-item index="5">
           <el-icon><document /></el-icon>
           <span>
             <RouterLink :to="{path:'/advice'}" active-class="active">用户建议</RouterLink>
           </span>
         </el-menu-item>
-        <el-menu-item index="5">
+        <el-menu-item index="6">
           <el-icon><setting /></el-icon>
           <span>
             <RouterLink :to="{path:'/sysInfo'}" active-class="active">系统信息管理</RouterLink>

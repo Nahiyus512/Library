@@ -11,7 +11,7 @@
  Target Server Version : 80036 (8.0.36)
  File Encoding         : 65001
 
- Date: 07/12/2025 21:52:07
+ Date: 08/12/2025 15:22:38
 */
 
 SET NAMES utf8mb4;
@@ -29,7 +29,7 @@ CREATE TABLE `advice`  (
   `info_time` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   `reply_time` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 25 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 26 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of advice
@@ -42,6 +42,7 @@ INSERT INTO `advice` VALUES (9, '11111111111111111111111111111111111111111111111
 INSERT INTO `advice` VALUES (22, '我借的书什么时候还？', NULL, '1111', '2024-07-04 15:05:38', NULL);
 INSERT INTO `advice` VALUES (23, '新用户来啦。', '欢迎欢迎', '2222', '2024-07-04 15:07:00', '2024-07-04 15:18:22');
 INSERT INTO `advice` VALUES (24, '看看看看', '滚！！！', 'xiaowei', '2024-07-30 15:39:18', '2024-07-30 15:39:55');
+INSERT INTO `advice` VALUES (25, '挺好的', NULL, 'xiaoniao', '2025-12-08 15:20:42', NULL);
 
 -- ----------------------------
 -- Table structure for book
@@ -120,10 +121,10 @@ INSERT INTO `book_borrow` VALUES (11, '1111', 1, '消失的影子', 5, '2024-08-
 -- ----------------------------
 DROP TABLE IF EXISTS `book_class`;
 CREATE TABLE `book_class`  (
-  `classId` int NOT NULL,
+  `class_id` int NOT NULL AUTO_INCREMENT,
   `classify` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
-  PRIMARY KEY (`classId`) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
+  PRIMARY KEY (`class_id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of book_class
