@@ -67,7 +67,7 @@ public class BookController {
     @PostMapping("/add")
     public R<String> addBook(@RequestBody Book book){
         log.info("添加的信息:id{},name:{},author:{}", book.getBookId(), book.getBookName(), book.getBookAuthor());
-        book.setBookId(UUIDUtil.generateUUID());
+        //book.setBookId(UUIDUtil.generateUUID());
         return bookService.add(book) > 0 ? R.success("添加成功") : R.error("添加失败");
     }
 
