@@ -45,8 +45,8 @@ public class BookScoreController {
         ZoneId zoneId = ZoneId.systemDefault();
         ZonedDateTime zonedDateTime = time.atZone(zoneId);
         Date date = Date.from(zonedDateTime.toInstant());
-        BookScore bookScore = new BookScore(null,userId,bookId,Integer.parseInt(score),date.toString());
-        Integer integer = bookScoreMapper.insert(bookScore);
+        BookScore bookScore = new BookScore(null, Integer.parseInt(userId), Integer.parseInt(bookId), Integer.parseInt(score), date.toString());
+        Integer integer = bookScoreMapper.insetScore(bookScore);
         if(integer == 1){
             return R.success("评分成功");
         }
@@ -65,7 +65,7 @@ public class BookScoreController {
      * @return
      */
     @GetMapping("/recommend")
-    public R<List<Book>> recommendBook(@RequestParam String userId) {
+    public R<List<Book>> recommendBook(@RequestParam Integer userId) {
         LambdaQueryWrapper<BookScore> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(BookScore::getUserId,userId);
         List<BookScore> bookScoreList = bookService.list(queryWrapper);
@@ -108,7 +108,7 @@ public class BookScoreController {
 
 
     @GetMapping("/findScore")
-    public R<Integer> findScore(@RequestParam("userId") String userId,@RequestParam("bookId") String bookId) {
+    public R<Integer> findScore(@RequestParam("userId") Integer userId,@RequestParam("bookId") Integer bookId) {
         System.out.println("==>s");
         LambdaQueryWrapper<BookScore> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BookScore::getUserId,userId);

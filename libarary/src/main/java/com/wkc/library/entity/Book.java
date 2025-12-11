@@ -2,6 +2,8 @@ package com.wkc.library.entity;
 
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,7 +18,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Book {
 
-    public String bookId;//书本id
+    @TableId(value = "book_id", type = IdType.AUTO)
+    public Integer bookId;//书本id
     public String bookName;//书名
     public double bookPrice;//书本价格
     public String bookPublic;//书本出版社

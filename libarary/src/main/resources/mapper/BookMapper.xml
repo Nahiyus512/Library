@@ -5,7 +5,7 @@
 <mapper namespace="com.wkc.library.mapper.BookMapper">
     
     <insert id="insertBook" parameterType="com.wkc.library.entity.Book">
-        insert into book(book_id,book_name,book_public,book_author) values(#{book_id},#{book.bookName},#{book.bookPublic},#{book.bookAuthor})
+        insert into book(book_name,book_public,book_author) values(#{book.bookName},#{book.bookPublic},#{book.bookAuthor})
     </insert>
     
     <delete id="deleteByBookId" parameterType="int">

@@ -11,7 +11,7 @@ import java.util.List;
  * @date 2023/4/11 13:14
  */
 public interface BookScoreService extends IService<BookScore> {
-    List<Book> recommend(String userId);
+    List<Book> recommend(Integer userId);
 
     boolean updateScore(BookScore bookScore);
 }

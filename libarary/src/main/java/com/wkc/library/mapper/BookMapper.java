@@ -21,7 +21,7 @@ public interface BookMapper extends BaseMapper<Book> {
 
 
     //更具书本ID删除书本
-    int deleteByBookId(@Param("bookId") String bookId);
+    int deleteByBookId(@Param("bookId") Integer bookId);
 
     //更具书本Id修改书本
     int updateByBookId(@Param("book") Book book);

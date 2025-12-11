@@ -19,8 +19,8 @@ public class BookScore {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
-    private String userId;
-    private String bookId;
+    private Integer userId;
+    private Integer bookId;
     private Integer score;
     private String time;
 }

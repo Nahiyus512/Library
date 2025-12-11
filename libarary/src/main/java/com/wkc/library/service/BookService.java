@@ -15,7 +15,7 @@ public interface BookService extends IService<Book> {
      int add(Book book);
 
      //删除书本
-    boolean deleteById(String id);
+    boolean deleteById(Integer id);
 
     //根据id修改书本
     boolean updateByBookId(Book book);

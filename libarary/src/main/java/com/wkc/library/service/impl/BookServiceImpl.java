@@ -27,7 +27,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     }
 
     @Override
-    public boolean deleteById(String id) {
+    public boolean deleteById(Integer id) {
         int i = bookMapper.deleteByBookId(id);
         if(i > 0){
             return true;

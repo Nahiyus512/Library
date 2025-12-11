@@ -35,32 +35,32 @@ public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore
     @Autowired
     BookScoreMapper bookScoreMapper;
 
+    @Autowired
+    BookRecommend bookRecommend;
+
     @Override
-    public List<Book> recommend(String userId) { // 将 userId 改为 String 类型
+    public List<Book> recommend(Integer userId) {
         List<Book> bookList = new ArrayList<>();
-        try (Connection conn = DriverManager.getConnection(BookRecommend.DB_URL, BookRecommend.USER, BookRecommend.PASS)) {
-            // 加载用户评分数据
-            Map<String, Map<String, Double>> userRatings = BookRecommend.loadRatingsFromDB(conn);
+        
+        // 加载用户评分数据
+        Map<Integer, Map<Integer, Double>> userRatings = bookRecommend.loadRatings();
 
-            // 找到与目标用户最相似的三个用户
-            List<String> similarUsers = BookRecommend.findTopThreeSimilarUsers(userId, userRatings);
-            System.out.println("与用户 " + userId + " 最相似的三个用户为：" + similarUsers);
+        // 找到与目标用户最相似的三个用户
+        List<Integer> similarUsers = bookRecommend.findTopThreeSimilarUsers(userId, userRatings);
+        System.out.println("与用户 " + userId + " 最相似的三个用户为：" + similarUsers);
 
-            // 基于相似用户推荐图书
-            List<Map.Entry<String, Integer>> recommendedBooks = BookRecommend.recommendBooksBasedOnSimilarUsers(userRatings, similarUsers, userId);
+        // 基于相似用户推荐图书
+        List<Map.Entry<Integer, Integer>> recommendedBooks = bookRecommend.recommendBooksBasedOnSimilarUsers(userRatings, similarUsers, userId);
 
-            // 根据推荐的图书 ID 查询图书信息
-            for (Map.Entry<String, Integer> entry : recommendedBooks) {
-                String bookId = entry.getKey(); // 获取推荐的图书 ID
-                LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
-                queryWrapper.eq(Book::getBookId, bookId); // 使用 String 类型的 bookId
-                Book book = bookMapper.selectOne(queryWrapper);
-                if (book != null) {
-                    bookList.add(book);
-                }
+        // 根据推荐的图书 ID 查询图书信息
+        for (Map.Entry<Integer, Integer> entry : recommendedBooks) {
+            Integer bookId = entry.getKey(); // 获取推荐的图书 ID
+            LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Book::getBookId, bookId);
+            Book book = bookMapper.selectOne(queryWrapper);
+            if (book != null) {
+                bookList.add(book);
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
 
         return bookList;
@@ -76,11 +76,6 @@ public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         bookScore.setTime(date.format(formatter));
         if(selectOne != null) {
-//            if(selectOne.getScore() == bookScore.getScore()){
-//                //如果评分相等，就只更新时间2
-//                bookScoreMapper.update(bookScore,new LambdaQueryWrapper<BookScore>().eq(BookScore::getUserId,bookScore.getUserId()));
-//                return true;
-//            }
             LambdaQueryWrapper<BookScore> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(BookScore::getUserId,bookScore.getUserId());
             int update = bookScoreMapper.update(bookScore, lambdaQueryWrapper);

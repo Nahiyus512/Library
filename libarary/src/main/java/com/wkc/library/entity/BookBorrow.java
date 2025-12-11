@@ -19,7 +19,7 @@ public class BookBorrow {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     private String userName;
-    private String bookId;
+    private Integer bookId;
     private String bookName;
     private double borrowTime;
     private String beginTime;
