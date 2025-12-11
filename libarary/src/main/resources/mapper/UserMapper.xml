@@ -9,7 +9,7 @@
     </select>
     
     <insert id="logon" parameterType="com.wkc.library.entity.User">
-        insert into user(id,name,password,age,address) values(#{user.id},#{user.name},#{user.password},#{user.age},#{user.address})
+        insert into user(name,password,age,address) values(#{user.name},#{user.password},#{user.age},#{user.address})
     </insert>
     
     <select id="selectByName" resultType="com.wkc.library.entity.User">

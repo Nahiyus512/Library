@@ -16,8 +16,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class User {
 
-    @TableId(value = "id")
-    private String id;//用户id
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;//用户id
     private String name;//用户名
     private String password;//用户密码
     private Integer age;//用户年龄

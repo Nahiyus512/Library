@@ -79,7 +79,7 @@ public class UserController {
         Integer age = user.getAge();
         String address = user.getAddress();
         User newUser = new User();
-        newUser.setId(UUIDUtil.generateUUID());
+        //newUser.setId(UUIDUtil.generateUUID());
         newUser.setName(username);
         newUser.setAge(age);
         newUser.setPassword(password);

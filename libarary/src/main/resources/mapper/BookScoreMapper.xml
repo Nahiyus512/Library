@@ -5,7 +5,7 @@
 <mapper namespace="com.wkc.library.mapper.BookScoreMapper">
     
     <insert id="insetScore" parameterType="com.wkc.library.entity.BookScore">
-        insert into book_score (id,user_id,book_id,score,time) values (#{bookScore.id},#{bookScore.userId},#{bookScore.bookId},#{bookScore.score},#{bookScore.time})
+        insert into book_score (user_id,book_id,score,time) values (#{bookScore.userId},#{bookScore.bookId},#{bookScore.score},#{bookScore.time})
     </insert>
     <select id="getAll" resultType="com.wkc.library.entity.BookScore">
         select * from book_score

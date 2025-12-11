@@ -2,8 +2,8 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.wkc.library.mapper.BookBorrowMapper">
     <insert id="insertBorrowInfo" parameterType="com.wkc.library.entity.BookBorrow">
-    insert into book_borrow(id,user_name,book_id,book_name,borrow_time,begin_time,end_time)
-     values (#{bookBorrow.id},#{bookBorrow.userName},#{bookBorrow.bookId},#{bookBorrow.bookName},#{bookBorrow.borrowTime},#{bookBorrow.beginTime},#{bookBorrow.endTime})
+    insert into book_borrow(user_name,book_id,book_name,borrow_time,begin_time,end_time)
+     values (#{bookBorrow.userName},#{bookBorrow.bookId},#{bookBorrow.bookName},#{bookBorrow.borrowTime},#{bookBorrow.beginTime},#{bookBorrow.endTime})
     </insert>
     
     

@@ -89,7 +89,7 @@ public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore
             }
             return true;
         }else {
-            bookScore.setId(UUIDUtil.generateUUID());
+            //bookScore.setId(UUIDUtil.generateUUID());
             Integer integer = bookScoreMapper.insetScore(bookScore);
             if(integer == 0){
                 return false;

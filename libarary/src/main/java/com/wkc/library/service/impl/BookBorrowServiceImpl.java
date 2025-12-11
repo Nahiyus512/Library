@@ -27,7 +27,7 @@ public class BookBorrowServiceImpl extends ServiceImpl<BookBorrowMapper, BookBor
 
     @Override
     public Boolean borrowBook(BookBorrow bookBorrow) {
-        bookBorrow.setId(UUIDUtil.generateUUID());
+        //bookBorrow.setId(UUIDUtil.generateUUID());
         LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
         LambdaUpdateWrapper<Book> updateWrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(Book::getBookId,bookBorrow.getBookId());

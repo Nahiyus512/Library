@@ -46,7 +46,7 @@ public class BookScoreController {
         ZonedDateTime zonedDateTime = time.atZone(zoneId);
         Date date = Date.from(zonedDateTime.toInstant());
         BookScore bookScore = new BookScore(null,userId,bookId,Integer.parseInt(score),date.toString());
-        Integer integer = bookScoreMapper.insetScore(bookScore);
+        Integer integer = bookScoreMapper.insert(bookScore);
         if(integer == 1){
             return R.success("评分成功");
         }

@@ -1,5 +1,7 @@
 package com.wkc.library.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -14,7 +16,8 @@ import java.util.Date;
 @TableName("book_borrow")
 public class BookBorrow {
 
-    private String id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
     private String userName;
     private String bookId;
     private String bookName;
