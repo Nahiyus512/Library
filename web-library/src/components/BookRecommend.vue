@@ -24,7 +24,7 @@
       align-center
       style="height:540px;background-color: #d6e5e4"
   >
-    <div class="image-div" style="display: flex;justify-content: left"><img :src="bookData.bookImage" style="width: 300px;height: 320px" > </div>
+    <div class="image-div" style="display: flex;justify-content: left"><img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" style="width: 300px;height: 320px" > </div>
     <span>书名:{{bookData.bookName}}</span>
     <span>出版社:{{bookData.bookPublic}}</span>
     <span>分类:{{bookData.bookClassify}}</span>

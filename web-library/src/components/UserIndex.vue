@@ -4,7 +4,7 @@
     <div class="left-container">
       <!-- 天气组件 -->
       <div class="weather-widget">
-        <h3>邵阳气温</h3>
+        <h3>佛山气温</h3>
         <p>天气:{{ weather.condition }}</p>
         <p>温度:{{ weather.temperature }} ℃</p>
       </div>
@@ -117,7 +117,7 @@ onMounted(() => {
   chartDom.setOption(option);
 
   // 假设我们直接使用城市名称深圳作为示例，实际应用中应根据纬度经度查询城市名称
-  const location = '邵阳'; // 示例城市，实际应用中应动态获取或输入
+  const location = '佛山'; // 示例城市，实际应用中应动态获取或输入
 
   // 动态获取地理位置并更新天气组件
   // 监听地理位置变化，当有有效值时更新天气信息
@@ -153,10 +153,10 @@ async function fetchWeatherData(apiKey: string, location: string) {
       weather.condition = response.data.forecasts[0].casts[0].dayweather;
       weather.temperature = response.data.forecasts[0].casts[0].daytemp;
     } else {
-      console.error('Failed to fetch weather data:', response.data);
+      console.error('天气接口失败:', response.data);
     }
   } catch (error) {
-    console.error('Error fetching weather data:', error);
+    console.error('天气接口异常:', error);
   }
 }
 
