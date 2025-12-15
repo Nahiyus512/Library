@@ -7,6 +7,7 @@
       </div>
       
       <nav class="app-nav">
+        <RouterLink to="/main" class="nav-item" active-class="active">首页</RouterLink>
         <RouterLink to="/userIndex" class="nav-item" active-class="active">仪表盘</RouterLink>
         <RouterLink to="/book" class="nav-item" active-class="active">图书库</RouterLink>
         <RouterLink to="/bookRecommend" class="nav-item" active-class="active">推荐</RouterLink>

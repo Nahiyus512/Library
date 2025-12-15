@@ -3,6 +3,7 @@ import {createRouter,createWebHistory,createWebHashHistory} from "vue-router";
 
 import Login from "../components/Login.vue"
 import Home from "../components/Home.vue"
+import MainPage from "../components/MainPage.vue"
 import UserIndex from "../components/UserIndex.vue"
 import Book from "../components/Book.vue"
 import BookRecommend from "../components/BookRecommend.vue"
@@ -15,6 +16,8 @@ import SystemInfo from "../views/SystemInfo.vue"
 import BookBorrowInfo from "../views/BookBorrowInfo.vue"
 import Advice from "../views/Advice.vue"
 import BookClass from "../views/BookClass.vue";
+import CategoryPlaceholder from "../views/CategoryPlaceholder.vue";
+import ArtPlaceholder from "../views/ArtPlaceholder.vue";
 
 
 const router = createRouter({
@@ -29,8 +32,23 @@ const router = createRouter({
             path:"/home",
             name:"home",
             component:Home,
-            redirect:"/userIndex",
+            redirect:"/main",
             children:[
+                {
+                    path: "/main",
+                    name: "main",
+                    component: MainPage
+                },
+                {
+                    path: "/category/:id",
+                    name: "category",
+                    component: CategoryPlaceholder
+                },
+                {
+                    path: "/art/:id",
+                    name: "art",
+                    component: ArtPlaceholder
+                },
                 {
                     path: "/userIndex",
                     name: "UserIndex",
