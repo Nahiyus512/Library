@@ -1,0 +1,501 @@
+<template>
+  <div class="split-layout">
+    <!-- Left Panel: Categories -->
+    <div 
+      class="panel left-panel" 
+      :class="{ 'expanded': activeSide === 'left', 'shrunk': activeSide === 'right' || isMasonryExpanded }"
+      @click="handlePanelClick('left')"
+    >
+      <div class="panel-content category-content">
+        <h2 class="section-title">Collections</h2>
+        <ul class="category-list">
+          <li 
+            v-for="(item, index) in categories" 
+            :key="index"
+            class="category-item"
+            @click.stop="navigateToCategory(item)"
+          >
+            <span class="category-index">0{{ index + 1 }}</span>
+            <span class="category-name">{{ item }}</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Right Panel: AI Prompt Books Masonry -->
+    <div 
+      class="panel right-panel" 
+      :class="{ 'expanded': activeSide === 'right' || isMasonryExpanded, 'shrunk': activeSide === 'left' }"
+      @click="expandMasonry"
+    >
+      <!-- Expanded Layout Container -->
+      <div class="layout-container" :class="{ 'is-expanded-mode': isMasonryExpanded }">
+        
+        <!-- Left Sidebar (Always present, width animated) -->
+        <div class="sidebar left-sidebar" :class="{ 'collapsed': !isMasonryExpanded }">
+          <div class="watermark-vertical">LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY</div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area" :class="{ 'beige-grid': isMasonryExpanded }">
+          <button class="return-btn" v-if="isMasonryExpanded" @click.stop="collapseMasonry">←</button>
+          <div class="bg-watermark" v-if="isMasonryExpanded">LIBRARY</div>
+          
+          <div class="scroll-container" ref="scrollContainer" :class="{ 'expanded-padding': isMasonryExpanded }">
+            <div class="masonry-wrapper">
+              <!-- Column 1 -->
+              <div class="masonry-column">
+                <BookCard 
+                  v-for="(book, index) in col1" 
+                  :key="`${book.id}-${index}-1`"
+                  :book="book"
+                  :is-expanded="isMasonryExpanded"
+                />
+              </div>
+
+              <!-- Column 2 (Middle) -->
+              <div class="masonry-column middle-column">
+                <BookCard 
+                  v-for="(book, index) in col2" 
+                  :key="`${book.id}-${index}-2`"
+                  :book="book"
+                  :is-expanded="isMasonryExpanded"
+                />
+              </div>
+
+              <!-- Column 3 -->
+              <div class="masonry-column">
+                <BookCard 
+                  v-for="(book, index) in col3" 
+                  :key="`${book.id}-${index}-3`"
+                  :book="book"
+                  :is-expanded="isMasonryExpanded"
+                />
+              </div>
+            </div>
+            <!-- Loading Sentinel -->
+            <div ref="sentinel" class="sentinel"></div>
+          </div>
+        </div>
+
+        <!-- Right Sidebar (Always present, width animated) -->
+        <div class="sidebar right-sidebar" :class="{ 'collapsed': !isMasonryExpanded }">
+          <div class="watermark-vertical">LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { useRouter } from 'vue-router';
+import BookCard from './BookCard.vue';
+
+const router = useRouter();
+const activeSide = ref<string | null>(null);
+const isMasonryExpanded = ref(false);
+const scrollContainer = ref<HTMLElement | null>(null);
+const sentinel = ref<HTMLElement | null>(null);
+
+const col1 = ref<BookItem[]>([]);
+const col2 = ref<BookItem[]>([]);
+const col3 = ref<BookItem[]>([]);
+
+const categories = [
+  "经典", "哲学", "知识", "历史", "生活", "科幻", "玄幻"
+];
+
+interface BookItem {
+  id: number;
+  title: string;
+  titleCN: string;
+  author: string;
+  quote: string;
+  category: string;
+  colorTheme: string;
+  isBorder?: boolean;
+}
+
+const rawBooks = [
+  { id: 1, title: "Three-Body Problem", titleCN: "三体", quote: "给岁月以文明，而不是给文明以岁月。", author: "刘慈欣", category: "SCI-FI", colorTheme: "linear-gradient(to bottom right, #111827, #581c87, #000)" }, 
+  { id: 2, title: "Sapiens: A Brief History of Humankind", titleCN: "人类简史", quote: "历史从无正义。", author: "尤瓦尔·赫拉利", category: "HISTORY", colorTheme: "#fef3c7" }, 
+  { id: 3, title: "The Hitchhiker's Guide to the Galaxy", titleCN: "银河系漫游指南", quote: "DON'T PANIC.", author: "道格拉斯·亚当斯", category: "SCI-FI", colorTheme: "#2563eb" }, 
+  { id: 4, title: "Interaction of Color", titleCN: "色彩互动学", quote: "色彩是相对的。", author: "约瑟夫·阿尔伯斯", category: "LIFE", colorTheme: "linear-gradient(to right, #facc15, #ef4444)" }, 
+  { id: 5, title: "The Non-Designer's Design Book", titleCN: "写给大家看的设计书", quote: "亲密性、对齐、重复、对比。", author: "罗宾·威廉姆斯", category: "LIFE", colorTheme: "#ffffff", isBorder: true }, 
+  { id: 6, title: "Grid Systems in Graphic Design", titleCN: "平面设计中的网格系统", quote: "秩序是自由的基础。", author: "约瑟夫·米勒-布罗克曼", category: "KNOWLEDGE", colorTheme: "#ea580c" }, 
+  { id: 7, title: "Dune", titleCN: "沙丘", quote: "恐惧是思维的杀手。", author: "弗兰克·赫伯特", category: "SCI-FI", colorTheme: "#d97706" }, 
+  { id: 8, title: "1984", titleCN: "1984", quote: "老大哥在看着你。", author: "乔治·奥威尔", category: "CLASSIC", colorTheme: "#1f2937" }, 
+  { id: 9, title: "Brave New World", titleCN: "美丽新世界", quote: "快乐就是一切。", author: "阿道司·赫胥黎", category: "CLASSIC", colorTheme: "#cffafe" }, 
+  { id: 10, title: "Zen and the Art of Motorcycle Maintenance", titleCN: "禅与摩托车维修艺术", quote: "关心即是质量。", author: "罗伯特·波西格", category: "PHILOSOPHY", colorTheme: "#047857" }, 
+  { id: 11, title: "Amusing Ourselves to Death", titleCN: "娱乐至死", quote: "我们将毁于我们所热爱的东西。", author: "尼尔·波兹曼", category: "KNOWLEDGE", colorTheme: "#9ca3af" }, 
+  { id: 12, title: "Life 3.0", titleCN: "生命3.0", quote: "生命是自我复制的信息处理系统。", author: "迈克斯·泰格马克", category: "KNOWLEDGE", colorTheme: "#312e81" }, 
+];
+
+const getBookStyle = (book: BookItem) => {
+  const style: any = { background: book.colorTheme };
+  if (book.isBorder) {
+    style.border = '4px solid #000';
+    style.color = '#000';
+  }
+  return style;
+};
+
+const isLightColor = (color: string) => {
+  // Simple heuristic for hex codes or known light colors
+  if (color.startsWith('#')) {
+    const hex = color.replace('#', '');
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    const brightness = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    return brightness > 155;
+  }
+  return color === '#ffffff' || color.includes('#fef3c7') || color.includes('#cffafe');
+};
+
+const handlePanelClick = (side: string) => {
+  if (side === 'left' && activeSide.value !== 'left') {
+     // Optional: Logic for left panel interaction if needed
+  }
+};
+
+const expandMasonry = () => {
+  if (!isMasonryExpanded.value) {
+    isMasonryExpanded.value = true;
+    activeSide.value = 'right';
+  }
+};
+
+const collapseMasonry = () => {
+  isMasonryExpanded.value = false;
+  activeSide.value = null;
+};
+
+const navigateToCategory = (category: string) => {
+  activeSide.value = 'left';
+  setTimeout(() => {
+    router.push(`/category/${category}`);
+  }, 600);
+};
+
+const distributeBooks = (books: BookItem[]) => {
+  books.forEach((book, index) => {
+    // Distribute round-robin based on total count to maintain order flow
+    const totalIndex = col1.value.length + col2.value.length + col3.value.length;
+    const remainder = totalIndex % 3;
+    if (remainder === 0) col1.value.push(book);
+    else if (remainder === 1) col2.value.push(book);
+    else col3.value.push(book);
+  });
+};
+
+const loadMore = () => {
+  // Simulate network delay for effect, or just add instantly
+  // Adding rawBooks again to cycle
+  distributeBooks(rawBooks);
+};
+
+let observer: IntersectionObserver;
+
+onMounted(() => {
+  distributeBooks(rawBooks); // Initial load
+
+  observer = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) {
+      loadMore();
+    }
+  }, {
+    root: scrollContainer.value,
+    rootMargin: '200px', // Load before reaching bottom
+    threshold: 0.1
+  });
+
+  if (sentinel.value) {
+    observer.observe(sentinel.value);
+  }
+});
+
+onUnmounted(() => {
+  if (observer) observer.disconnect();
+});
+</script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.split-layout {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background: #fff;
+}
+
+.panel {
+  height: 100%;
+  transition: all 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ensure padding is zero or controlled */
+.panel * {
+  box-sizing: border-box;
+}
+
+.left-panel {
+  width: 50%;
+  background-color: #fff;
+  border-right: 1px solid rgba(0,0,0,0.05);
+  z-index: 2;
+}
+
+.right-panel {
+  width: 50%;
+  background-color: #fcfcfc;
+  z-index: 1;
+  transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.panel.expanded { width: 100% !important; }
+.panel.shrunk { width: 0% !important; opacity: 0; pointer-events: none; }
+
+.layout-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+/* Expanded Layout Components */
+.sidebar {
+  width: 60px; /* White margin width */
+  background: #fff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end; /* Bottom alignment */
+  padding-top: 20px;
+  z-index: 10;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
+  overflow: hidden;
+  transition: width 0.3s ease, opacity 0.3s ease, border-width 0.3s ease;
+}
+
+/* Collapsed state for sidebars: width 0, no border */
+.sidebar.collapsed {
+  width: 0;
+  border-left-width: 0;
+  border-right-width: 0;
+  padding: 0;
+  opacity: 0;
+}
+
+.left-sidebar { border-left: none; }
+.right-sidebar { border-right: none; }
+
+.content-area {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #fcfcfc; /* Default background */
+  transition: background 0.3s ease;
+}
+
+.content-area.beige-grid {
+  background-color: #faf8f5; /* Pale beige close to white */
+  background-image: 
+    linear-gradient(#e5e5e5 1px, transparent 1px),
+    linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+  background-size: 125px 125px; /* Larger grid (2.5x of 50px) */
+}
+
+.scroll-container {
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  padding: 15px 40px 0 40px; /* Reduced top padding, remove bottom padding */
+  box-sizing: border-box;
+  scrollbar-width: none;
+  position: relative;
+  z-index: 5; /* Above watermark */
+  transition: padding 0.3s ease;
+}
+.scroll-container.expanded-padding {
+  padding: 15px 15% 0 15%; /* Add horizontal padding to shrink cards */
+}
+.scroll-container::-webkit-scrollbar { display: none; }
+
+/* Watermarks */
+.bg-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 200px;
+  color: rgba(0,0,0,0.03);
+  pointer-events: none;
+  z-index: 0;
+  letter-spacing: 20px;
+}
+
+.watermark-vertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg); /* Bottom to top direction */
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: rgba(0,0,0,0.1);
+  letter-spacing: 4px;
+  white-space: nowrap;
+  padding: 20px 0;
+  margin: 0;
+  /* Text close to black border: alignment handled by flex item alignment or margins */
+}
+
+.left-sidebar .watermark-vertical {
+  margin-left: 20px; /* Push towards border? No, flex align center. */
+  align-self: flex-end; /* Close to right border (black border) */
+  margin-right: 5px;
+}
+
+.right-sidebar .watermark-vertical {
+  align-self: flex-start; /* Close to left border (black border) */
+  margin-left: 5px;
+}
+
+/* Return Button */
+.return-btn {
+  width: 32px; height: 32px;
+  background: #000; /* Black background */
+  color: #fff; /* White text/icon */
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+  position: absolute; /* Fixed position relative to content-area */
+  top: 20px;
+  left: 20px;
+  z-index: 20; /* Ensure it's above everything */
+}
+
+.return-btn:active {
+  transform: scale(0.95);
+}
+
+.panel-content {
+  height: 100%;
+  width: 100%;
+  padding: 40px;
+  box-sizing: border-box;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+/* Left Panel */
+.category-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 80px;
+}
+
+.section-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #999;
+  margin-bottom: 40px;
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.category-item {
+  display: flex;
+  align-items: baseline;
+  gap: 15px;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  color: #333;
+}
+
+.category-item:hover {
+  transform: translateX(10px);
+  color: #000;
+}
+
+.category-index {
+  font-size: 12px;
+  color: #ccc;
+  font-family: monospace;
+}
+
+.category-name {
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 1px;
+}
+
+/* Right Panel Old Classes (Kept for default state compatibility) */
+.art-content {
+  /* This class is now effectively replaced by .scroll-container logic in expanded mode,
+     but kept for structure if needed or we can migrate styles. 
+     Actually, let's ensure default view uses .scroll-container style logic.
+  */
+}
+
+.masonry-wrapper {
+  display: flex;
+  gap: 40px;
+  width: 100%;
+}
+
+.masonry-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.middle-column {
+  margin-top: 80px; /* Stagger effect */
+}
+
+
+/* Book card styles moved to BookCard.vue */
+
+.sentinel {
+  height: 20px;
+  width: 100%;
+}
+
+
+@media (max-width: 1024px) {
+  .masonry-wrapper { flex-direction: column; }
+  .middle-column { margin-top: 0; }
+  .left-panel, .right-panel { width: 100%; height: 50%; }
+  .split-layout { flex-direction: column; }
+}
+
+@media (max-width: 640px) {
+  .masonry-wrapper { flex-direction: column; }
+  .middle-column { margin-top: 0; }
+}
+</style>
