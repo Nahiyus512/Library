@@ -1,145 +1,159 @@
 <template>
-  <div class="user-main">
-    <div class="left-contain">
-      <span class="span-title">用户信息:</span>
-      <div class="user-info">
-        <div class="flip-card">
-          <div class="flip-card-inner">
-            <div class="flip-card-front">
-<!--              <p class="title">FLIP CARD</p>-->
-<!--              <p>Hover Me</p>-->
-              <p>账  号:{{ userInfo.userName }}</p>
-              <p>密  码:{{ userInfo.password }}</p>
-              <p>年  龄:{{ userInfo.age }}</p>
-              <p>地  址:{{ userInfo.address }}</p>
-            </div>
-            <div class="flip-card-back">
-              <span class="span-back-title">修改信息: </span><br/>
-              <span class="span-back">账  号:<input type="text" v-model="inputValue.userName" disabled style="background-color: #f8eec8"/></span><br/>
-              <span class="span-back">密  码:<input type="text" v-model="inputValue.password"/></span><br/>
-              <span class="span-back">年  龄:<input type="text" v-model="inputValue.age"/></span><br/>
-              <span class="span-back">地  址:<input type="text" v-model="inputValue.address"/></span><br/>
-              <span class="span-back-btn"><button @click="updateUser">确认修改</button></span>
-            </div>
+  <div class="page-container">
+    <div class="user-layout">
+      <!-- User Profile Card -->
+      <div class="profile-card">
+        <div class="profile-header">
+          <div class="avatar-placeholder">
+            {{ userInfo.userName.charAt(0).toUpperCase() }}
           </div>
+          <h2 class="username">{{ userInfo.userName }}</h2>
+          <p class="user-role">读者</p>
+        </div>
+
+        <div class="profile-details">
+          <div class="detail-item">
+            <span class="label">账号</span>
+            <span class="value">{{ userInfo.userName }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">年龄</span>
+            <span class="value">{{ userInfo.age }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">地址</span>
+            <span class="value">{{ userInfo.address }}</span>
+          </div>
+        </div>
+
+        <div class="profile-actions">
+          <button class="action-btn outline" @click="openEditDialog">
+            修改信息
+          </button>
+          <button class="action-btn danger" @click="logout">
+            退出登录
+          </button>
+        </div>
+      </div>
+
+      <!-- Borrowed Books Section -->
+      <div class="borrow-section">
+        <div class="section-header">
+          <h3 class="section-title">借阅记录</h3>
+          <span class="section-subtitle">管理您的借阅书籍和归还时间</span>
+        </div>
+
+        <div class="table-container">
+          <el-table 
+            :data="borrowData" 
+            style="width: 100%" 
+            :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }"
+          >
+            <el-table-column prop="bookName" label="书名" min-width="150" />
+            <el-table-column prop="borrowTime" label="借阅天数" width="100" align="center" />
+            <el-table-column prop="beginTime" label="借阅时间" width="180" />
+            <el-table-column prop="endTime" label="应还时间" width="180" />
+            <el-table-column fixed="right" label="操作" width="150" align="center">
+              <template #default="scope">
+                <el-button link type="primary" @click="changeBorrow(scope.row)">
+                  续借
+                </el-button>
+                <el-button link type="danger" @click="changeBack(scope.row)">
+                  归还
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
         </div>
       </div>
     </div>
-    <div class="center-contain">
-      <span class="span-title">借阅书本信息:</span>
-      <div class="book-borrow-info">
-        <el-table :data="borrowData"  class="col-table-el" >
-          <el-table-column prop="bookName" label="书名" width="170" />
-          <el-table-column prop="borrowTime" label="借阅天数" width="80" />
-          <el-table-column prop="beginTime" label="起始时间" width="175" />
-          <el-table-column prop="endTime" label="结束时间" width="175" />
-          <el-table-column fixed="right" label="操作" width="143">
-            <template #default="scope">
-              <el-button link type="primary" size="small" @click="changeBorrow(scope.row)">
-                续借
-              </el-button>
-              <el-button link type="primary" size="small" @click="changeBack(scope.row)">
-                归还
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+
+    <!-- Edit Profile Dialog -->
+    <el-dialog
+      v-model="editDialogVisible"
+      title="修改个人信息"
+      width="400px"
+      align-center
+      class="custom-dialog"
+    >
+      <div class="form-container">
+        <div class="form-group">
+          <label>账号</label>
+          <el-input v-model="inputValue.userName" disabled />
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <el-input v-model="inputValue.password" type="password" show-password />
+        </div>
+        <div class="form-group">
+          <label>年龄</label>
+          <el-input v-model="inputValue.age" />
+        </div>
+        <div class="form-group">
+          <label>地址</label>
+          <el-input v-model="inputValue.address" />
+        </div>
       </div>
-    </div>
-    <div class="right-contain">
-      <div class="right-contain-center">
-        <button class="btn" @click="logout">
-          <div class="wrapper">
-            <p class="text">退出系统</p>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="editDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="updateUser">保存修改</el-button>
+        </div>
+      </template>
+    </el-dialog>
 
-            <div class="flower flower1">
-              <div class="petal one"></div>
-              <div class="petal two"></div>
-              <div class="petal three"></div>
-              <div class="petal four"></div>
-            </div>
-            <div class="flower flower2">
-              <div class="petal one"></div>
-              <div class="petal two"></div>
-              <div class="petal three"></div>
-              <div class="petal four"></div>
-            </div>
-            <div class="flower flower3">
-              <div class="petal one"></div>
-              <div class="petal two"></div>
-              <div class="petal three"></div>
-              <div class="petal four"></div>
-            </div>
-            <div class="flower flower4">
-              <div class="petal one"></div>
-              <div class="petal two"></div>
-              <div class="petal three"></div>
-              <div class="petal four"></div>
-            </div>
-            <div class="flower flower5">
-              <div class="petal one"></div>
-              <div class="petal two"></div>
-              <div class="petal three"></div>
-              <div class="petal four"></div>
-            </div>
-            <div class="flower flower6">
-              <div class="petal one"></div>
-              <div class="petal two"></div>
-              <div class="petal three"></div>
-              <div class="petal four"></div>
-            </div>
-          </div>
-        </button>
-
-      </div>
-    </div>
-  </div>
-
-  <el-dialog
+    <!-- Renew Dialog -->
+    <el-dialog
       v-model="borrowDialogVisible"
-      title="续借"
-      width="400"
+      title="续借书籍"
+      width="400px"
       align-center
-  >
-    <span>请输入续借时长:</span><br/>
-    <el-input v-model.number="borrowDay" placeholder="请输入续借时长/天" ></el-input>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="borrowDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="borrow">
-          确定
-        </el-button>
+      class="custom-dialog"
+    >
+      <p class="dialog-desc">请输入您想要续借的天数。</p>
+      <div class="form-group">
+        <el-input v-model.number="borrowDay" placeholder="请输入天数" type="number" />
       </div>
-    </template>
-  </el-dialog>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="borrowDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="borrow">确认续借</el-button>
+        </div>
+      </template>
+    </el-dialog>
 
-
-  <el-dialog
+    <!-- Return Dialog -->
+    <el-dialog
       v-model="backDialogVisible"
-      title="归还书本"
-      width="400"
+      title="归还书籍"
+      width="400px"
       align-center
-  >
-    <span>确认归还书本:{{borrowSum.bookName}}吗?</span><br/>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="backDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="back">
-          确定
-        </el-button>
-      </div>
-    </template>
-  </el-dialog>
-
+      class="custom-dialog"
+    >
+      <p class="dialog-desc">确认归还书籍 <strong>{{borrowSum.bookName}}</strong> 吗？</p>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="backDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="back">确认归还</el-button>
+        </div>
+      </template>
+    </el-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
-import router from "../router/index.ts";
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from "vue-router";
 import { useCookies } from '@vueuse/integrations/useCookies'
-const cookie = useCookies()
-import {ref, reactive, onMounted, computed} from 'vue'
 import myAxios from "../axios/index.js";
-import {ElMessage} from "element-plus";
+import { ElMessage } from "element-plus";
+
+const router = useRouter();
+const cookie = useCookies()
+
+const editDialogVisible = ref(false)
+const borrowDialogVisible = ref(false)
+const backDialogVisible = ref(false)
 
 const inputValue = reactive({
   userName: '',
@@ -154,9 +168,8 @@ const userInfo = reactive({
   age: '',
   address: ''
 })
+
 const borrowData = ref([])
-const borrowDialogVisible = ref(false)
-const backDialogVisible = ref(false)
 const borrowTime = ref<number>(0)
 const borrowDay = ref<number>(0)
 const borrowDays = ref(0);
@@ -167,7 +180,6 @@ const borrowSum = reactive({
   endTime:  '',
 })
 
-
 onMounted(()=>{
   inputValue.userName = cookie.get('username')
   userInfo.userName = cookie.get('username')
@@ -175,26 +187,34 @@ onMounted(()=>{
   getBorrowInfo()
 })
 
-const changeBorrow = (row)=>{
+const openEditDialog = () => {
+  editDialogVisible.value = true
+  // Sync input values with current info
+  inputValue.password = userInfo.password
+  inputValue.age = userInfo.age
+  inputValue.address = userInfo.address
+}
+
+const changeBorrow = (row: any) => {
   borrowDialogVisible.value = true
   borrowSum.userName = row.userName
   borrowSum.bookName = row.bookName
-  borrowTime.value = parseInt(row.borrowTime,10)
+  borrowTime.value = parseInt(row.borrowTime, 10)
   borrowSum.beginTime = row.beginTime
   borrowSum.endTime = row.endTime
 }
 
-const changeBack = (row)=>{
+const changeBack = (row: any) => {
   backDialogVisible.value = true
   borrowSum.userName = row.userName
   borrowSum.bookName = row.bookName
-  borrowTime.value = parseInt(row.borrowTime,10)
+  borrowTime.value = parseInt(row.borrowTime, 10)
   borrowSum.beginTime = row.beginTime
   borrowSum.endTime = row.endTime
 }
 
-//获取用户信息
-const getUserInfo = async ()=>{
+// Get User Info
+const getUserInfo = async () => {
   try {
     let res = await myAxios.get('http://localhost:8080/user/getUserByName?name='+userInfo.userName)
     if(res.data.code == 200){
@@ -205,45 +225,46 @@ const getUserInfo = async ()=>{
       inputValue.age = res.data.data.age
       inputValue.address = res.data.data.address
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-//修改用户信息
-const updateUser = async ()=>{
+// Update User Info
+const updateUser = async () => {
   try {
     let res = await myAxios.post('http://localhost:8080/user/updateByName', {
       name: inputValue.userName,
-      password:inputValue.password,
-      age:inputValue.age,
-      address:inputValue.address
+      password: inputValue.password,
+      age: inputValue.age,
+      address: inputValue.address
     })
    if(res.data.code == 200){
      ElMessage.success(res.data.data)
-    await getUserInfo()
-   }else {
+     await getUserInfo()
+     editDialogVisible.value = false
+   } else {
      ElMessage.error(res.data.data)
    }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-//获取书本借阅数据
-const getBorrowInfo = async ()=>{
+// Get Borrow Info
+const getBorrowInfo = async () => {
   try {
     let res = await myAxios.get('http://localhost:8080/bookBorrow/getBorrowInfo?username='+userInfo.userName)
     if(res.data.code == 200){
       borrowData.value = res.data.data
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-//续借
-const borrow = async ()=>{
+// Renew
+const borrow = async () => {
   borrowDays.value = borrowDay.value + borrowTime.value
   try {
     let res = await myAxios.post('http://localhost:8080/bookBorrow/borrowTime', {
@@ -256,16 +277,16 @@ const borrow = async ()=>{
       ElMessage.success(res.data.data)
       await getBorrowInfo()
       borrowDialogVisible.value = false
-    }else {
+    } else {
       ElMessage.error(res.data.msg)
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-//归还
-const back = async ()=>{
+// Return
+const back = async () => {
   try {
     let res = await myAxios.post('http://localhost:8080/bookBorrow/back', {
       userName: borrowSum.userName,
@@ -276,374 +297,178 @@ const back = async ()=>{
       ElMessage.success(res.data.data)
       await getBorrowInfo()
       backDialogVisible.value = false
-    }else {
+    } else {
       ElMessage.error(res.data.msg)
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-const logout = ()=>{
+const logout = () => {
   cookie.remove('token')
   router.push('/login')
 }
-
-
-
-
 </script>
 
 <style scoped>
-
-.user-main{
-  width: 100%;
-  height: 550px;
-  display: flex;
+.page-container {
+  padding-top: 20px;
 }
 
-.left-contain{
-  width: 30%;
-  height: 100%;
-  display: block;
-  background: rgb(253, 198, 176);
-}
-
-.span-title{
-  font:oblique bold 26px "楷体";
-  color: rgb(164, 59, 21);
-}
-
-.user-info{
-  width: 300px;
-  height: 400px;
-  display: block;
-  margin-top: 60px;
-  margin-left: 80px;
-}
-
-.flip-card {
-  background-color: transparent;
-  width: 290px;
-  height: 354px;
-  perspective: 1000px;
-  font-family: sans-serif;
-}
-
-
-.flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  transition: transform 0.8s;
-  transform-style: preserve-3d;
-}
-
-.flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
-}
-
-.flip-card-front{
-  box-shadow: 0 8px 14px 0 rgba(0,0,0,0.2);
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border: 1px solid coral;
-  border-radius: 1rem;
-}
-
-.flip-card-back {
-  box-shadow: 0 8px 14px 0 rgba(0,0,0,0.2);
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  border: 1px solid coral;
-  border-radius: 1rem;
-}
-
-.span-back-title {
-  font:oblique bold 26px "楷体";
-}
-
-.span-back>input{
-  width: 150px;
-  height: 20px;
-  border-radius: 8px;
-  margin-left: 10px;
-  border: 1px solid rgb(253, 198, 176);
-  color: rgb(208, 68, 12);
-  background-color: rgb(253, 198, 176);
-}
-
-.span-back-btn>button{
-  width: 100px;
-  height: 30px;
-  border-radius: 10px;
-  border: 1px solid rgb(253, 198, 176);
-  background-color: rgb(253, 198, 176);
-  font:oblique bold 16px "楷体";
-}
-
-.flip-card-front {
-  background: linear-gradient(120deg, bisque 60%, rgb(255, 231, 222) 88%,
-  rgb(255, 211, 195) 40%, rgba(255, 127, 80, 0.603) 48%);
-  color: coral;
-}
-
-.flip-card-back {
-  background: linear-gradient(120deg, rgb(255, 174, 145) 30%, coral 88%,
-  bisque 40%, rgb(255, 185, 160) 78%);
-  color: white;
-  transform: rotateY(180deg);
-}
-
-
-
-.center-contain {
-  width: 50%;
-  height: 100%;
-  background-color: #d58869;
-}
-
-.book-borrow-info {
-  width: 100%;
-  height: 520px;
-  display: flex;
-}
-
-.right-contain{
-  width: 20%;
-  height: 100%;
-  background-color: rgb(253, 198, 176);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.col-table-el {
-  width: 100%;
-  font-family: 楷体;
-  font-size: 14px;
-  background-color: #e0be94;
-}
-
-.right-contain-center {
-  width: 200px;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-
-.btn {
-  height: 4em;
-  width: 12em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border: 0px solid black;
-  cursor: pointer;
-}
-
-.wrapper {
-  height: 2em;
-  width: 8em;
-  position: relative;
-  background: transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.text {
-  font-size: 18px;
-  z-index: 1;
-  color: #000;
-  padding: 4px 12px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.7);
-  transition: all 0.5s ease;
-  font-family: 楷体;
-}
-
-.flower {
+.user-layout {
   display: grid;
-  grid-template-columns: 1em 1em;
-  position: absolute;
-  transition: grid-template-columns 0.8s ease;
+  grid-template-columns: 320px 1fr;
+  gap: 40px;
+  align-items: start;
 }
 
-.flower1 {
-  top: -12px;
-  left: -13px;
-  transform: rotate(5deg);
+/* Profile Card */
+.profile-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  position: sticky;
+  top: 20px;
 }
 
-.flower2 {
-  bottom: -5px;
-  left: 8px;
-  transform: rotate(35deg);
+.avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  background: #000;
+  color: #fff;
+  font-size: 32px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  margin: 0 auto 20px;
 }
 
-.flower3 {
-  bottom: -15px;
-  transform: rotate(0deg);
+.username {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #1a1a1a;
 }
 
-.flower4 {
-  top: -14px;
-  transform: rotate(15deg);
+.user-role {
+  color: #888;
+  font-size: 14px;
+  margin: 0 0 30px 0;
 }
 
-.flower5 {
-  right: 11px;
-  top: -3px;
-  transform: rotate(25deg);
+.profile-details {
+  text-align: left;
+  margin-bottom: 30px;
 }
 
-.flower6 {
-  right: -15px;
-  bottom: -15px;
-  transform: rotate(30deg);
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
 }
 
-.petal {
-  height: 1em;
-  width: 1em;
-  border-radius: 40% 70% / 7% 90%;
-  background: linear-gradient(#07a6d7, #93e0ee);
-  border: 0.5px solid #96d1ec;
-  z-index: 0;
-  transition: width 0.8s ease, height 0.8s ease;
+.detail-item .label {
+  color: #888;
 }
 
-.two {
-  transform: rotate(90deg);
+.detail-item .value {
+  color: #333;
+  font-weight: 500;
 }
 
-.three {
-  transform: rotate(270deg);
+.profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
-.four {
-  transform: rotate(180deg);
+.action-btn {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
 }
 
-.btn:hover .petal {
-  background: linear-gradient(#0761d7, #93bdee);
-  border: 0.5px solid #96b4ec;
+.action-btn.outline {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #333;
 }
 
-.btn:hover .flower {
-  grid-template-columns: 1.5em 1.5em;
+.action-btn.outline:hover {
+  border-color: #000;
 }
 
-.btn:hover .flower .petal {
-  width: 1.5em;
-  height: 1.5em;
+.action-btn.danger {
+  background: transparent;
+  border: 1px solid #ff4d4f;
+  color: #ff4d4f;
 }
 
-.btn:hover .text {
-  background: rgba(255, 255, 255, 0.4);
+.action-btn.danger:hover {
+  background: #fff1f0;
 }
 
-.btn:hover div.flower1 {
-  animation: 15s linear 0s normal none infinite running flower1;
+/* Borrow Section */
+.borrow-section {
+  background: #fff;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
 }
 
-@keyframes flower1 {
-  0% {
-    transform: rotate(5deg);
+.section-header {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+  color: #1a1a1a;
+}
+
+.section-subtitle {
+  color: #888;
+  font-size: 14px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #666;
+}
+
+.dialog-desc {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .user-layout {
+    grid-template-columns: 1fr;
   }
-
-  100% {
-    transform: rotate(365deg);
-  }
-}
-
-.btn:hover div.flower2 {
-  animation: 13s linear 1s normal none infinite running flower2;
-}
-
-@keyframes flower2 {
-  0% {
-    transform: rotate(35deg);
-  }
-
-  100% {
-    transform: rotate(-325deg);
-  }
-}
-
-.btn:hover div.flower3 {
-  animation: 16s linear 1s normal none infinite running flower3;
-}
-
-@keyframes flower3 {
-  0% {
-    transform: rotate(0deg);
-  }
-
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.btn:hover div.flower4 {
-  animation: 17s linear 1s normal none infinite running flower4;
-}
-
-@keyframes flower4 {
-  0% {
-    transform: rotate(15deg);
-  }
-
-  100% {
-    transform: rotate(375deg);
-  }
-}
-
-.btn:hover div.flower5 {
-  animation: 20s linear 1s normal none infinite running flower5;
-}
-
-@keyframes flower5 {
-  0% {
-    transform: rotate(25deg);
-  }
-
-  100% {
-    transform: rotate(-335deg);
-  }
-}
-
-.btn:hover div.flower6 {
-  animation: 15s linear 1s normal none infinite running flower6;
-}
-
-@keyframes flower6 {
-  0% {
-    transform: rotate(30deg);
-  }
-
-  100% {
-    transform: rotate(390deg);
+  
+  .profile-card {
+    position: static;
   }
 }
-
-
-
 </style>

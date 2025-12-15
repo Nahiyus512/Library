@@ -1,106 +1,127 @@
-<template>
-<div class="header-div" style="width: 100%;height: 200px;">
-  <div class="header-label">
-    <div class="title-div">图书推荐系统</div>
-    <span class="username-span">欢迎您:  {{username}}  .</span>
-  </div>
-  <div class="navigate" style="height: 120px">
-    <RouterLink :to="{path:'/userIndex'}" active-class="active">首页</RouterLink>
-    <RouterLink :to="{path:'/book'}" active-class="active">图书信息</RouterLink>
-    <RouterLink :to="{path:'/bookRecommend'}" active-class="active">好书推荐</RouterLink>
-    <RouterLink :to="{path:'/suggest'}" active-class="active">留言建议</RouterLink>
-    <RouterLink :to="{path:'/user'}" active-class="active">个人中心</RouterLink>
-  </div>
-</div>
-  <div class="home-main" style="width: 100%;height: 515px;">
-    <RouterView></RouterView>
+  <template>
+  <div class="app-container">
+    <header class="app-header">
+      <div class="brand">
+        <span class="brand-text">图书馆</span>
+        <span class="user-greeting" v-if="username"> / {{ username }}</span>
+      </div>
+      
+      <nav class="app-nav">
+        <RouterLink to="/userIndex" class="nav-item" active-class="active">仪表盘</RouterLink>
+        <RouterLink to="/book" class="nav-item" active-class="active">图书库</RouterLink>
+        <RouterLink to="/bookRecommend" class="nav-item" active-class="active">推荐</RouterLink>
+        <RouterLink to="/suggest" class="nav-item" active-class="active">建议</RouterLink>
+        <RouterLink to="/user" class="nav-item" active-class="active">个人中心</RouterLink>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <RouterView v-slot="{ Component }">
+        <component :is="Component" :key="$route.fullPath" />
+      </RouterView>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import {RouterView,RouterLink} from "vue-router";
-import {onMounted,ref} from "vue";
-import myAxios from "../axios/index.js";
+import { RouterView, RouterLink } from "vue-router";
+import { onMounted, ref } from "vue";
 import bus from "../bus/index";
-import {ElMessage} from "element-plus";
+import { ElMessage } from "element-plus";
 import { useCookies } from '@vueuse/integrations/useCookies'
+
 const cookie = useCookies()
-
 const username = ref('')
-onMounted(()=>{
+
+onMounted(() => {
   username.value = cookie.get('username')
-  // test()
-  bus.on('msg',(val)=>{ElMessage.info('val==>',val.username)})
+  bus.on('msg', (val: any) => { ElMessage.info('val==>', val.username) })
 })
-
-
-async function test() {
-  let res = await myAxios.get("http://localhost:8080/book/home")
- // console.log("res===>",res)
-}
-
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-.header-label {
-  width: 100%;
-  height: 80px;
-  display: block;
-  margin: 0 auto;
-  background-image: url("../assets/homebg02.png");
-  background-size: cover;
+.app-container {
+  height: 100vh;
+  background-color: #f9f9f9;
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.title-div {
-  width: 100%;
-  height: 60px;
-  font-size: 23px;
-  font-weight: 900;
-  font-style: italic;
-  color: white;
+.app-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-family: 楷体;
+  padding: 20px 40px;
+  background: transparent;
+  flex-shrink: 0;
 }
 
-.username-span {
-  width: 100%;
-  font-size: 16px;
-  display: block;
-  text-align: right;
+.brand {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
 }
 
-.navigate {
+.user-greeting {
+  font-weight: 400;
+  color: #888;
+}
+
+.app-nav {
   display: flex;
-  justify-content: center;
-  margin: 0 auto;
-  background-color: #8c939d;
+  gap: 40px;
 }
 
-.navigate a {
-  display: block;
-  text-align: center;
-  margin-right: 10px;
-  margin-top: 40px;
-  width: 90px;
-  height: 40px;
-  line-height: 40px;
-  border-radius: 10px;
-  background-color: gray;
+.nav-item {
   text-decoration: none;
-  color: white;
-  font-size: 10px;
-  letter-spacing: 5px;
+  color: #888;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  position: relative;
 }
 
-.navigate a.active {
-  background-color: #64967E;
-  color: #ffc268;
-  font-weight: 900;
-  text-shadow: 0 0 1px black;
-  font-family: 微软雅黑;
+.nav-item:hover {
+  color: #000;
 }
 
+.nav-item.active {
+  color: #000;
+}
+
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  background-color: #000;
+}
+
+.app-main {
+  flex: 1;
+  padding: 0 40px 40px 40px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

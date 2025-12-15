@@ -1,238 +1,180 @@
 <template>
-  <div class="sys-main">
-    <div class="center-div">
-      <div class="sys-info">
-        <div class="card">
-          <div class="star star-1"></div>
-          <div class="star star-2"></div>
-          <div class="star star-3"></div>
-          <div class="star star-4"></div>
-          <div class="star star-5"></div>
-          <div class="star star-6"></div>
-          <div class="star star-7"></div>
-          <div class="card-info">
-            <button @click="exit">欢迎下次使用</button>
-          </div>
-          <svg class="moon" viewBox="0 0 20 20">
-            <path d="M 10 9 z z M 7.007 6.552 c 0 -2.259 0.795 -4.33 2.117 -5.955 C 4.34 1.042 0.594 5.07 0.594 9.98 c 0 5.207 4.211 9.426 9.406 9.426 c 2.94 0 5.972 -1.354 7.696 -3.472 c -0.289 0.026 -0.987 0.044 -1.283 0.044 C 11.219 15.979 7.007 11.759 7.007 6.552 z"></path></svg>
-          <svg class="rocket" viewBox="48.0129 48.1783 416 415.6">
-            <path d="M461.81,53.81a4.4,4.4,0,0,0-3.3-3.39c-54.38-13.3-180,34.09-248.13,102.17a294.9,294.9,0,0,0-33.09,39.08c-21-1.9-42-.3-59.88,7.5-50.49,22.2-65.18,80.18-69.28,105.07a9,9,0,0,0,9.8,10.4l81.07-8.9a180.29,180.29,0,0,0,1.1,18.3,18.15,18.15,0,0,0,5.3,11.09l31.39,31.39a18.15,18.15,0,0,0,11.1,5.3,179.91,179.91,0,0,0,18.19,1.1l-8.89,81a9,9,0,0,0,10.39,9.79c24.9-4,83-18.69,105.07-69.17,7.8-17.9,9.4-38.79,7.6-59.69a293.91,293.91,0,0,0,39.19-33.09C427.82,233.76,474.91,110.9,461.81,53.81ZM298.66,213.67a42.7,42.7,0,1,1,60.38,0A42.65,42.65,0,0,1,298.66,213.67Z"></path></svg>
-
-        </div>
-
+  <div class="page-container">
+    <div class="page-header">
+      <div class="header-left">
+        <h2 class="page-title">系统设置</h2>
+        <span class="page-subtitle">管理系统配置和个人会话</span>
       </div>
+    </div>
+
+    <div class="content-container">
+      <el-row :gutter="20">
+        <el-col :span="12" :xs="24">
+          <div class="setting-card">
+            <div class="card-header">
+              <h3>关于系统</h3>
+            </div>
+            <div class="card-body">
+              <div class="info-item">
+                <span class="label">系统名称</span>
+                <span class="value">图书馆管理系统</span>
+              </div>
+              <div class="info-item">
+                <span class="label">当前版本</span>
+                <span class="value">v1.0.0</span>
+              </div>
+              <div class="info-item">
+                <span class="label">开发状态</span>
+                <span class="value"><el-tag type="info" effect="plain" style="color: #000; border-color: #000;" size="small">运行中</el-tag></span>
+              </div>
+            </div>
+          </div>
+        </el-col>
+        
+        <el-col :span="12" :xs="24">
+          <div class="setting-card">
+            <div class="card-header">
+              <h3>会话管理</h3>
+            </div>
+            <div class="card-body">
+              <p class="description">退出当前登录的管理员账号，返回登录页面。</p>
+              <div class="action-area">
+                <el-button color="#000" plain @click="exit">
+                  <el-icon class="el-icon--left"><SwitchButton /></el-icon>退出登录
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import {useCookies} from "@vueuse/integrations/useCookies";
-import {useRouter} from "vue-router";
+import { useCookies } from "@vueuse/integrations/useCookies";
+import { useRouter } from "vue-router";
+import { SwitchButton } from '@element-plus/icons-vue';
+import { ElMessageBox, ElMessage } from 'element-plus';
+
 const cookie = useCookies()
 const router = useRouter();
 
-const exit = ()=>{
-  cookie.remove('adminId')
-  cookie.remove('token')
-  router.push('/login')
+const exit = () => {
+  ElMessageBox.confirm(
+    '确定要退出登录吗？',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+    .then(() => {
+      cookie.remove('adminId')
+      cookie.remove('token')
+      ElMessage.success('已安全退出');
+      setTimeout(() => {
+        router.push('/login')
+      }, 500);
+    })
+    .catch(() => {
+      // cancel
+    })
 }
-
 </script>
 
-<style scoped lang="scss">
-
-.sys-main {
-  width: 100%;
-  height: 630px;
-  justify-content: center;
+<style scoped>
+.page-container {
+  padding: 20px;
+  height: 100%;
   display: flex;
-  background-color: #e1e3e7;
-  align-items: center;
+  flex-direction: column;
+  background-color: #f5f7fa;
 }
 
-
-.center-div {
-  width: 200px;
-  height: 200px;
+.page-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
+  margin-bottom: 20px;
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
 }
 
-.sys-info {
-  width: 300px;
-  height: 300px;
-}
-
-
-.card {
-  width: 290px;
-  height: 350px;
-  background: linear-gradient(135deg, rgba(48,48,48,1) 48%, rgba(0,0,0,1) 100%);
-  background-size: 300%,300%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  border-radius: 15px;
-  box-shadow: 5px 5px 15px 5px #000000;
-  overflow: hidden;
-  transition: all 1s ease;
-}
-
-.moon {
-  width: 70px;
-  height: 70px;
-  top: 15%;
-  right: 120px;
-  position: absolute;
-  fill: white;
-  transform: rotate(-20deg);
-  transition: all 1s ease;
-}
-
-.rocket {
-  width: 70px;
-  height: 70px;
-  bottom: -2%;
-  left: -2%;
-  position: absolute;
-  fill: white;
-  transition: all 1.9s ease;
-}
-
-.star {
-  position: absolute;
-  background: radial-gradient(circle, rgba(251,239,63,1) 0%, rgba(255,253,212,1) 100%);
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-}
-
-.star-1 {
-  width: 100px;
-  height: 100px;
-  bottom: 90px;
-  left: -15px;
-  transition: all 1s ease;
-}
-
-.star-2 {
-  width: 150px;
-  height: 150px;
-  top: -10%;
-  left: -10%;
-  transition: all .5s ease;
-}
-
-.star-3 {
-  width: 100px;
-  height: 100px;
-  bottom: 5%;
-  right: -15px;
-  transition: all .3s ease;
-}
-
-.star-4 {
-  width: 20px;
-  height: 20px;
-  top: 4%;
-  right: 5px;
-  transition: all 1.4s ease;
-}
-
-.star-5 {
-  width: 20px;
-  height: 20px;
-  bottom: 24%;
-  right: 45%;
-  animation: rotate 3s normal linear infinite;
-}
-
-.star-6 {
-  width: 20px;
-  height: 20px;
-  top: 14%;
-  right: 25%;
-  animation: rotate 5s normal linear infinite;
-}
-
-.star-7 {
-  width: 40px;
-  height: 40px;
-  top: 34%;
-  right: 65%;
-  animation: rotate 5s normal linear infinite;
-}
-
-.card-info button {
-  width: 150px;
-  height: 40px;
-  font-size: 1.2em;
+.page-title {
+  margin: 0;
+  font-size: 24px;
   font-weight: 600;
-  text-transform: uppercase;
-  transition: all 1s ease;
-  font-family: '楷体';
-  text-shadow: 2px 2px 5px #000;
-  border-radius: 20px;
+  color: #303133;
 }
 
-.card:hover {
-  background: rgb(48,48,48);
-  background: linear-gradient(135deg, rgba(48,48,48,1) 10%, rgba(0,0,0,1) 90%);
-  background-size: 100%,100%;
+.page-subtitle {
+  display: block;
+  margin-top: 5px;
+  color: #909399;
+  font-size: 14px;
 }
 
-.card:hover .star-1,
-.card:hover .star-3 {
-  background: linear-gradient(90deg, rgba(255,241,0,1) 0%, rgba(246,249,93,1) 77%, rgba(238,255,0,1) 100%);
-  transform: scale(1.2) rotate(10deg);
+.content-container {
+  flex: 1;
 }
 
-.card:hover .star-2,
-.card:hover .star-4,
-.card:hover .star-5 {
-  background: linear-gradient(90deg, rgba(255,241,0,1) 0%, rgba(246,249,93,1) 77%, rgba(238,255,0,1) 100%);
-  transform: scale(1.2) rotate(-150deg);
+.setting-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
+  overflow: hidden;
 }
 
-.card:hover .rocket {
-  transform: scale(.3) translate(450px,-730px) rotate(-260deg);
+.card-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #EBEEF5;
 }
 
-.card:hover .moon {
-  width: 50px;
-  height: 50px;
+.card-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #303133;
 }
 
-.card-info:hover button {
-  font-size: 1.3em;
-  color: #fff;
+.card-body {
+  padding: 20px;
 }
 
-@keyframes rotate {
-  0% {
-    -webkit-transform: rotate3d(0, 0, 1, 0deg);
-    transform: rotate3d(0, 0, 1, 0deg);
-  }
-
-  25% {
-    -webkit-transform: rotate3d(0, 0, 1, 90deg);
-    transform: rotate3d(0, 0, 1, 90deg);
-  }
-
-  50% {
-    -webkit-transform: rotate3d(0, 0, 1, 180deg);
-    transform: rotate3d(0, 0, 1, 180deg);
-  }
-
-  75% {
-    -webkit-transform: rotate3d(0, 0, 1, 270deg);
-    transform: rotate3d(0, 0, 1, 270deg);
-  }
-
-  100% {
-    -webkit-transform: rotate3d(0, 0, 1, 360deg);
-    transform: rotate3d(0, 0, 1, 360deg);
-  }
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item .label {
+  color: #606266;
+}
+
+.info-item .value {
+  color: #303133;
+  font-weight: 500;
+}
+
+.description {
+  color: #606266;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.action-area {
+  display: flex;
+  justify-content: flex-end;
+}
 </style>

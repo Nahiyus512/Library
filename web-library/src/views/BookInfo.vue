@@ -1,62 +1,120 @@
 <template>
-  <div class="book-info">
-    <div class="header-info">
-      输入查询的书名: <el-input v-model="headSearchInput" style="width: 240px" placeholder="Please input" />
-      <el-button type="success" round style="margin-left: 10px" @click="findBook">查询</el-button>
-      <el-button type="success" round style="margin-right: 20px" @click="dialogAddFormVisible = true">
-        添加书本
-      </el-button>
+  <div class="book-info-container">
+    <div class="page-header">
+      <div class="header-left">
+        <h2 class="page-title">图书管理</h2>
+        <span class="page-subtitle">管理馆藏图书信息</span>
+      </div>
+      <div class="header-right">
+        <el-input 
+          v-model="headSearchInput" 
+          placeholder="搜索书名..." 
+          class="search-input"
+          :prefix-icon="Search"
+          clearable
+          @clear="findBook"
+          @keyup.enter="findBook"
+        />
+        <el-button color="#000" @click="findBook">查询</el-button>
+        <el-button color="#000" plain @click="dialogAddFormVisible = true">
+          <el-icon class="el-icon--left"><Plus /></el-icon>添加书本
+        </el-button>
+      </div>
     </div>
-    <div class="main-div">
-      <el-table :data="tableData" style="width: 100%">
-        <el-table-column type="index" label="序号" width="80" fixed />
-        <el-table-column prop="bookName" label="书名" width="150" />
-        <el-table-column prop="bookPrice" label="价格" width="100" />
-        <el-table-column prop="bookPublic" label="出版社" width="150" />
-        <el-table-column prop="bookClassify" label="分类" width="120" />
-        <el-table-column label="书本图片">
+
+    <div class="content-card">
+      <el-table :data="tableData" style="width: 100%; flex: 1;" height="100%" stripe>
+        <el-table-column type="index" label="序号" width="80" fixed align="center" />
+        <el-table-column prop="bookName" label="书名" min-width="150" />
+        <el-table-column prop="bookPrice" label="价格" width="100" align="center">
           <template #default="scope">
-            <el-image :src="`http://localhost:8080/common/download?name=${scope.row.bookImge}`"
-              style="width: 90px;height: 90px" />
+            ¥{{ scope.row.bookPrice }}
           </template>
         </el-table-column>
-        <el-table-column prop="bookDescription" label="描述" width="200" />
-        <el-table-column prop="bookNum" label="数量" width="100" />
-        <el-table-column fixed="right" label="操作" width="120">
+        <el-table-column prop="bookPublic" label="出版社" width="150" show-overflow-tooltip />
+        <el-table-column prop="bookClassify" label="分类" width="120" align="center">
           <template #default="scope">
-            <el-button link type="primary" size="small" @click="changeBook(scope.row)">
-              修改
+            <el-tag size="small" type="info" effect="plain" style="color: #000; border-color: #000;">{{ scope.row.bookClassify }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="封面" width="120" align="center">
+          <template #default="scope">
+            <el-image 
+              :src="`http://localhost:8080/common/download?name=${scope.row.bookImge}`"
+              style="width: 60px; height: 80px; border-radius: 4px;"
+              fit="cover"
+              :preview-src-list="[`http://localhost:8080/common/download?name=${scope.row.bookImge}`]"
+              preview-teleported
+            >
+              <template #error>
+                <div class="image-slot">
+                  <el-icon><Picture /></el-icon>
+                </div>
+              </template>
+            </el-image>
+          </template>
+        </el-table-column>
+        <el-table-column prop="bookDescription" label="描述" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="bookNum" label="库存" width="100" align="center" />
+        <el-table-column fixed="right" label="操作" width="180" align="center">
+          <template #default="scope">
+            <el-button link style="color: #000" size="small" @click="changeBook(scope.row)">
+              <el-icon><Edit /></el-icon> 修改
             </el-button>
-            <el-button link type="primary" size="small" @click="deleteBook(scope.row)">删除</el-button>
+            <el-button link style="color: #666" size="small" @click="deleteBook(scope.row)">
+              <el-icon><Delete /></el-icon> 删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
-      <el-pagination class="page" v-model:current-page="dataInfo.pageNum" v-model:page-size="dataInfo.pageSize"
-        :page-sizes="[3, 5, 10, 15]" :small="small" :disabled="disabled" :background="background"
-        layout="total,sizes, prev, pager, next" :total="dataInfo.allNum" @size-change="handleSizeChange"
-        @current-change="handleCurrentChange" />
+      
+      <div class="pagination-container">
+        <el-pagination 
+          v-model:current-page="dataInfo.pageNum" 
+          v-model:page-size="dataInfo.pageSize"
+          :page-sizes="[5, 10, 20]" 
+          :disabled="disabled" 
+          :background="true"
+          layout="total, sizes, prev, pager, next, jumper" 
+          :total="dataInfo.allNum" 
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange" 
+        />
+      </div>
     </div>
   </div>
 
-  <el-dialog v-model="dialogFormVisible" title="修改书本信息" width="500">
-    <el-form :model="form">
-      <el-form-item label="书名" :label-width="formLabelWidth">
-        <el-input v-model="form.bookName" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="价格" :label-width="formLabelWidth">
-        <el-input v-model="form.bookPrice" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="出版社" :label-width="formLabelWidth">
-        <el-input v-model="form.bookPublic" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="分类" :label-width="formLabelWidth">
-        <!--        <el-input v-model="form.bookClassify" autocomplete="off" />-->
-        <el-select v-model="form.bookClassify" placeholder="Select" style="width: 120px">
-          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
-            :disabled="item.disabled" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="图片" :label-width="formLabelWidth">
+  <el-dialog v-model="dialogFormVisible" title="修改书本信息" width="600px" destroy-on-close>
+    <el-form :model="form" label-position="top">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="书名">
+            <el-input v-model="form.bookName" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="价格">
+            <el-input v-model="form.bookPrice" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="出版社">
+            <el-input v-model="form.bookPublic" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="分类">
+            <el-select v-model="form.bookClassify" placeholder="选择分类" style="width: 100%">
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
+                :disabled="item.disabled" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      
+      <el-form-item label="封面图片">
         <el-upload
             class="avatar-uploader"
             action="http://localhost:8080/common/upload?module=imageUrl"
@@ -71,42 +129,53 @@
         </el-upload>
       </el-form-item>
 
-      <el-form-item label="描述" :label-width="formLabelWidth">
-        <el-input v-model="form.bookDesc" autocomplete="off" />
+      <el-form-item label="描述">
+        <el-input v-model="form.bookDesc" type="textarea" :rows="3" autocomplete="off" />
       </el-form-item>
-      <el-form-item label="数量" :label-width="formLabelWidth">
-        <el-input v-model="form.bookNum" autocomplete="off" />
+      
+      <el-form-item label="库存数量">
+        <el-input-number v-model="form.bookNum" :min="0" style="width: 100%" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取消</el-button>
-        <el-button type="primary" @click="clickUpdateOk">
-          确定
-        </el-button>
+        <el-button color="#000" @click="clickUpdateOk">确定</el-button>
       </div>
     </template>
   </el-dialog>
 
-  <el-dialog v-model="dialogAddFormVisible" title="添加书籍" width="500">
-    <el-form :model="addForm">
-      <el-form-item label="书名" :label-width="formLabelWidth">
-        <el-input v-model="addForm.bookName" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="价格" :label-width="formLabelWidth">
-        <el-input v-model="addForm.bookPrice" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="出版社" :label-width="formLabelWidth">
-        <el-input v-model="addForm.bookPublic" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="分类" :label-width="formLabelWidth">
-        <!--        <el-input v-model="addForm.bookClassify" autocomplete="off" />-->
-        <el-select v-model="addForm.bookClassify" placeholder="Select" style="width: 120px">
-          <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
-            :disabled="item.disabled" />
-        </el-select>
-      </el-form-item>
-      <el-form-item label="图片" :label-width="formLabelWidth">
+  <el-dialog v-model="dialogAddFormVisible" title="添加书籍" width="600px" destroy-on-close>
+    <el-form :model="addForm" label-position="top">
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="书名">
+            <el-input v-model="addForm.bookName" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="价格">
+            <el-input v-model="addForm.bookPrice" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <el-form-item label="出版社">
+            <el-input v-model="addForm.bookPublic" autocomplete="off" />
+          </el-form-item>
+        </el-col>
+        <el-col :span="12">
+          <el-form-item label="分类">
+            <el-select v-model="addForm.bookClassify" placeholder="选择分类" style="width: 100%">
+              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
+                :disabled="item.disabled" />
+            </el-select>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      
+      <el-form-item label="封面图片">
         <el-upload class="avatar-uploader" action="http://localhost:8080/common/upload?module=imageUrl"
           :headers="headers" :show-file-list="false" :on-success="handleAvatarSuccess" ref="uploadRef">
           <img v-if="imageUrl" :src="imageUrl" class="avatar" />
@@ -115,42 +184,42 @@
           </el-icon>
         </el-upload>
       </el-form-item>
-      <el-form-item label="描述" :label-width="formLabelWidth">
-        <el-input v-model="addForm.bookDesc" autocomplete="off" />
+      
+      <el-form-item label="描述">
+        <el-input v-model="addForm.bookDesc" type="textarea" :rows="3" autocomplete="off" />
       </el-form-item>
-      <el-form-item label="数量" :label-width="formLabelWidth">
-        <el-input v-model="addForm.bookNum" autocomplete="off" />
+      
+      <el-form-item label="库存数量">
+        <el-input-number v-model="addForm.bookNum" :min="0" style="width: 100%" />
       </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="cancel">取消</el-button>
-        <el-button type="primary" @click="clickAddOk">
-          确定
-        </el-button>
+        <el-button color="#000" @click="clickAddOk">确定</el-button>
       </div>
     </template>
   </el-dialog>
 
-  <el-dialog v-model="centerDialogVisible" title="提示" width="500" align-center>
-    <span>确认删除此书本数据吗?</span>
+  <el-dialog v-model="centerDialogVisible" title="警告" width="400px" align-center destroy-on-close>
+    <div class="warning-content">
+      <el-icon class="warning-icon"><WarningFilled /></el-icon>
+      <span>确认删除此书本数据吗? 此操作无法恢复。</span>
+    </div>
     <template #footer>
       <div class="dialog-footer">
         <el-button @click="centerDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="clickDeleteBook">
-          确定
-        </el-button>
+        <el-button color="#000" plain @click="clickDeleteBook">删除</el-button>
       </div>
     </template>
   </el-dialog>
-
 </template>
 
 <script lang="ts" setup>
 import { onMounted, ref, reactive } from "vue";
 import myAxios from "../axios/index.js"
 import { ElMessage, UploadInstance } from "element-plus";
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Search, Edit, Delete, WarningFilled, Picture } from '@element-plus/icons-vue'
 import type { UploadProps } from 'element-plus'
 import { getCurrentInstance } from 'vue';
 import { useCookies } from '@vueuse/integrations/useCookies'
@@ -159,14 +228,11 @@ const cookie = useCookies()
 const selectValue = ref('')
 const options = ref<any[]>([])
 
-
-
 const uploadRef = ref<UploadInstance>()
 const instance = getCurrentInstance();
 const dialogFormVisible = ref(false)
 const dialogAddFormVisible = ref(false)
 const centerDialogVisible = ref(false)
-const formLabelWidth = '120px'
 const small = ref(false)
 const background = ref(false)
 const disabled = ref(false)
@@ -186,11 +252,6 @@ const form = reactive({
   bookDesc: '',
   bookNum: '',
 })
-
-const addImgForm = reactive({
-  image: ''
-})
-
 
 //添加书本数据
 const addForm = reactive({
@@ -213,7 +274,6 @@ const dataInfo = reactive({
 })
 
 onMounted(() => {
-  //console.log("onmount")
   getBook()
   getBookClass()
 })
@@ -237,6 +297,7 @@ const clearData = () => {
   addForm.bookPrice = ''
   addForm.bookClassify = ''
   addForm.bookNum = ''
+  imageUrl.value = ''
 }
 
 const cancel = () => {
@@ -251,9 +312,7 @@ const getBook = async () => {
       pageNum: dataInfo.pageNum,
       nameInfo: dataInfo.name
     })
-    //console.log(res)
     tableData.value = JSON.parse(JSON.stringify(res.data.data.bookList))
-    //console.log(tableData)
     dataInfo.allNum = JSON.parse(JSON.stringify(res.data.data.count))
   } catch (e) {
     console.log(e)
@@ -280,12 +339,10 @@ const changeBook = (row) => {
 
 const deleteBook = (row) => {
   centerDialogVisible.value = true
-  //console.log(row)
   form.bookId = row.bookId
 }
 
 async function clickUpdateOk(row) {
-  console.log("你点击了ok")
   try {
     let updateResult = await myAxios.put('http://localhost:8080/book/change', {
       bookId: form.bookId,
@@ -297,7 +354,6 @@ async function clickUpdateOk(row) {
       bookDescription: form.bookDesc,
       bookNum: form.bookNum
     })
-    //console.log(updateResult)
     if (updateResult.data.code === 200) {
       await getBook()
       ElMessage.success(updateResult.data.data)
@@ -375,16 +431,8 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = (
   response,
   uploadFile
 ) => {
-  console.log("resp==>", response)
-
-  // 后端返回的是 objectName（如 "book/uuid.png"）
-  // 存到 addForm.bookImage（这个会提交到后端 /book/add）
   addForm.bookImage = response.data
-
-  // 用 /common/download 来预览图片
   imageUrl.value = `http://localhost:8080/common/download?name=${response.data}`
-
-  console.log(imageUrl.value)
   instance?.proxy?.$forceUpdate()
 }
 
@@ -393,22 +441,13 @@ const handleEditAvatarSuccess: UploadProps['onSuccess'] = (
     response,
     uploadFile
 ) => {
-  // 保存给修改用
   form.bookImage = response.data
-
-  // 预览用
   imageUrl.value = `http://localhost:8080/common/download?name=${response.data}`
-
-  console.log("修改图片成功 =>", imageUrl.value)
 }
 
 const getBookClass = async () => {
   try {
     const res = await myAxios.get('http://localhost:8080/class/get')
-
-    // 假设后端返回格式是：
-    // { code: 200, data: [ { className: '自然' }, ... ] }
-
     if (res.data.code === 200) {
       options.value = res.data.data.map((item: any) => ({
         value: item.classify,
@@ -419,56 +458,150 @@ const getBookClass = async () => {
     console.error("获取分类失败：", error)
   }
 }
-
-
 </script>
 
 <style lang="scss" scoped>
-.book-info {
-  .header-info {
-    //height: 15vh;
-    background-color: #68cbc1;
-    padding-top: 40px;
-    padding-left: 20px;
-    padding-bottom: 40px;
+.book-info-container {
+  padding: 24px;
+  background-color: #f5f7fa;
+  height: 100%; /* Change min-height to height for fixed layout */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-shrink: 0;
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0;
+        margin-bottom: 8px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+        color: #909399;
+      }
+    }
+
+    .header-right {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+
+      .search-input {
+        width: 240px;
+      }
+    }
   }
 
-  .main-div {
-    .page {
-      margin-top: 5px;
-      justify-content: center;
+  .content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .pagination-container {
       display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+      flex-shrink: 0;
     }
   }
 }
 
-.avatar-uploader .avatar {
-  width: 178px;
-  height: 178px;
-  display: block;
+.warning-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+  
+  .warning-icon {
+    font-size: 24px;
+    color: #e6a23c;
+  }
+  
+  span {
+    font-size: 16px;
+    color: #606266;
+  }
 }
-</style>
 
-
-<style>
-.avatar-uploader .el-upload {
-  border: 1px dashed var(--el-border-color);
+.avatar-uploader {
+  border: 1px dashed #d9d9d9;
   border-radius: 6px;
   cursor: pointer;
   position: relative;
   overflow: hidden;
   transition: var(--el-transition-duration-fast);
+  width: 178px;
+  height: 178px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  &:hover {
+    border-color: #000;
+  }
 }
 
-.avatar-uploader .el-upload:hover {
-  border-color: var(--el-color-primary);
-}
-
-.el-icon.avatar-uploader-icon {
+.avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
   width: 178px;
   height: 178px;
   text-align: center;
+}
+
+.avatar {
+  width: 178px;
+  height: 178px;
+  display: block;
+  object-fit: cover;
+}
+
+.image-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background: #f5f7fa;
+  color: #909399;
+  font-size: 20px;
+}
+
+@media (max-width: 768px) {
+  .book-info-container {
+    padding: 16px;
+    
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      
+      .header-right {
+        width: 100%;
+        flex-wrap: wrap;
+        
+        .search-input {
+          flex: 1;
+          min-width: 200px;
+        }
+      }
+    }
+  }
 }
 </style>

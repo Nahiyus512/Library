@@ -1,85 +1,127 @@
 <template>
-  <el-row class="tac">
-    <el-col :span="24">
-      <h3 class="mb-2">欢迎使用图书推荐系统</h3>
-      <el-menu
-          active-text-color="#ffd04b"
-          background-color="#545c64"
-          class="el-menu"
-          default-active="2"
-          text-color="#fff"
-      >
-        <el-menu-item index="1">
-          <el-icon><icon-menu /></el-icon>
-          <span>
-            <RouterLink :to="{path:'/userInfo'}" active-class="active">用户信息管理</RouterLink>
-          </span>
-        </el-menu-item>
-        <el-menu-item index="2">
-          <el-icon><icon-menu /></el-icon>
-          <span>
-            <RouterLink :to="{path:'/bookInfo'}" active-class="active">书本信息管理</RouterLink>
-          </span>
-        </el-menu-item>
-        <el-menu-item index="3">
-          <el-icon><icon-menu /></el-icon>
-          <span>
-            <RouterLink :to="{path:'/bookClass'}" active-class="active">书本分类管理</RouterLink>
-          </span>
-        </el-menu-item>
-        <el-menu-item index=4>
-          <el-icon><document /></el-icon>
-          <span>
-            <RouterLink :to="{path:'/bookBorrowInfo'}" active-class="active">书本借阅管理</RouterLink>
-          </span>
-        </el-menu-item>
-        <el-menu-item index="5">
-          <el-icon><document /></el-icon>
-          <span>
-            <RouterLink :to="{path:'/advice'}" active-class="active">用户建议</RouterLink>
-          </span>
-        </el-menu-item>
-        <el-menu-item index="6">
-          <el-icon><setting /></el-icon>
-          <span>
-            <RouterLink :to="{path:'/sysInfo'}" active-class="active">系统信息管理</RouterLink>
-          </span>
-        </el-menu-item>
-      </el-menu>
-    </el-col>
-  </el-row>
+  <div class="admin-menu">
+    <div class="menu-header">
+      <h3>系统管理</h3>
+    </div>
+    <el-menu
+        class="minimal-menu"
+        :default-active="activePath"
+        router
+    >
+      <el-menu-item index="/userInfo">
+        <el-icon><User /></el-icon>
+        <span>用户管理</span>
+      </el-menu-item>
+      
+      <el-menu-item index="/bookInfo">
+        <el-icon><Notebook /></el-icon>
+        <span>图书管理</span>
+      </el-menu-item>
+      
+      <el-menu-item index="/bookClass">
+        <el-icon><CollectionTag /></el-icon>
+        <span>分类管理</span>
+      </el-menu-item>
+      
+      <el-menu-item index="/bookBorrowInfo">
+        <el-icon><Tickets /></el-icon>
+        <span>借阅管理</span>
+      </el-menu-item>
+      
+      <el-menu-item index="/advice">
+        <el-icon><ChatDotRound /></el-icon>
+        <span>意见反馈</span>
+      </el-menu-item>
+      
+      <el-menu-item index="/sysInfo">
+        <el-icon><Setting /></el-icon>
+        <span>系统设置</span>
+      </el-menu-item>
+    </el-menu>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import {RouterView,RouterLink} from "vue-router";
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import {
-  Document,
-  Menu as IconMenu,
-  Location,
+  User,
+  Notebook,
+  CollectionTag,
+  Tickets,
+  ChatDotRound,
   Setting,
 } from '@element-plus/icons-vue'
 
+const route = useRoute();
+const activePath = computed(() => route.path);
 </script>
 
-<style>
-.mb-2{
-  justify-content: center;
-  display: flex;
-  font-weight: 300;
-  font-style: italic;
-  font-family: 楷体;
-  font-size: 1.2em;
+<style scoped>
+.admin-menu {
+  height: 100%;
+  background: #f5f5f5;
+  border-right: 1px solid #eee;
+  padding-top: 20px;
+  box-sizing: border-box;
+  overflow-y: auto;
 }
 
-.el-menu{
-  width: 100%;
+/* Hide scrollbar for Chrome, Safari and Opera */
+.admin-menu::-webkit-scrollbar {
+  display: none;
 }
 
-span a {
-  display: block;
-  text-align: center;
-  line-height: 40px;
-  text-decoration: none;
-  color: white;
+/* Hide scrollbar for IE, Edge and Firefox */
+.admin-menu {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.menu-header {
+  padding: 0 20px 30px;
+  margin-bottom: 10px;
+}
+
+.menu-header h3 {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #333;
+  margin: 0;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+}
+
+.minimal-menu {
+  border-right: none !important;
+  background: transparent !important;
+}
+
+:deep(.el-menu-item) {
+  height: 50px;
+  line-height: 50px;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent !important;
+}
+
+:deep(.el-menu-item:hover) {
+  color: #000 !important;
+  background: rgba(0,0,0,0.03) !important;
+}
+
+:deep(.el-menu-item.is-active) {
+  color: #000 !important;
+  background: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+:deep(.el-icon) {
+  font-size: 16px;
+  margin-right: 10px;
 }
 </style>

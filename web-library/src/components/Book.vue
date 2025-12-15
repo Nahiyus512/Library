@@ -1,216 +1,238 @@
 <template>
-  <div class="book-main">
-    <div class="book-contain" style="background-color: #c0d5d3">
-      <div class="book-info" v-for="book in tableData" :key="book.bookId" @click="clickBook(book)">
-       <div class="book-image">
-          <img :src="'http://localhost:8080/common/download?name=' +book.bookImge" alt="image" width="160px" height="170px">
-       </div>
-       <span style="display: flex;justify-content: center">{{book.bookName}}</span>
+  <div class="page-container">
+    <div class="scroll-container">
+      <div class="books-grid">
+        <div 
+          class="book-card" 
+          v-for="book in tableData" 
+          :key="book.bookId" 
+          @click="clickBook(book)"
+        >
+          <div class="book-cover-wrapper">
+            <img 
+              :src="'http://localhost:8080/common/download?name=' + book.bookImge" 
+              alt="cover" 
+              class="book-cover"
+              loading="lazy"
+            />
+          </div>
+          <div class="book-info-preview">
+            <h3 class="book-title">{{ book.bookName }}</h3>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="page-div">
+    
+    <div class="pagination-wrapper">
       <el-pagination
-          v-model:current-page="pageInfo.pageNum"
-          v-model:page-size="pageInfo.pageSize"
-          layout="prev, pager, next"
-          :total="pageInfo.allNum"
-          @current-change="handleCurrentChange"
+        v-model:current-page="pageInfo.pageNum"
+        v-model:page-size="pageInfo.pageSize"
+        layout="prev, pager, next"
+        :total="pageInfo.allNum"
+        @current-change="handleCurrentChange"
+        background
+        class="minimal-pagination"
       />
     </div>
-  </div>
-  <el-dialog
+
+    <!-- Book Details Dialog -->
+    <el-dialog
       v-model="centerDialogVisible"
-      width="360"
+      width="600px"
       align-center
-      style="height:540px;background-color: #d6e5e4;border-radius: 10px;"
-  >
-    <div class="image-div" style="display: flex;justify-content: left"><img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" style="width: 300px;height: 320px" > </div>
-    <span>书名:{{bookData.bookName}}</span>
-    <span>出版社:{{bookData.bookPublic}}</span>
-    <span>分类:{{bookData.bookClassify}}</span>
-    <span>数量:{{bookData.bookNum}}</span>
-    <div class="rating" @click="rate($event)" style="width: 100%;height: auto">
-      点击评分:<input
-          v-for="n in 5"
-          :key="n"
-          type="radio"
-          :id="'star' + n"
-          :value="n"
-          hidden
-      />
-      <label
-          v-for="n in 5"
-          :key="n"
-          :for="'star' + n"
-          :class="{ filled: n <= ratingData.rating }"
-      >
-        &#9733;
-      </label>
-      <span>评分: {{ ratingData.rating }}</span>
-    </div>
-    <div class="contain-div">
-      <div class="inputScore-div">
-        <button>
-          <span @click="inputScore">评 分</span>
-        </button>
+      class="book-dialog"
+      :show-close="false"
+    >
+      <div class="dialog-content">
+        <div class="dialog-cover">
+          <img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" alt="cover">
+        </div>
+        
+        <div class="dialog-details">
+          <h2 class="detail-title">{{ bookData.bookName }}</h2>
+          
+          <div class="detail-meta">
+            <div class="meta-item">
+              <span class="label">出版社</span>
+              <span class="value">{{ bookData.bookPublic }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">分类</span>
+              <span class="value">{{ bookData.bookClassify }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">库存</span>
+              <span class="value">{{ bookData.bookNum }}</span>
+            </div>
+          </div>
+
+          <div class="rating-section">
+            <span class="section-label">您的评分</span>
+            <div class="stars" @click="rate($event)">
+              <input
+                v-for="n in 5"
+                :key="n"
+                type="radio"
+                :id="'star' + n"
+                :value="n"
+                hidden
+              />
+              <label
+                v-for="n in 5"
+                :key="n"
+                :for="'star' + n"
+                :class="{ filled: n <= ratingData.rating }"
+              >
+                ★
+              </label>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="action-btn outline" @click="inputScore">
+              评分
+            </button>
+            <button class="action-btn primary" @click="borrow" :disabled="bookData.bookNum <= 0">
+              {{ bookData.bookNum > 0 ? '借阅' : '暂无库存' }}
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="borrow-div">
-        <button>
-          <span @click="borrow">借 阅</span>
-        </button>
-      </div>
-    </div>
-  </el-dialog>
+    </el-dialog>
+  </div>
 </template>
 
 <script setup lang="ts">
-import {ref, reactive, onMounted} from "vue";
-import {ElMessage} from "element-plus";
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage } from "element-plus";
 import myAxios from "../axios/index.js";
 import { useCookies } from '@vueuse/integrations/useCookies'
+
 const cookie = useCookies()
 
-// 使用ref定义响应式变量
-
 const ratingData = reactive({
-  rating:0,
-  userId:0,
-  bookId:0,
-  bookName:'',
-  ratingTime:''
+  rating: 0,
+  userId: 0,
+  bookId: 0,
+  bookName: '',
+  ratingTime: ''
 })
 
 const centerDialogVisible = ref(false)
 
 const pageInfo = reactive({
-  pageSize:12,
-  pageNum:1,
-  allNum:20,
-  bookName:''
+  pageSize: 12,
+  pageNum: 1,
+  allNum: 20,
+  bookName: ''
 })
 
-//添加书本数据
 const bookData = reactive({
-  bookId:'',
+  bookId: '',
   bookName: '',
   bookPrice: '',
   bookPublic: '',
   bookClassify: '',
-  bookImage:'',
-  bookDesc:'',
-  bookNum:''
+  bookImage: '',
+  bookDesc: '',
+  bookNum: 0
 })
 
-//借阅书本数据
 const borrowData = reactive({
-  userName:'',
-  bookId:'',
-  bookName:'',
-  borrowTime:'',
-  beginTime:'',
-  endTime:''
-})
-
-onMounted(()=>{
-  getBook()
-  let username = cookie.get('username')
-  borrowData.userName = username
-  //console.log(nowDate(time))
-  console.log(nowDate(lastTime))
-  getUserByName(username)
+  userName: '',
+  bookId: '',
+  bookName: '',
+  borrowTime: '',
+  beginTime: '',
+  endTime: ''
 })
 
 const tableData = ref([])
 
-const getTime = new Date().getTime(); //获取到当前时间戳
-const lastTime = new Date(getTime+432000000);
-const time = new Date(getTime); //创建一个日期对象
-function nowDate(time) {
-  const year = time.getFullYear(); // 年
-  const month = (time.getMonth() + 1).toString().padStart(2, '0'); // 月
-  const date = time.getDate().toString().padStart(2, '0'); // 日
-  const hour = time.getHours().toString().padStart(2, '0'); // 时
-  const minute = time.getMinutes().toString().padStart(2, '0'); // 分
-  const second = time.getSeconds().toString().padStart(2, '0'); // 秒
+onMounted(() => {
+  getBook()
+  let username = cookie.get('username')
+  borrowData.userName = username
+  getUserByName(username)
+})
+
+const getTime = new Date().getTime();
+const lastTime = new Date(getTime + 432000000);
+const time = new Date(getTime);
+
+function nowDate(time: Date) {
+  const year = time.getFullYear();
+  const month = (time.getMonth() + 1).toString().padStart(2, '0');
+  const date = time.getDate().toString().padStart(2, '0');
+  const hour = time.getHours().toString().padStart(2, '0');
+  const minute = time.getMinutes().toString().padStart(2, '0');
+  const second = time.getSeconds().toString().padStart(2, '0');
   return (
-      year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second
+    year + "-" + month + "-" + date + " " + hour + ":" + minute + ":" + second
   )
 }
 
-
-
-//点击书本事件
-const clickBook = (book)=>{
- // ElMessage.info(book)
+const clickBook = (book: any) => {
   bookData.bookId = book.bookId
   bookData.bookImage = book.bookImge
   bookData.bookName = book.bookName
   bookData.bookPublic = book.bookPublic
   bookData.bookClassify = book.bookClassify
   bookData.bookNum = book.bookNum
-  centerDialogVisible.value=true
+  centerDialogVisible.value = true
 
-  //查看用户对书本是否进行过评分
-  ratingData.bookId=book.bookId
+  ratingData.bookId = book.bookId
   ratingData.bookName = book.bookName
   findRating()
-
 }
-
 
 const handleCurrentChange = (val: number) => {
   getBook()
 }
 
-
-const getUserByName = async (username)=>{
+const getUserByName = async (username: string) => {
   try {
-    let res = await myAxios.get('http://localhost:8080/user/getUserByName',{
-      params:{
-        name:username
-      }
+    let res = await myAxios.get('http://localhost:8080/user/getUserByName', {
+      params: { name: username }
     })
     ratingData.userId = res.data.data.id
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-const getBook = async ()=> {
+const getBook = async () => {
   try {
     let res = await myAxios.post('http://localhost:8080/book/listPage', {
       pageSize: pageInfo.pageSize,
       pageNum: pageInfo.pageNum,
       nameInfo: pageInfo.bookName
     })
-    //console.log(res)
     tableData.value = JSON.parse(JSON.stringify(res.data.data.bookList))
-    //console.log(tableData)
     pageInfo.allNum = JSON.parse(JSON.stringify(res.data.data.count))
   } catch (e) {
     console.log(e)
   }
 }
 
-const borrow =async ()=>{
-  if(bookData.bookNum > 0){
-    //ElMessage.success("借书成功")
+const borrow = async () => {
+  if (bookData.bookNum > 0) {
     try {
-      let res = await myAxios.put('http://localhost:8080/bookBorrow/borrow',{
-        userName:borrowData.userName,
-        bookId:bookData.bookId,
-        bookName:bookData.bookName,
-        borrowTime:'5',
-        beginTime:nowDate(time),
-        endTime:nowDate(lastTime)
+      let res = await myAxios.put('http://localhost:8080/bookBorrow/borrow', {
+        userName: borrowData.userName,
+        bookId: bookData.bookId,
+        bookName: bookData.bookName,
+        borrowTime: '5',
+        beginTime: nowDate(time),
+        endTime: nowDate(lastTime)
       })
       ElMessage.success(res.data.data)
-      centerDialogVisible.value=false
+      centerDialogVisible.value = false
       await getBook()
-    }catch (e) {
+    } catch (e) {
       console.log(e)
     }
-  }else{
+  } else {
     ElMessage.error("借书失败")
   }
 }
@@ -218,12 +240,12 @@ const borrow =async ()=>{
 const rate = (event: MouseEvent) => {
   const target = event.target as HTMLElement;
   if (target.tagName === 'LABEL') {
-    const starIndex = parseInt(target.getAttribute('for').slice(-1), 10);
+    const starIndex = parseInt(target.getAttribute('for')!.slice(-1), 10);
     ratingData.rating = starIndex;
   }
 };
 
-const findRating = async ()=>{
+const findRating = async () => {
   try {
     let res = await myAxios.get('http://localhost:8080/bookScore/findScore', {
       params: {
@@ -232,235 +254,245 @@ const findRating = async ()=>{
       }
     });
     ratingData.rating = res.data.data
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
 
-const inputScore = async ()=>{
+const inputScore = async () => {
   try {
-    let rs = await myAxios.put('http://localhost:8080/bookScore/updateScore',{
-      userId:ratingData.userId,
-      bookId:ratingData.bookId,
-      score:ratingData.rating
+    let rs = await myAxios.put('http://localhost:8080/bookScore/updateScore', {
+      userId: ratingData.userId,
+      bookId: ratingData.bookId,
+      score: ratingData.rating
     })
     ElMessage.success(rs.data.data)
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
 }
-
 </script>
 
 <style scoped>
-
-.book-main {
-  width: 100%;
-  height: 515px;
-  display:flex;
-  flex-flow: row wrap;
-  justify-content: center;
-}
-
-.book-contain{
-  width: 100%;
-  height: 513px;
-  flex-wrap: wrap; /* 允许子元素换行 */
-  display: flex;
-  justify-content: center;
-}
-
-
-.book-info {
-  /*display: flow;*/
-  width: 160px;
-  height: 200px;
-  margin-right: 20px;
-  margin-top: 10px;
-  border-radius: 30px;
-  background: #e0e0e0;
-  box-shadow: 5px 5px 10px #bebebe,
-  -10px -10px 20px #ffffff;
-}
-
-.book-info:hover{
-  transform: scale(1.1);
-  box-shadow: 0 25px 40px rgba(0,0,0,0.5);
-}
-
-.book-image {
-  border-radius: 30px 30px 0 0;
-  width: 100%;
-  height:170px;
-  overflow: hidden;
-  position: relative;
-}
-
-
-.page-div {
-  position: center;
-  clear: both;
-  display: flex;
-  justify-content: center;
-}
-
-span {
-  display: flex;
-  margin-top: 4px;
-  justify-content: left;
-  font:oblique bold 16px "楷体";
-}
-
-.contain-div {
-  display: flex;
-}
-/*提交评分样式*/
-.inputScore-div {
-  margin-top: 10px;
-  margin-right: 40px;
-  display: flex;
-  justify-content: left;
-}
-
-
-/* From uiverse.io by @Ali-Tahmazi99 */
-.inputScore-div button {
-  display: inline-block;
-  width: 100px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid #03045e;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.5s ease-in;
-  z-index: 1;
-}
-
-.inputScore-div button::before,
-.inputScore-div button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 0;
+.page-container {
   height: 100%;
-  transform: skew(15deg);
-  transition: all 0.5s;
-  overflow: hidden;
-  z-index: -1;
-}
-
-.inputScore-div button::before {
-  left: -10px;
-  background: #240046;
-}
-
-.inputScore-div button::after {
-  right: -10px;
-  background: #5a189a;
-}
-
-.inputScore-div button:hover::before,
-.inputScore-div button:hover::after {
-  width: 58%;
-}
-
-.inputScore-div button:hover span {
-  color: #e0aaff;
-  transition: 0.3s;
-}
-
-.inputScore-div button span {
-  color: #03045e;
-  font-size: 16px;
-  transition: all 0.3s ease-in;
   display: flex;
-  justify-content: center;
-}
-
-
-
-/*借阅书本样式*/
-.borrow-div {
-  margin-top: 10px;
-  margin-left: 40px;
-  display: flex;
-  justify-content: right;
-}
-
-
-/* From uiverse.io by @Ali-Tahmazi99 */
-.borrow-div button {
-  display: inline-block;
-  width: 100px;
-  height: 34px;
-  border-radius: 10px;
-  border: 1px solid #03045e;
-  position: relative;
+  flex-direction: column;
   overflow: hidden;
-  transition: all 0.5s ease-in;
-  z-index: 1;
 }
 
-.borrow-div button::before,
-.borrow-div button::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  width: 0;
+.scroll-container {
+  flex: 1;
+  overflow: hidden;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.books-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+  overflow: hidden;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.3s ease;
   height: 100%;
-  transform: skew(15deg);
-  transition: all 0.5s;
-  overflow: hidden;
-  z-index: -1;
-}
-
-.borrow-div button::before {
-  left: -10px;
-  background: #240046;
-}
-
-.borrow-div button::after {
-  right: -10px;
-  background: #5a189a;
-}
-
-.borrow-div button:hover::before,
-.borrow-div button:hover::after {
-  width: 58%;
-}
-
-.borrow-div button:hover span {
-  color: #e0aaff;
-  transition: 0.3s;
-}
-
-.borrow-div button span {
-  color: #03045e;
-  font-size: 16px;
-  transition: all 0.3s ease-in;
-  display: flex;
+  min-height: 0;
   justify-content: center;
 }
 
+.book-card:hover {
+  transform: translateY(-5px);
+}
 
-.rating {
-  display: inline-block;
-  margin-top: 4px;
-  font:oblique bold 16px "楷体";
+.book-cover-wrapper {
+  flex: 1;
+  width: 100%;
+  background: transparent;
+  overflow: hidden;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: box-shadow 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.book-card:hover .book-cover-wrapper {
+  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.book-cover {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  transition: transform 0.5s ease;
+}
+
+.book-card:hover .book-cover {
+  transform: scale(1.05);
+}
+
+.book-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+  flex-shrink: 0;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  background-color: #f9f9f9; /* Match app background */
+}
+
+/* Dialog Styles */
+.dialog-content {
+  display: flex;
+  gap: 30px;
+}
+
+.dialog-cover {
+  width: 180px;
+  flex-shrink: 0;
+}
+
+.dialog-cover img {
+  width: 100%;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.dialog-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 0 0 20px 0;
+}
+
+.detail-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 30px;
+}
+
+.meta-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
+}
+
+.meta-item .label {
+  color: #999;
+}
+
+.meta-item .value {
+  font-weight: 500;
+}
+
+.rating-section {
+  margin-bottom: 30px;
+}
+
+.section-label {
+  display: block;
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stars {
+  display: flex;
+  gap: 5px;
   cursor: pointer;
 }
 
-.rating label {
+.stars label {
+  font-size: 24px;
+  color: #eee;
   cursor: pointer;
+  transition: color 0.2s;
 }
 
-.filled {
-  color: #ffcc00;
+.stars label:hover,
+.stars label:hover ~ label {
+  color: #ddd;
 }
 
-.rating label:hover,
-.rating label:hover ~ label {
-  color: #ffcc00;
+.stars label.filled {
+  color: #000;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 15px;
+  margin-top: auto;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.action-btn.outline {
+  background: transparent;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.action-btn.outline:hover {
+  border-color: #000;
+}
+
+.action-btn.primary {
+  background: #000;
+  color: #fff;
+}
+
+.action-btn.primary:hover {
+  background: #333;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Override Element Plus Pagination */
+:deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
+  background-color: #000;
+  color: #fff;
+}
 </style>

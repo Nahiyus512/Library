@@ -8,13 +8,13 @@
       <div class="brand-panel">
         <div class="brand-content">
           <h1 class="hero-text">
-            <span>THE</span>
-            <span class="highlight">LIBRARY</span>
+            <span>图书</span>
+            <span class="highlight">管理系统</span>
           </h1>
-          <p class="brand-desc">Curated knowledge.</p>
+          <p class="brand-desc">精心挑选的知识宝库。</p>
           
           <div class="brand-footer">
-            <span>EST. 2025</span>
+            <span>始于 2025</span>
             <div class="line"></div>
           </div>
         </div>
@@ -24,8 +24,8 @@
       <div class="form-panel">
         <div class="form-header">
           <div class="tabs">
-            <span :class="['tab', active === 1 ? 'active' : '']" @click="switchTab(1)">Log In</span>
-            <span :class="['tab', active === 2 ? 'active' : '']" @click="switchTab(2)">Register</span>
+            <span :class="['tab', active === 1 ? 'active' : '']" @click="switchTab(1)">登录</span>
+            <span :class="['tab', active === 2 ? 'active' : '']" @click="switchTab(2)">注册</span>
           </div>
         </div>
 
@@ -35,28 +35,28 @@
             <div v-if="active === 1" key="login" class="form-content">
               <div class="input-group">
                 <input type="text" v-model="info.username" @input="handleInput" placeholder=" " id="username"/>
-                <label for="username">Username</label>
+                <label for="username">用户名</label>
                 <span class="border-animation"></span>
                 <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
               </div>
 
               <div class="input-group">
                 <input type="password" v-model="info.password" placeholder=" " id="password"/>
-                <label for="password">Password</label>
+                <label for="password">密码</label>
                 <span class="border-animation"></span>
               </div>
 
               <div class="input-group captcha-group">
                 <div class="captcha-wrapper">
                   <input type="text" v-model="info.captcha" placeholder=" " id="captcha"/>
-                  <label for="captcha">Code</label>
+                  <label for="captcha">验证码</label>
                   <span class="border-animation"></span>
                 </div>
                 <img :src="captchaImg" @click="getCaptcha" alt="captcha" class="captcha-img"/>
               </div>
 
               <button class="cta-btn" @click="loginClick">
-                <span class="btn-text">Authenticate</span>
+                <span class="btn-text">验证登录</span>
                 <span class="btn-icon">→</span>
               </button>
             </div>
@@ -65,26 +65,26 @@
             <div v-else key="register" class="form-content">
               <div class="input-group">
                 <input type="text" v-model="info.newName" @input="countInput" placeholder=" " id="reg-user"/>
-                <label for="reg-user">New Username</label>
+                <label for="reg-user">新用户名</label>
                 <span class="border-animation"></span>
                 <p v-if="countError" class="error-msg">{{ countError }}</p>
               </div>
 
               <div class="input-group">
                 <input type="password" v-model="info.firstPassword" @input="passInput" placeholder=" " id="reg-pass"/>
-                <label for="reg-pass">Password</label>
+                <label for="reg-pass">密码</label>
                 <span class="border-animation"></span>
                 <p v-if="passwordError" class="error-msg">{{ passwordError }}</p>
               </div>
 
               <div class="input-group">
                 <input type="password" v-model="info.secondPassword" placeholder=" " id="reg-confirm"/>
-                <label for="reg-confirm">Confirm</label>
+                <label for="reg-confirm">确认密码</label>
                 <span class="border-animation"></span>
               </div>
 
               <button class="cta-btn" @click="logonClick">
-                <span class="btn-text">Join System</span>
+                <span class="btn-text">加入系统</span>
                 <span class="btn-icon">+</span>
               </button>
             </div>
@@ -216,7 +216,7 @@ const handleInput = (event) => {
   if (regex.test(value)) {
     errorMessage.value = '';
   } else {
-    errorMessage.value = '4-15 characters, alphanumeric only';
+    errorMessage.value = '4-15个字符，仅限字母数字';
   }
 };
 
@@ -225,7 +225,7 @@ const countInput = (event) => {
   if (regex.test(value)) {
     countError.value = '';
   } else {
-    countError.value = '4-15 characters, alphanumeric only';
+    countError.value = '4-15个字符，仅限字母数字';
   }
 };
 
@@ -234,7 +234,7 @@ const passInput = (event) => {
   if (regex.test(value)) {
     passwordError.value = '';
   } else {
-    passwordError.value = '4-15 characters, alphanumeric only';
+    passwordError.value = '4-15个字符，仅限字母数字';
   }
 };
 
@@ -255,11 +255,11 @@ async function getCaptcha() {
 async function loginClick() {
   try {
     if(info.username === '') {
-      ElMessage.error("Username required")
+      ElMessage.error("请输入用户名")
       return;
     }
     if(info.password === '') {
-      ElMessage.error("Password required");
+      ElMessage.error("请输入密码");
       return;
     }
     let res = await myAxios.post("http://localhost:8080/user/login",{
@@ -272,13 +272,13 @@ async function loginClick() {
       setToken(res.data.data.token)
       cookie.set('username',info.username)
       if(info.username === 'admin') {
-        ElMessage.success("Welcome, Administrator")
+        ElMessage.success("欢迎，管理员")
         setTimeout(()=>{
           router.push("/admin")
           cookie.set('adminId','pass')
         },1000)
       } else {
-        ElMessage.success("Welcome back")
+        ElMessage.success("欢迎回来")
         setTimeout(()=>{
           router.push("/home")
         },1000)
@@ -294,15 +294,15 @@ async function loginClick() {
 async function logonClick() {
   try {
     if(info.firstPassword != info.secondPassword) {
-      ElMessage.error("Passwords do not match")
+      ElMessage.error("两次输入的密码不一致")
       return;
     }
     if(countError.value !== '') {
-      ElMessage.error("Invalid username format")
+      ElMessage.error("用户名格式无效")
       return;
     }
     if(passwordError.value !== '') {
-      ElMessage.error("Invalid password format")
+      ElMessage.error("密码格式无效")
       return;
     }
     let res = await myAxios.post("http://localhost:8080/user/logon",{
@@ -310,7 +310,7 @@ async function logonClick() {
       password:info.firstPassword
     })
     if(res.data.code === 200){
-      ElMessage.success("Registration successful")
+      ElMessage.success("注册成功")
       active.value = 1; // Switch to login
     } else {
       ElMessage.error(res.data.msg)

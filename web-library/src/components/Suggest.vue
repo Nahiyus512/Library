@@ -1,53 +1,85 @@
 <template>
-<div class="suggest">
-  <div class="suggest-header">
-    <span>留言建议</span>
-  </div>
-  <div class="suggest-body">
-    <div class="suggest-contain">
-      <div class="suggest-item" v-for="(item, index) in suggestions" :key="index">
-        <div class="right-item">
-          <span>{{item.userName}}: </span>
-          <span class="span-info">{{item.info}} 。</span>
-          <span>{{item.infoTime}}</span>
+  <div class="suggest-container">
+    <div class="suggest-layout">
+      <div class="header-section">
+        <h2>留言建议</h2>
+        <p class="subtitle">您的反馈是我们进步的动力</p>
+      </div>
+
+      <div class="messages-container" ref="messagesContainer">
+        <div v-if="suggestions.length === 0" class="empty-state">
+          <el-empty description="暂无留言" />
         </div>
-        <div class="left-item" v-if="item.reply">
-          <span class="span-user">admin: </span>
-          <span class="span-reply">{{item.reply}}</span>
-          <span >{{ item.replyTime }}</span>
+        
+        <div v-else class="message-list">
+          <div v-for="(item, index) in suggestions" :key="index" class="message-card">
+            <div class="message-header">
+              <span class="username">{{ item.userName }}</span>
+              <span class="time">{{ item.infoTime }}</span>
+            </div>
+            <div class="message-content">
+              {{ item.info }}
+            </div>
+            
+            <div v-if="item.reply" class="reply-section">
+              <div class="reply-header">
+                <span class="admin-badge">管理员回复</span>
+                <span class="time">{{ item.replyTime }}</span>
+              </div>
+              <div class="reply-content">
+                {{ item.reply }}
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="div-line"></div>
+      </div>
+
+      <div class="input-section">
+        <el-input
+          v-model="inputValue"
+          placeholder="请输入您的建议..."
+          type="textarea"
+          :rows="3"
+          resize="none"
+          class="custom-textarea"
+        />
+        <div class="button-wrapper">
+          <el-button color="#000" @click="inputBtn" :disabled="!inputValue.trim()">
+            提交建议
+          </el-button>
+        </div>
       </div>
     </div>
   </div>
-  <div class="suggest-footer">
-    <input class="input" v-model="inputValue" placeholder="text">
-    <button @click="inputBtn">
-      <span> 提交</span>
-    </button>
-  </div>
-</div>
 </template>
 
 <script setup lang="ts">
-
-import {onMounted, reactive, ref} from 'vue'
+import { onMounted, ref, nextTick } from 'vue'
 import myAxios from '../axios/index.js'
 import { useCookies } from '@vueuse/integrations/useCookies'
-const cookie = useCookies()
+import { ElMessage } from 'element-plus'
 
+const cookie = useCookies()
 const inputValue = ref('')
 const userName = ref('')
-
-const suggestions = ref([]);
+const suggestions = ref([])
+const messagesContainer = ref(null)
 
 onMounted(() => {
   userName.value = cookie.get('username')
   getUserAdvises()
 })
 
-const inputBtn = () => {
-  postSuggest()
+const scrollToBottom = async () => {
+  await nextTick()
+  if (messagesContainer.value) {
+    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
+  }
+}
+
+const inputBtn = async () => {
+  if (!inputValue.value.trim()) return
+  await postSuggest()
   inputValue.value = ''
 }
 
@@ -55,9 +87,10 @@ async function getUserAdvises() {
   try {
     let res = await myAxios.get('http://localhost:8080/advice/get?userName=' + userName.value)
     suggestions.value = res.data.data
-    console.log(res)
-  }catch (error) {
-    console.log(error)
+    scrollToBottom()
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('获取留言失败')
   }
 }
 
@@ -67,195 +100,157 @@ async function postSuggest() {
       info: inputValue.value,
       userName: userName.value
     })
-    console.log(res)
-    await getUserAdvises()
-  }catch (error) {
-    console.log(error)
+    if (res.data.code === 200) {
+      ElMessage.success('提交成功')
+      await getUserAdvises()
+    } else {
+      ElMessage.error(res.data.msg || '提交失败')
+    }
+  } catch (error) {
+    console.error(error)
+    ElMessage.error('网络错误')
   }
 }
-
 </script>
 
 <style scoped>
+.suggest-container {
+  height: 100%;
+  padding: 20px;
+  background-color: #f5f7fa;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
 
-.suggest {
+.suggest-layout {
   width: 100%;
-  height: 550px;
+  max-width: 800px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  background-color: #8bb451;
-}
-
-.suggest-header {
-  width: 100%;
-  height: 80px;
-  background-color: #71886d;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-style: italic;
-}
-.suggest-header span {
-  font:oblique bold 25px "楷体";
-}
-
-.suggest-body {
-  width: 100%;
-  height: 450px;
-  background-color: #64967E;
-  display: flex;
-  justify-content: center;
-}
-
-.suggest-contain {
-  width: 80%;
   height: 100%;
-  background-color: #e3e0e5;
-  justify-content: center;
-  overflow-y: scroll; /* 添加此属性以启用滚动条 */
-}
-
-/* 如果需要的话，你还可以为滚动条添加自定义样式 */
-::-webkit-scrollbar {
-  width: 8px; /* 滚动条宽度 */
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2); /* 滚动条颜色 */
-  border-radius: 5px; /* 圆角 */
-}
-
-::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1); /* 滚动条轨道的颜色 */
-}
-
-
-.suggest-item {
-  font:oblique bold 18px "楷体";
-  margin-top: 10px;
-}
-.left-item {
-  display: flex;
-  flex-direction: row;
-  justify-content: left; /* 或者使用 "flex-end" 如果你想让所有项目都贴紧右边 */
-  padding-left: 20px;
-  flex-wrap: wrap;
-}
-
-.left-item span {
-  margin-right: 5px;
-  flex-wrap: wrap;
-}
-
-.right-item {
-  display: flex;
-  flex-direction: row;
-  justify-content: right; /* 或者使用 "flex-end" 如果你想让所有项目都贴紧右边 */
-  padding-right: 20px;
-  flex-wrap: wrap;
-}
-.right-item span {
-  margin-left: 5px;
-}
-
-.span-info{
-  max-width: 80%;
-  word-wrap: break-word;
-  flex-wrap: wrap;
-}
-
-.div-line {
-  display: flex;
-  width: 100%;
-  height: 1px;
-  background-color: #7c7373;
-  margin-top: 10px;
-}
-
-.suggest-footer {
-  width: 100%;
-  height: 120px;
-  background-color: #71886d;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.input {
-  border: 2px solid transparent;
-  width: 30em;
-  height: 2.5em;
-  padding-left: 0.8em;
-  outline: none;
   overflow: hidden;
-  background-color: #F3F3F3;
-  border-radius: 10px;
-  transition: all 0.5s;
 }
 
-.input:hover,
-.input:focus {
-  border: 2px solid #4A9DEC;
-  box-shadow: 0px 0px 0px 7px rgb(74, 157, 236, 20%);
-  background-color: white;
+.header-section {
+  padding: 20px 30px;
+  border-bottom: 1px solid #eee;
+  background: #fff;
 }
 
-button {
-  position: relative;
-  height: 2.5em;
-  padding: 0 30px;
-  border: 2px solid #000;
-  background: #e8e8e8;
-  user-select: none;
-  white-space: nowrap;
-  transition: all .05s linear;
-  font-family: inherit;
-  margin-left: 20px;
+.header-section h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
 }
 
-button:before, button:after {
-  content: "";
-  position: absolute;
-  background: #e8e8e8;
-  transition: all .2s linear;
+.subtitle {
+  margin: 5px 0 0;
+  font-size: 14px;
+  color: #909399;
 }
 
-button:before {
-  width: calc(100% + 6px);
-  height: calc(100% - 16px);
-  top: 8px;
-  left: -3px;
+.messages-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #f9f9f9;
 }
 
-button:after {
-  width: calc(100% - 16px);
-  height: calc(100% + 6px);
-  top: -3px;
-  left: 8px;
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-button:hover {
-  cursor: crosshair;
+.message-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+  border: 1px solid #ebeef5;
 }
 
-button:active {
-  transform: scale(0.95);
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
 }
 
-button:hover:before {
-  height: calc(100% - 32px);
-  top: 16px;
+.username {
+  font-weight: 600;
+  color: #303133;
+  font-size: 16px;
 }
 
-button:hover:after {
-  width: calc(100% - 32px);
-  left: 16px;
+.time {
+  font-size: 12px;
+  color: #909399;
 }
 
-button span {
-  z-index: 3;
-  position: relative;
-  font:oblique bold 15px "楷体";
+.message-content {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+  white-space: pre-wrap;
 }
 
+.reply-section {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #ebeef5;
+  background: #fdfdfd;
+}
+
+.reply-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.admin-badge {
+  background: #f4f4f5;
+  color: #909399;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #e9e9eb;
+}
+
+.reply-content {
+  font-size: 14px;
+  color: #606266;
+  line-height: 1.6;
+}
+
+.input-section {
+  padding: 20px;
+  background: #fff;
+  border-top: 1px solid #eee;
+}
+
+.button-wrapper {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Scrollbar styling */
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+.messages-container::-webkit-scrollbar-thumb {
+  background: #dcdfe6;
+  border-radius: 3px;
+}
+.messages-container::-webkit-scrollbar-track {
+  background: transparent;
+}
 </style>

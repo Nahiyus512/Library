@@ -1,97 +1,137 @@
 <template>
-  <div class="common-layout">
-    <el-container class="container">
-      <el-header class="header">
-        图书推荐系统
-      </el-header>
-      <div class="header-left">
-        <span class="username-span">欢迎你: {{username}}</span>
-      </div>
+  <div class="admin-layout">
+    <el-container class="main-container">
+      <el-aside width="240px" class="admin-aside">
+        <Menu />
+      </el-aside>
+      
       <el-container>
-        <el-aside class="aside">
-          <Menu></Menu>
-        </el-aside>
-        <el-main class="el-main">
-          <div class="main-view">
-            <RouterView></RouterView>
+        <el-header class="admin-header">
+          <div class="header-content">
+            <span class="page-title">后台管理系统</span>
+            <div class="user-info">
+              <span class="user-name" v-if="username">{{ username }}</span>
+              <span class="user-role">管理员</span>
+            </div>
           </div>
+        </el-header>
+        
+        <el-main class="admin-content">
+          <RouterView v-slot="{ Component }">
+            <component :is="Component" :key="$route.fullPath" />
+          </RouterView>
         </el-main>
       </el-container>
     </el-container>
   </div>
 </template>
 
-
 <script lang="ts" setup>
-import {RouterView, useRouter} from "vue-router";
-const router = useRouter();
+import { RouterView, useRouter } from "vue-router";
 import { useCookies } from '@vueuse/integrations/useCookies'
-const cookie = useCookies()
 import Menu from './Menu.vue'
-import myAxios from "../axios/index.js"
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
 
-const username=ref('')
+const router = useRouter();
+const cookie = useCookies()
+const username = ref('')
 
-onMounted(()=>{
-  // test()
+onMounted(() => {
   let pass = cookie.get('adminId')
-  username.value=cookie.get('username')
-  //console.log(pass)
-  if(pass == null) {
+  username.value = cookie.get('username')
+  if (pass == null) {
     router.push('/login')
   }
 })
-
-async function test() {
-  let res = await myAxios.get("http://localhost:8080/book/home")
-  console.log("res===>",res)
-}
-
-
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-.common-layout {
+.admin-layout {
   height: 100vh;
-  .container {
-    height: 100vh;
-    .header {
-      height: 12vh;
-      font-size: 20px;
-      font-weight: bold;
-      font-style: italic;
-      justify-content: center;
-      display: flex;
-      background-color: gray;
-      padding-top: 40px;
-    }
-    .header-left {
-      display: flex;
-      justify-content: flex-end;
-      width: 100%;
-      height: 50px;
-      align-items: center;
-      background-color: gray;
-      .username-span {
-        margin-right: 30px;
-      }
-    }
-    .aside{
-      width:250px;
-      background-color: #545c64;
-    }
-    .el-main{
-      padding: 0;
-      .page {
-        justify-content: center;
-        display: flex;
-      }
-    }
-  }
+  width: 100vw;
+  font-family: 'Inter', sans-serif;
+  background-color: #fff;
+  overflow: hidden;
 }
 
+.main-container {
+  height: 100%;
+}
 
+.admin-aside {
+  background-color: #f5f5f5;
+  border-right: 1px solid #eee;
+  overflow: hidden;
+}
 
+.admin-content {
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+}
+
+.header-content {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #000;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.user-name {
+  font-weight: 500;
+  color: #000;
+}
+
+.user-role {
+  color: #999;
+  font-size: 12px;
+  background: #f5f5f5;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.admin-content {
+  background: #fff;
+  padding: 0; /* Remove padding to let children control layout */
+  overflow: hidden; /* Prevent window scroll */
+  display: flex;
+  flex-direction: column;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
