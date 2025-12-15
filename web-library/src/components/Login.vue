@@ -1,53 +1,94 @@
 <template>
-  <div class="login-container">
-    <div class="slider">
-      <div :class="active=== 1 ? 'form' : 'form hidden'">
-        <div class="title">欢迎 <b>回来</b></div>
-        <div class="subtitle">登录你的账户</div>
-        <div class="input-form">
-          <input type="text" v-model="info.username" @input="handleInput" placeholder="账号"/>
-          <span class="lable">账号</span>
-          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+  <div class="swiss-login-container">
+    <div class="swiss-grid-bg"></div>
+    <canvas id="particle-canvas" class="particle-bg"></canvas>
+    
+    <div class="main-card">
+      <!-- Left Panel: Brand / Typography -->
+      <div class="brand-panel">
+        <div class="brand-content">
+          <h1 class="hero-text">
+            <span>THE</span>
+            <span class="highlight">LIBRARY</span>
+          </h1>
+          <p class="brand-desc">Curated knowledge.</p>
+          
+          <div class="brand-footer">
+            <span>EST. 2025</span>
+            <div class="line"></div>
+          </div>
         </div>
-        <div class="input-form">
-          <input type="password" v-model="info.password" placeholder="密码"/>
-          <span class="lable">密码</span>
-        </div>
-        <div class="input-code">
-          <input type="text" class="text-code" v-model="info.captcha" placeholder="验证码"/>
-          <img :src=captchaImg @click="getCaptcha">
-        </div>
-        <button @click="loginClick">登录</button>
       </div>
-      <div :class="active=== 2 ? 'form' : 'form hidden'">
-        <div class="title">开始</div>
-        <div class="subtitle">注册你的账户</div>
-        <div class="input-form">
-          <input type="text" v-model="info.newName" @input="countInput" placeholder="账号"/>
-          <span class="lable">账号</span>
-          <p v-if="countError" class="error-message">{{ countError }}</p>
+
+      <!-- Right Panel: Form -->
+      <div class="form-panel">
+        <div class="form-header">
+          <div class="tabs">
+            <span :class="['tab', active === 1 ? 'active' : '']" @click="switchTab(1)">Log In</span>
+            <span :class="['tab', active === 2 ? 'active' : '']" @click="switchTab(2)">Register</span>
+          </div>
         </div>
-        <div class="input-form">
-          <input type="text" v-model="info.firstPassword" @input="passInput" placeholder="密码"/>
-          <span class="lable">密码</span>
-          <p v-if="passwordError" class="error-message">{{ passwordError }}</p>
-        </div>
-        <div class="input-form">
-          <input type="text" v-model="info.secondPassword"  placeholder="确认密码"/>
-          <span class="lable">确认密码</span>
-        </div>
-        <button @click="logonClick">注册</button>
-      </div>
-      <div :class="active===1 ? 'card' : 'card active'">
-        <div class="head">
-          <div class="name">图书推荐系统</div>
-        </div>
-        <div class="desc">图书推荐系统是一种利用信息技术为用户提供个性化的图书推荐的系统。图书推荐系统可以根据用户的阅读历史、评价和偏好，分析用户的兴趣和需求，从海量的图书和文献中筛选出适合用户的阅读材料。图书推荐系统可以提高用户的阅读体验，节省时间，并促进知识的传播。图书推荐系统的实现方法有多种，常见的有基于协同过滤的推荐算法。</div>
-        <div class="btn">
-          {{ active === 1 ? '新用户 ?' : '已有账号' }}
-          <button @click="active = (active === 1) ? 2 : 1">
-            {{ active === 1 ? '去注册' : '去登陆' }}
-          </button>
+
+        <div class="form-content-wrapper">
+          <transition name="fade-slide" mode="out-in">
+            <!-- Login Form -->
+            <div v-if="active === 1" key="login" class="form-content">
+              <div class="input-group">
+                <input type="text" v-model="info.username" @input="handleInput" placeholder=" " id="username"/>
+                <label for="username">Username</label>
+                <span class="border-animation"></span>
+                <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
+              </div>
+
+              <div class="input-group">
+                <input type="password" v-model="info.password" placeholder=" " id="password"/>
+                <label for="password">Password</label>
+                <span class="border-animation"></span>
+              </div>
+
+              <div class="input-group captcha-group">
+                <div class="captcha-wrapper">
+                  <input type="text" v-model="info.captcha" placeholder=" " id="captcha"/>
+                  <label for="captcha">Code</label>
+                  <span class="border-animation"></span>
+                </div>
+                <img :src="captchaImg" @click="getCaptcha" alt="captcha" class="captcha-img"/>
+              </div>
+
+              <button class="cta-btn" @click="loginClick">
+                <span class="btn-text">Authenticate</span>
+                <span class="btn-icon">→</span>
+              </button>
+            </div>
+
+            <!-- Register Form -->
+            <div v-else key="register" class="form-content">
+              <div class="input-group">
+                <input type="text" v-model="info.newName" @input="countInput" placeholder=" " id="reg-user"/>
+                <label for="reg-user">New Username</label>
+                <span class="border-animation"></span>
+                <p v-if="countError" class="error-msg">{{ countError }}</p>
+              </div>
+
+              <div class="input-group">
+                <input type="password" v-model="info.firstPassword" @input="passInput" placeholder=" " id="reg-pass"/>
+                <label for="reg-pass">Password</label>
+                <span class="border-animation"></span>
+                <p v-if="passwordError" class="error-msg">{{ passwordError }}</p>
+              </div>
+
+              <div class="input-group">
+                <input type="password" v-model="info.secondPassword" placeholder=" " id="reg-confirm"/>
+                <label for="reg-confirm">Confirm</label>
+                <span class="border-animation"></span>
+              </div>
+
+              <button class="cta-btn" @click="logonClick">
+                <span class="btn-text">Join System</span>
+                <span class="btn-icon">+</span>
+              </button>
+            </div>
+          </transition>
         </div>
       </div>
     </div>
@@ -55,8 +96,7 @@
 </template>
 
 <script setup>
-
-import {ref, reactive, computed, onMounted} from "vue";
+import {ref, reactive, onMounted} from "vue";
 import {useRouter} from "vue-router";
 const router = useRouter();
 import myAxios from "../axios/index.js"
@@ -64,12 +104,10 @@ import {setToken} from "../utils/token.js";
 import {ElMessage} from "element-plus";
 import { useCookies } from '@vueuse/integrations/useCookies'
 const cookie = useCookies()
-import bus from "../bus/index"
-
 
 const errorMessage = ref('');
 const countError = ref('');
-const passwordError=ref('')
+const passwordError = ref('')
 const active = ref(1);
 const captchaImg = ref('')
 const info = reactive({
@@ -82,62 +120,131 @@ const info = reactive({
   uuid:'',
 })
 
-//定义登录校验规则
 const regex = /^[A-Za-z0-9]{4,15}$/;
+
 onMounted(()=>{
-  console.log("sss")
   getCaptcha()
+  initParticles()
 })
 
-//校验账号输入规则
+const initParticles = () => {
+  const canvas = document.getElementById('particle-canvas');
+  const ctx = canvas.getContext('2d');
+  
+  let width, height;
+  let particles = [];
+  
+  // Configuration
+  const particleCount = 60;
+  const connectionDistance = 150;
+  const mouseDistance = 200;
+
+  const resize = () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  };
+  
+  window.addEventListener('resize', resize);
+  resize();
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.5;
+      this.vy = (Math.random() - 0.5) * 0.5;
+      this.size = Math.random() * 2 + 1;
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0 || this.x > width) this.vx *= -1;
+      if (this.y < 0 || this.y > height) this.vy *= -1;
+    }
+
+    draw() {
+      ctx.fillStyle = '#000000'; // Black particles
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+
+  const animate = () => {
+    ctx.clearRect(0, 0, width, height);
+    
+    particles.forEach((p, index) => {
+      p.update();
+      p.draw();
+
+      // Connect particles
+      for (let j = index + 1; j < particles.length; j++) {
+        const p2 = particles[j];
+        const dx = p.x - p2.x;
+        const dy = p.y - p2.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        if (distance < connectionDistance) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(0, 0, 0, ${1 - distance / connectionDistance})`; // Black lines with fade
+          ctx.lineWidth = 0.5;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+    });
+
+    requestAnimationFrame(animate);
+  };
+
+  animate();
+};
+
+const switchTab = (tab) => {
+  active.value = tab;
+}
+
 const handleInput = (event) => {
   const value = event.target.value;
-  // 检查输入值是否符合正则表达式
   if (regex.test(value)) {
-    errorMessage.value = ''; // 符合时清除错误信息
+    errorMessage.value = '';
   } else {
-    errorMessage.value = '输入内容不正确，请输入长度为4-15位的数字和字母'; // 不符合时设置错误信息
+    errorMessage.value = '4-15 characters, alphanumeric only';
   }
-  // 注意：这里没有直接修改event.target.value来阻止输入，而是通过errorMessage提示用户
-  // 若要直接限制输入，可参考之前示例中的逻辑，但通常更好的做法是给予用户反馈而非直接阻止
 };
 
-//校验注册账号输入规则
 const countInput = (event) => {
   const value = event.target.value;
-  // 检查输入值是否符合正则表达式
   if (regex.test(value)) {
-    countError.value = ''; // 符合时清除错误信息
+    countError.value = '';
   } else {
-    countError.value = '输入内容不正确，请输入长度为4-15位的数字和字母'; // 不符合时设置错误信息
+    countError.value = '4-15 characters, alphanumeric only';
   }
-  // 注意：这里没有直接修改event.target.value来阻止输入，而是通过errorMessage提示用户
-  // 若要直接限制输入，可参考之前示例中的逻辑，但通常更好的做法是给予用户反馈而非直接阻止
 };
 
-//校验注册账号输入规则
 const passInput = (event) => {
   const value = event.target.value;
-  // 检查输入值是否符合正则表达式
   if (regex.test(value)) {
-    passwordError.value = ''; // 符合时清除错误信息
+    passwordError.value = '';
   } else {
-    passwordError.value = '输入内容不正确，请输入长度为4-15位的数字和字母'; // 不符合时设置错误信息
+    passwordError.value = '4-15 characters, alphanumeric only';
   }
-  // 注意：这里没有直接修改event.target.value来阻止输入，而是通过errorMessage提示用户
-  // 若要直接限制输入，可参考之前示例中的逻辑，但通常更好的做法是给予用户反馈而非直接阻止
 };
 
-// 初始化时也可以检查一次输入值
 if (info.username) {
   handleInput({ target: { value: info.username } });
 }
 
-//获取验证码
 async function getCaptcha() {
   try {
     let res = await myAxios.get("http://localhost:8080/code/captcha")
-    console.log(res)
     captchaImg.value = "data:image/png;base64," + res.data.data.imageBase64
     info.uuid = res.data.data.uuid
   } catch (e) {
@@ -145,17 +252,14 @@ async function getCaptcha() {
   }
 }
 
-
 async function loginClick() {
   try {
-    if(info.username === '')
-    {
-      ElMessage.error("账号不能为空")
+    if(info.username === '') {
+      ElMessage.error("Username required")
       return;
     }
-    if(info.password === '')
-    {
-      ElMessage.error("密码不能为空");
+    if(info.password === '') {
+      ElMessage.error("Password required");
       return;
     }
     let res = await myAxios.post("http://localhost:8080/user/login",{
@@ -166,260 +270,386 @@ async function loginClick() {
     })
     if(res.data.code === 200) {
       setToken(res.data.data.token)
-      console.log('传递用户名')
       cookie.set('username',info.username)
-      //alert("登录成功")
       if(info.username === 'admin') {
-        ElMessage.success("管理员登录成功")
+        ElMessage.success("Welcome, Administrator")
         setTimeout(()=>{
           router.push("/admin")
           cookie.set('adminId','pass')
         },1000)
-      }else{
-        ElMessage.success("用户登录成功")
+      } else {
+        ElMessage.success("Welcome back")
         setTimeout(()=>{
           router.push("/home")
         },1000)
       }
-    }
-    else {
+    } else {
       ElMessage.error(res.data.msg)
     }
-  }catch (e) {
-    console.log("登录失败")
+  } catch (e) {
+    console.log("Login failed")
   }
 }
 
 async function logonClick() {
   try {
-    if(info.firstPassword != info.secondPassword)
-    {
-      ElMessage.error("两次密码不一致")
+    if(info.firstPassword != info.secondPassword) {
+      ElMessage.error("Passwords do not match")
       return;
     }
     if(countError.value !== '') {
-      ElMessage.error("账号不符合规则")
+      ElMessage.error("Invalid username format")
       return;
     }
     if(passwordError.value !== '') {
-      ElMessage.error("密码不符合规则")
+      ElMessage.error("Invalid password format")
       return;
     }
     let res = await myAxios.post("http://localhost:8080/user/logon",{
       name:info.newName,
       password:info.firstPassword
     })
-    console.log(res)
     if(res.data.code === 200){
-      ElMessage.success("用户注册成功")
-    }else {
+      ElMessage.success("Registration successful")
+      active.value = 1; // Switch to login
+    } else {
       ElMessage.error(res.data.msg)
     }
-  }catch (e) {
+  } catch (e) {
     console.log(e)
   }
   info.newName=''
   info.firstPassword=''
   info.secondPassword=''
 }
-
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&display=swap');
 
-.login-container {
+/* Reset & Base */
+* {
+  box-sizing: border-box;
+}
+
+.swiss-login-container {
   width: 100%;
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: url("../assets/bg01.jpg") no-repeat center center;
-  background-size: 100% 100%;
-  -webkit-filter: opacity(70%);
-  filter: opacity(70%);
+  background-color: #f5f5f5;
+  font-family: 'Inter', sans-serif;
+  color: #000;
+  position: relative;
+  overflow: hidden;
+}
 
-  .slider {
+/* Swiss Grid Background */
+.swiss-grid-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(#e0e0e0 1px, transparent 1px),
+    linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 0;
+  opacity: 0.5;
+}
+
+.particle-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1; /* Above grid, below card */
+  pointer-events: none;
+}
+
+.main-card {
+  position: relative;
+  z-index: 10;
+  width: 900px;
+  height: 600px;
+  background: #fff;
+  display: flex;
+  box-shadow: 20px 20px 0px #000000; /* Hard shadow */
+  border: 3px solid #000;
+  animation: cardEntry 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Left Panel */
+.brand-panel {
+  flex: 1;
+  background: #000;
+  color: #fff;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 3px solid #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-text {
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -2px;
+  display: flex;
+  flex-direction: column;
+  
+  span {
+    display: block;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: textSlideUp 0.6s ease forwards;
+    
+    &:nth-child(1) { animation-delay: 0.4s; }
+    &:nth-child(2) { animation-delay: 0.6s; }
+  }
+
+  .highlight {
+    -webkit-text-stroke: 1px #fff;
+    color: transparent; /* Outline style */
+  }
+}
+
+.brand-desc {
+  font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  opacity: 0.7;
+  margin-top: 20px;
+}
+
+.brand-footer {
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  
+  .line {
+    height: 1px;
+    background: #fff;
+    flex: 1;
+    opacity: 0.3;
+  }
+}
+
+/* Right Panel */
+.form-panel {
+  flex: 1.2;
+  padding: 60px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+}
+
+.form-header {
+  margin-bottom: 40px;
+}
+
+.tabs {
+  display: flex;
+  gap: 30px;
+  
+  .tab {
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: all 0.3s ease;
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    .form {
-      width: 400px;
-      height: 500px;
-      background: rgb(17,25,40,0.75);
-      //backdrop-filter: blur(16px) saturate(0);
-      border-radius: 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 40px 60px;
-      box-shadow: rgba(50,50,93,0.25) 50px 50px 100px -20px,
-      rgba(0,0,0,0.5) 30px 30px 600px -30px,
-      rgba(212,217,222,0.35) 2px -2px 6px 0px inset;
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      align-items: flex-start;
-      margin: 0 2px;
-      z-index: 3;
-      transition: 0.5s ease-in-out;
+    padding-bottom: 5px;
 
-      &.hidden {
-        height: 395px;
-        box-shadow: none;
-        z-index: 1;
-      }
-
-      .title {
-        font-size: 18px;
-        color: white;
-        letter-spacing: 1px;
-        font-weight: 300;
-      }
-
-      .subtitle {
-        font-size: 11px;
-        color: rgb(246,240,255);
-        letter-spacing: 1px;
-        margin-bottom: 35px;
-      }
-
-      .input-form {
+    &.active {
+      opacity: 1;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
         width: 100%;
-        position: relative;
-        margin-bottom: 20px;
-
-        input {
-          width: 100%;
-          height: 35px;
-          border: none;
-          outline: 1.5px solid rgb(200,200,220);
-          background: transparent;
-          border-radius: 8px;
-          font-size: 12px;
-          padding: 0 15px;
-          color: rgb(246,259,255);
-          &::placeholder {
-            color: rgb(175,180,190);
-          }
-          &:focus {
-            outline: 1.5px solid rgb(224,229,240);
-            &::placeholder{
-              opacity: 0;
-            }
-            & + .lable {
-              opacity: 1;
-              top: -20px
-            }
-          }
-          &:not(:placeholder-shown) + .lable {
-            opacity: 1;
-            top: -20px;
-          }
-        }
-
-        .lable {
-          position: absolute;
-          top: 0;
-          left: 0;
-          color: rgb(246,259,255);
-          font-size: 11px;
-          font-weight: bold;
-          transition: 0.25s ease-out;
-          opacity: 0;
-        }
-        .error-message{
-          height: 10px;
-          color: red;
-          font-size: 10px;
-        }
-
-      }
-      .input-code {
-        width: 100%;
-        margin-bottom: 20px;
-        display: flex;
-        //height: 35px;
-        .text-code {
-          width: 50%;
-          height: 32px;
-          margin-right: 10px;
-          border-radius: 5px;
-          background-color: transparent;
-          border: none;
-          outline: 1.5px solid rgb(200,200,220);
-          font-size: 12px;
-          padding: 0 15px;
-        }
-        img {
-          width: 120px;
-          height: 35px;
-          padding: 0 15px;
-        }
-      }
-      button {
-        width: 107%;
-        height: 35px;
-        background: rgb(36,217,127);
-        color: #ffffff;
-        border: none;
-        outline: none;
-        border-radius: 5px;
-        font-weight: bold;
-        font-size: 12px;
-        cursor: pointer;
-        margin-top: 5px;
+        height: 2px;
+        background: #000;
       }
     }
 
-    .card {
-      position: absolute;
-      right: 0px;
-      top: 50%;
-      transform: translate(0,-50%);
-      width: 448px;
-      height: 400px;
-      background: url("../assets/bg03.png");
-      background-size: 100% 100%;
-      padding: 40px;
-      border-radius: 0 10px 10px 0;
-      transition: 0.5s ease-in-out;
-      z-index: 2;
-      &.active {
-        right: calc(100% - 530px);
-        border-radius: 10px 0 0 10px;
-      }
-
-      .head {
-        font-size: 34px;
-        margin-bottom: 35px;
-        .name {
-          font-weight: 300;
-          font-style: italic;
-        }
-      }
-
-      .desc {
-        font-size: 14px;
-        text-align: justify;
-        margin-bottom: 35px;
-        font-weight: bold;
-      }
-
-      .btn {
-        font-size: 14px;
-        button {
-          background: rgb(36,217,127);
-          margin-top: 100px;
-          font-size: 14px;
-          padding: 5px 15px;
-          border: none;
-          outline: none;
-          border-radius: 5px;
-          cursor: pointer;
-          margin-left: 10px;
-        }
-      }
+    &:hover {
+      opacity: 0.8;
     }
   }
 }
 
+.form-content-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.input-group {
+  position: relative;
+  margin-bottom: 35px;
+  
+  input {
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    color: #000;
+    background: transparent;
+    transition: border-color 0.3s;
+    border-radius: 0; /* No rounding */
+
+    &:focus {
+      outline: none;
+    }
+    
+    &:focus ~ label,
+    &:not(:placeholder-shown) ~ label {
+      top: -20px;
+      font-size: 12px;
+      color: #000;
+      font-weight: 700;
+    }
+
+    &:focus ~ .border-animation {
+      width: 100%;
+    }
+  }
+
+  label {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    font-size: 16px;
+    color: #999;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+
+  .border-animation {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #000;
+    transition: width 0.3s ease;
+  }
+
+  .error-msg {
+    position: absolute;
+    bottom: -20px;
+    left: 0;
+    font-size: 11px;
+    color: #000;
+    font-weight: 600;
+    background: #000;
+    color: #fff;
+    padding: 2px 4px;
+  }
+}
+
+.captcha-group {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  
+  .captcha-wrapper {
+    flex: 1;
+    position: relative;
+  }
+  
+  .captcha-img {
+    height: 40px;
+    cursor: pointer;
+    border: 1px solid #ddd;
+    transition: filter 0.3s;
+    
+    &:hover {
+      filter: contrast(1.2);
+    }
+  }
+}
+
+.cta-btn {
+  width: 100%;
+  padding: 18px;
+  background: #000;
+  color: #fff;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  transition: all 0.3s ease;
+  border: 1px solid #000;
+
+  &:hover {
+    background: #fff;
+    color: #000;
+    
+    .btn-icon {
+      transform: translateX(5px);
+    }
+  }
+  
+  .btn-icon {
+    font-size: 18px;
+    transition: transform 0.3s ease;
+  }
+}
+
+/* Animations */
+@keyframes cardEntry {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes textSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Vue Transitions */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
 </style>
