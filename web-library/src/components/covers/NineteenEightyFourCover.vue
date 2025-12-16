@@ -1,5 +1,5 @@
 <template>
-  <div class="cover-1984" ref="coverRef" @mousemove="handleMouseMove" @mouseleave="resetParallax">
+  <div class="cover-1984" :class="{ hero: mode === 'hero' }" ref="coverRef" @mousemove="handleMouseMove" @mouseleave="resetParallax">
     <div class="scanlines"></div>
     <div class="eye-container" :style="eyeStyle">
       <div class="sclera">
@@ -21,6 +21,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+
+const props = defineProps<{
+  mode?: 'card' | 'hero'
+}>();
 
 const coverRef = ref<HTMLElement | null>(null);
 const mouseX = ref(0);
@@ -96,7 +100,8 @@ const titleStyle = computed(() => {
   justify-content: center;
   align-items: center;
   transition: transform 0.1s ease-out;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
+  margin-top: 60px; /* Adjusted to prevent top cutoff */
 }
 
 .sclera {
@@ -173,11 +178,16 @@ const titleStyle = computed(() => {
 .glitch-text {
   font-size: 3rem;
   font-weight: 900;
-  margin: 0;
+  color: #fff;
   letter-spacing: -2px;
   position: relative;
-  color: #fff;
-  text-shadow: 2px 2px #39ff14;
+  mix-blend-mode: difference;
+  z-index: 0;
+  transition: font-size 0.3s ease;
+}
+
+.cover-1984.hero .glitch-text {
+  font-size: 4rem;
 }
 
 .glitch-text::before,

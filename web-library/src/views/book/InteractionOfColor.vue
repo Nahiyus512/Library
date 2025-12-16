@@ -1,6 +1,11 @@
 <template>
   <div class="interaction-container">
     
+    <!-- Top Left Return Button -->
+    <button class="return-btn fixed-top-left" @click="goBackHome">
+      <span>← END EXPERIMENT</span>
+    </button>
+
     <!-- Section 0: Hero / Cover -->
     <section class="section section-hero" id="section-0">
       <!-- 8-Square Animated Grid Background -->
@@ -68,6 +73,8 @@
           <p class="section-desc small-desc">上下拖动中间的混合条，寻找完美的透明点。</p>
         </div>
         
+        <!-- Button Removed -->
+
         <div 
           class="transparency-fullscreen" 
           ref="transContainerRef"
@@ -217,7 +224,7 @@
             <p class="book-author">{{ book.author }}</p>
           </div>
         </div>
-        <button class="back-home-btn" @click="goBackHome">返回首页</button>
+        <button class="footer-btn" @click="goBackHome">FINISH STUDY</button>
       </div>
     </section>
 
@@ -225,10 +232,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+const goBackHome = () => {
+  router.push('/main');
+};
 
 // --- Hero / Cover Logic ---
 const heroColors = [
@@ -523,10 +534,6 @@ const recommendedBooks = [
   { title: '颜色论', author: '歌德' }
 ]; // Reduced to 4
 
-const goBackHome = () => {
-  router.push('/main');
-};
-
 // Lifecycle
 onMounted(() => {
   animFrame = requestAnimationFrame(animate);
@@ -544,20 +551,104 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap');
 
 .interaction-container {
-  width: 100vw;
+  --font-modern: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-artistic: 'Inter', sans-serif; /* Bauhaus/Modernist style is clean sans */
+}
+
+.interaction-container {
+  width: 100%;
   height: 100vh;
-  overflow-y: scroll;
-  scroll-snap-type: y mandatory;
-  background-color: #000;
-  font-family: 'Noto Serif SC', serif;
+  background-color: #f0f0f0;
+  color: #333;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-family: var(--font-modern);
+  position: relative;
+}
+
+/* Typography Updates */
+.main-title {
+  font-family: var(--font-artistic);
+  font-weight: 900;
+  letter-spacing: -2px;
+}
+
+.author-quote, .section-desc {
+  font-family: var(--font-modern);
+}
+
+.section-title, .book-card-mini h3 {
+  font-family: var(--font-ui);
+  font-weight: 700;
+}
+
+.return-btn, .footer-btn, .instruction {
+  font-family: var(--font-ui);
+}
+
+/* Numbers (if any) */
+.number {
+  font-family: var(--font-modern);
+  font-weight: bold;
+}
+
+/* Return Buttons */
+.return-btn.fixed-top-left {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: #fff;
+  border: none;
+  padding: 12px 24px;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  color: #333;
+}
+
+.return-btn.fixed-top-left:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+  background: #000;
   color: #fff;
 }
 
-.interaction-container::-webkit-scrollbar {
-  display: none;
+.footer-action {
+  position: absolute;
+  bottom: 40px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none; /* Let clicks pass through if needed, but button needs pointer-events auto */
+}
+
+.footer-btn {
+  pointer-events: auto;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  padding: 15px 40px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: all 0.3s;
+  letter-spacing: 1px;
+  color: #333;
+}
+
+.footer-btn:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-3px);
 }
 
 .section {

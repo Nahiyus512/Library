@@ -105,7 +105,7 @@ onUnmounted(() => {
 }
 
 .design-title {
-  font-size: 3.5rem;
+  font-size: 2.5rem;
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -113,6 +113,11 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   gap: 0.1em;
+  transition: font-size 0.3s ease;
+}
+
+.cover-container:not(.hero) .design-title {
+  font-size: 2.0rem;
 }
 
 .d-char {

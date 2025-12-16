@@ -142,24 +142,29 @@ const handleMouseLeave = () => {
 }
 
 .huge-text {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 80px;
+  font-size: 5rem;
   font-weight: 900;
   color: #fff;
-  text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
-  letter-spacing: 4px;
   line-height: 1;
+  text-shadow: 0 0 20px rgba(0, 191, 255, 0.5);
+  margin-right: 10px;
+  transition: font-size 0.3s ease;
+}
+
+.cover-container:not(.hero) .huge-text {
+  font-size: 7rem;
 }
 
 .version-text {
-  position: absolute;
-  top: -10px;
-  right: -30px;
-  font-family: 'Inter', sans-serif;
-  font-size: 24px;
-  font-weight: 700;
-  color: #6366f1;
-  text-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+  font-size: 3rem;
+  font-weight: 300;
+  color: #00bfff;
+  letter-spacing: 2px;
+  transition: font-size 0.3s ease;
+}
+
+.cover-container:not(.hero) .version-text {
+  font-size: 1.5rem;
 }
 
 .subtitle-text {

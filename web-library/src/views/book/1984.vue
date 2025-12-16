@@ -1,5 +1,10 @@
 <template>
   <div class="page-container" ref="pageContainer" :class="{ 'torture-mode': tortureMode }">
+    <!-- Top Left Return Button -->
+    <button class="return-btn fixed-top-left" @click="goBackHome">
+      <span>← LOGOUT</span>
+    </button>
+
     <!-- Navigation -->
     <nav class="sticky-nav" :class="{ 'visible': showNav }">
       <div class="nav-links">
@@ -130,6 +135,11 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+const goBackHome = () => {
+  router.push('/main');
+};
+
 const pageContainer = ref<HTMLElement | null>(null);
 const showNav = ref(false);
 const activeSection = ref('');
@@ -270,17 +280,49 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Noto+Serif+SC:wght@700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Black+Ops+One&display=swap');
 
 .page-container {
-  background-color: #050505;
-  color: #39ff14;
-  font-family: 'Courier Prime', monospace;
+  --font-hero: 'Black Ops One', cursive;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
+  --font-mono: 'Share Tech Mono', monospace;
+  --font-pixel: 'VT323', monospace;
+}
+
+.page-container {
+  width: 100%;
   height: 100vh;
-  overflow-y: auto;
-  position: relative;
+  background-color: #0a0a0a;
+  color: #d4d4d4;
   overflow-x: hidden;
-  transition: background-color 0.1s;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+  position: relative;
+}
+
+/* Typography Updates */
+.hero-title {
+  font-family: var(--font-hero);
+  letter-spacing: 10px;
+}
+
+.hero-subtitle, .slogan, .broadcast, .intro-text, .ministry-desc, .fear-text {
+  font-family: var(--font-text);
+}
+
+.nav-links a, .return-btn {
+  font-family: var(--font-ui);
+}
+
+.date-display, .stability-meter span, .newspeak-word, .section-title {
+  font-family: var(--font-ui);
+  font-weight: bold;
+}
+
+/* Numbers (if any specific) */
+.number-display {
+  font-family: var(--font-mono);
 }
 
 .page-container.torture-mode {
@@ -307,6 +349,58 @@ onUnmounted(() => {
   background-size: 100% 2px, 3px 100%;
   pointer-events: none;
   z-index: 9999;
+}
+
+/* Return Buttons */
+.return-btn.fixed-top-left {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: #cc0000;
+  border: 2px solid #000;
+  padding: 10px 20px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #000;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.return-btn.fixed-top-left:hover {
+  background: #000;
+  color: #cc0000;
+  border-color: #cc0000;
+  box-shadow: 4px 4px 0 #cc0000;
+}
+
+.footer-action {
+  margin-top: 30px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-btn {
+  background: #000;
+  border: 2px solid #cc0000;
+  color: #cc0000;
+  padding: 15px 40px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.footer-btn:hover {
+  background: #cc0000;
+  color: #000;
+  box-shadow: 0 0 20px #cc0000;
 }
 
 /* Navigation */

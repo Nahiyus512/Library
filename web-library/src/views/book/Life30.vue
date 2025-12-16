@@ -1,11 +1,8 @@
 <template>
   <div class="life30-container" ref="containerRef">
     <!-- Return Button -->
-    <button class="return-btn" @click="goBack">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      返回首页
+    <button class="return-btn fixed-top-left" @click="goBack">
+      <span>← DISCONNECT AI</span>
     </button>
 
     <!-- Scroll Progress -->
@@ -207,7 +204,7 @@
       <footer class="page-footer">
         <h3>迎接 AI 时代</h3>
         <p>关于未来的讨论已经开始。用知识武装自己，加入这场对话。</p>
-        <button class="footer-back-btn" @click="goBack">返回图书馆</button>
+        <button class="footer-btn" @click="goBack">HUMAN MODE</button>
       </footer>
     </div>
   </div>
@@ -359,9 +356,102 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Inter:wght@300;400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;600&family=Noto+Serif+SC:wght@300;700&display=swap');
 
-/* Global Container */
+.life30-container {
+  --font-tech: 'Orbitron', sans-serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
+  --font-body: 'Exo 2', sans-serif;
+}
+
+.life30-container {
+  width: 100%;
+  height: 100vh;
+  background-color: #050510;
+  color: #e0e0ff;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: var(--font-body);
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+/* Typography Updates */
+.main-title, .version-superscript {
+  font-family: var(--font-tech);
+  letter-spacing: 5px;
+}
+
+.subtitle {
+  font-family: var(--font-tech);
+  text-transform: uppercase;
+}
+
+.section-content h2, .section-content h3 {
+  font-family: var(--font-ui);
+}
+
+.nav-item, .return-btn, .footer-btn, .viz-hint, .scenario-title {
+  font-family: var(--font-ui);
+}
+
+.text-block p, .intro-text, .scenario-desc, .closing-text {
+  font-family: var(--font-text);
+}
+
+.chapter-num, .version-superscript {
+  font-family: var(--font-tech);
+}
+
+/* Return Buttons */
+.return-btn.fixed-top-left {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid #00f0ff;
+  padding: 10px 20px;
+  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #00f0ff;
+  backdrop-filter: blur(5px);
+  text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.return-btn.fixed-top-left:hover {
+  background: #00f0ff;
+  color: #000;
+  box-shadow: 0 0 20px #00f0ff;
+}
+
+.footer-btn {
+  margin-top: 30px;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  padding: 15px 40px;
+  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 2px;
+  border-radius: 30px;
+  position: relative;
+  z-index: 10;
+}
+
+.footer-btn:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 0 0 30px rgba(255,255,255,0.8);
+}
+
 .life30-container {
   width: 100%;
   height: 100vh;

@@ -14,6 +14,10 @@
 </template>
 
 <script setup lang="ts">
+const props = defineProps<{
+  mode?: 'card' | 'hero'
+}>();
+
 const getParticleStyle = (n: number) => {
   const size = Math.random() * 3 + 1;
   return {
@@ -48,18 +52,20 @@ const getParticleStyle = (n: number) => {
 }
 
 .title {
-  font-family: 'Microsoft YaHei', sans-serif;
-  font-size: 3.5rem; /* Reduced from 8rem to fit in card */
+  font-size: 8rem;
   font-weight: 900;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0;
-  line-height: 1;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  color: #d2b48c; /* Tan/Sand color */
+  text-transform: uppercase;
+  letter-spacing: 10px;
+  text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+  z-index: 10;
+  mix-blend-mode: overlay;
   opacity: 0.9;
-  text-align: center;
-  width: 100%;
-  padding: 0 10px;
-  box-sizing: border-box;
+  transition: font-size 0.3s ease;
+}
+
+.dune-cover:not(.hero) .title {
+  font-size: 4rem;
 }
 
 /* Sand Layers (Abstract Curves) */

@@ -152,11 +152,16 @@ const gridStyle = computed(() => {
 .title-cn {
   font-family: 'Noto Serif SC', serif;
   font-weight: 900;
-  font-size: 2rem;
+  font-size: 3rem;
   line-height: 1.1;
   margin: 0;
   color: #000;
   letter-spacing: -1px;
+  transition: font-size 0.3s ease;
+}
+
+.cover-container:not(.hero) .title-cn {
+  font-size: 1.6rem;
 }
 
 .subtitle {
@@ -196,7 +201,7 @@ const gridStyle = computed(() => {
 
 /* Hero Mode Adjustments */
 .cover-container.hero .title-cn {
-  font-size: 4rem;
+  font-size: 3rem;
 }
 
 .cover-container.hero .swiss-layout {

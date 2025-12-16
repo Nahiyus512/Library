@@ -154,13 +154,15 @@ onUnmounted(() => {
 }
 
 .cn-title {
-  font-size: 2.2rem; /* Adjusted to fit in one line */
+  font-size: 2.5rem;
   font-weight: 900;
-  letter-spacing: -1px;
-  line-height: 1;
-  color: #3e2723;
-  margin-bottom: 0;
-  white-space: nowrap;
+  margin: 0;
+  letter-spacing: 5px;
+  transition: font-size 0.3s ease;
+}
+
+.sapiens-cover:not(.hero) .cn-title {
+  font-size: 2.2rem;
 }
 
 .en-title {

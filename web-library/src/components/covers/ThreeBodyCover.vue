@@ -1,6 +1,7 @@
 <template>
   <div 
     class="visual-three-body" 
+    :class="{ hero: mode === 'hero' }"
     ref="cardRef"
     @mousemove="handleMouseMove"
     @mouseleave="handleMouseLeave"
@@ -24,6 +25,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const props = defineProps<{
+  mode?: 'card' | 'hero'
+}>();
 
 // --- Interactive Title Logic ---
 const cardRef = ref<HTMLElement | null>(null);
@@ -97,12 +102,20 @@ onUnmounted(() => {
 }
 
 .huge-text {
-  font-family: 'SimHei', 'Microsoft YaHei', sans-serif; /* Boxy font */
-  font-size: 4rem; /* 2/3 size of 6rem */
+  font-size: 4rem;
   font-weight: 900;
+  letter-spacing: 0px;
   color: #fff;
-  letter-spacing: 5px;
-  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,255,255,0.5);
+  margin: 0;
+  z-index: 10;
+  mix-blend-mode: difference;
+  animation: breathe 4s ease-in-out infinite;
+  transition: font-size 0.3s ease;
+}
+
+.visual-three-body.hero .huge-text {
+  font-size: 7rem;
 }
 
 .warning-wrapper {

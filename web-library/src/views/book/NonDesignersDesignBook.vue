@@ -1,5 +1,10 @@
 <template>
   <div class="book-page" ref="pageRef" @scroll="handleScroll">
+    <!-- Top Left Return Button -->
+    <button class="return-btn fixed-top-left" @click="goBackHome">
+      <span>← CLOSE BOOK</span>
+    </button>
+
     <!-- Fixed Background -->
     <div class="fixed-bg"></div>
 
@@ -108,27 +113,33 @@
       <!-- 5. Proximity (Proximity) -->
       <section id="proximity" class="content-section proximity-section">
         <div class="section-header">
-          <h2>亲密性</h2>
+          <h2>亲密</h2>
           <h3>Proximity</h3>
         </div>
-        <div class="proximity-demo" @mousemove="handleProximityMove">
-          <div class="scatter-group" :class="{ gathered: isGathered }">
-             <div class="dot d1">Email</div>
-             <div class="dot d2">Phone</div>
-             <div class="dot d3">Address</div>
-             <div class="dot d4">Name</div>
-             <div class="dot dCenter">CONTACT INFO</div>
-          </div>
-          <p class="instruction">Hover over the center to group related items.</p>
+        <div class="proximity-demo">
+           <div class="business-card" :class="{ organized: proximityEnabled }">
+             <div class="card-element name">Jane Doe</div>
+             <div class="card-element title">Graphic Designer</div>
+             <div class="card-element contact-group">
+               <div class="contact-item">555-0199</div>
+               <div class="contact-item">jane@design.com</div>
+               <div class="contact-item">123 Art Street</div>
+             </div>
+           </div>
+           <p class="instruction-text">
+             {{ proximityEnabled ? 'Items grouped by relationship.' : 'Items scattered logically disconnected.' }}
+           </p>
+           <button class="toggle-btn" @click="proximityEnabled = !proximityEnabled">
+             {{ proximityEnabled ? 'SCATTER' : 'GROUP RELATED ITEMS' }}
+           </button>
+        </div>
+        
+        <div class="footer-action">
+          <button class="footer-btn" @click="goBackHome">DESIGN COMPLETE</button>
         </div>
       </section>
 
     </div>
-
-    <!-- Footer -->
-    <footer class="page-footer">
-      <button class="return-home-btn" @click="router.push('/main')">返回首页</button>
-    </footer>
   </div>
 </template>
 
@@ -138,6 +149,12 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const scrollY = ref(0);
+const proximityEnabled = ref(false);
+
+const goBackHome = () => {
+  router.push('/main');
+};
+
 const pageRef = ref<HTMLElement | null>(null);
 const isNavStuck = ref(false);
 const activeSection = ref('intro');
@@ -176,12 +193,12 @@ const scrollTo = (id: string) => {
 
 const handleProximityMove = (e: MouseEvent) => {
   const target = e.target as HTMLElement;
-  // Simple proximity check logic could go here, but using CSS hover for simplicity/performance
-  // interacting with the .scatter-group container
-  const center = target.closest('.proximity-demo')?.querySelector('.dCenter');
-  if (center) {
-     const rect = center.getBoundingClientRect();
-     const dist = Math.hypot(e.clientX - (rect.left + rect.width/2), e.clientY - (rect.top + rect.height/2));
+  const container = target.closest('.proximity-demo');
+  if (container) {
+     const rect = container.getBoundingClientRect();
+     const centerX = rect.left + rect.width / 2;
+     const centerY = rect.top + rect.height / 2;
+     const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
      isGathered.value = dist < 150;
   }
 };
@@ -213,6 +230,52 @@ onMounted(() => {
   opacity: 0.3;
   pointer-events: none;
   z-index: 0;
+}
+
+/* Return Buttons */
+.return-btn.fixed-top-left {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: #000;
+  border: 2px solid #fff;
+  padding: 10px 20px;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #fff;
+}
+
+.return-btn.fixed-top-left:hover {
+  background: #fff;
+  color: #000;
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
+}
+
+.footer-action {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 60px;
+}
+
+.footer-btn {
+  background: #000;
+  color: #fff;
+  border: 2px solid #000;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.footer-btn:hover {
+  background: #fff;
+  color: #000;
 }
 
 /* Hero Section */
@@ -519,55 +582,80 @@ onMounted(() => {
 /* Proximity Demo */
 .proximity-demo {
   width: 100%;
-  height: 400px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  position: relative;
+  gap: 30px;
 }
 
-.scatter-group {
-  position: relative;
-  width: 300px;
-  height: 300px;
-}
-
-.dot {
-  position: absolute;
-  padding: 10px;
+.business-card {
+  width: 400px;
+  height: 250px;
   background: #fff;
-  border: 1px solid #000;
-  font-size: 0.8rem;
+  border: 1px solid #ddd;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   transition: all 0.5s ease;
+  overflow: hidden;
 }
 
-.dCenter {
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  background: #000;
-  color: #fff;
-  z-index: 10;
-  padding: 20px;
-  border-radius: 50%;
-  cursor: pointer;
+.card-element {
+  position: absolute;
+  transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  font-family: var(--font-ui);
 }
 
-.d1 { top: 10%; left: 10%; }
-.d2 { top: 10%; right: 10%; }
-.d3 { bottom: 10%; left: 10%; }
-.d4 { bottom: 10%; right: 10%; }
+.name {
+  font-size: 1.5rem;
+  font-weight: 900;
+  top: 20px; left: 20px;
+}
 
-.scatter-group.gathered .d1 { top: 35%; left: 35%; }
-.scatter-group.gathered .d2 { top: 35%; right: 35%; }
-.scatter-group.gathered .d3 { bottom: 35%; left: 35%; }
-.scatter-group.gathered .d4 { bottom: 35%; right: 35%; }
+.title {
+  font-size: 1rem;
+  color: #666;
+  bottom: 20px; left: 20px;
+}
 
-.instruction {
-  margin-top: 40px;
+.contact-group {
+  top: 20px; right: 20px;
+  text-align: right;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+/* Scattered State (Default) */
+.business-card:not(.organized) .name {
+  top: 10%; left: 10%;
+}
+.business-card:not(.organized) .title {
+  bottom: 80%; left: 60%;
+}
+.business-card:not(.organized) .contact-group {
+  top: 70%; right: 50%;
+  text-align: left;
+}
+
+/* Organized State */
+.business-card.organized .name {
+  top: 40px; left: 40px;
+}
+.business-card.organized .title {
+  top: 75px; left: 40px; /* Grouped with name */
+  bottom: auto;
+}
+.business-card.organized .contact-group {
+  bottom: 40px; right: 40px; /* Grouped at bottom right */
+  top: auto;
+  text-align: right;
+}
+
+.instruction-text {
+  font-family: var(--font-text);
   color: #666;
   font-style: italic;
 }
+
 
 /* Footer */
 .page-footer {

@@ -5,6 +5,11 @@
       {{ countdownDisplay }}
     </div>
 
+    <!-- Back to Home Button (Fixed Top Left) -->
+    <button class="back-home-btn fixed-top-left" @click="goBackHome">
+      <span>[脱离游戏]</span>
+    </button>
+
     <nav class="sticky-nav" :class="{ 'nav-visible': showNav }">
       <div 
         v-for="(section, index) in sections" 
@@ -33,7 +38,7 @@
 
     <!-- Section 2: Archives (Books) -->
     <section class="section section-archives" id="section-1">
-      <h2 class="section-heading">绝密</h2>
+      <h2 class="section-heading">档案</h2>
       <div class="books-grid">
         <!-- Book 1 -->
         <div class="book-card card-red">
@@ -78,7 +83,7 @@
 
     <!-- Section 4: Concepts (Classified) -->
     <section class="section section-concepts" id="section-3">
-      <h2 class="section-heading">档案</h2>
+      <h2 class="section-heading">绝密</h2>
       <div class="concepts-list">
         <div class="concept-item" v-for="(concept, index) in concepts" :key="index">
           <h3 class="concept-title">{{ concept.title }}</h3>
@@ -98,10 +103,12 @@
         </div>
       </div>
       
-      <!-- Back to Home Button -->
-      <button class="back-home-btn" @click="goBackHome">
-        <span>&lt; 返回首页</span>
-      </button>
+      <!-- Footer Return -->
+      <div class="footer-return-container">
+        <button class="footer-return-btn" @click="goBackHome">
+          &lt;&lt; 返回地球 &gt;&gt;
+        </button>
+      </div>
     </section>
   </div>
 </template>
@@ -222,24 +229,53 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Noto+Serif+SC:wght@400;700&display=swap');
 
 .three-body-container {
-  width: 100vw;
+  --font-tech: 'Share Tech Mono', monospace;
+  --font-hero: 'Orbitron', sans-serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
+}
+
+.three-body-container {
+  width: 100%;
   height: 100vh;
-  overflow-y: scroll;
-  /* Removed scroll-snap-type for free scrolling */
   background-color: #000;
   color: #fff;
-  font-family: 'Noto Serif SC', serif;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: var(--font-ui);
   position: relative;
-  /* Hide scrollbar for Chrome/Safari/Opera */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  scroll-behavior: smooth;
+}
+
+/* Typography Updates */
+.main-title {
+  font-family: var(--font-hero);
+  letter-spacing: 10px;
+}
+
+.sub-title, .warning-blink {
+  font-family: var(--font-tech);
+  color: #ff0000;
+}
+
+.death-countdown, .book-year, .person-role, .concept-title {
+  font-family: var(--font-tech);
+}
+
+.book-title, .section-heading {
+  font-family: var(--font-ui);
+  font-weight: 900;
+}
+
+.book-excerpt, .concept-desc, .timeline-desc {
+  font-family: var(--font-text);
+}
+
+.nav-item, .back-home-btn {
+  font-family: var(--font-ui);
 }
 
 
@@ -324,6 +360,56 @@ onUnmounted(() => {
   z-index: 1; 
   white-space: nowrap;
   mix-blend-mode: screen;
+}
+
+/* Back Button Styles */
+.back-home-btn.fixed-top-left {
+  position: fixed;
+  top: 30px;
+  left: 30px;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid #ff0000;
+  color: #ff0000;
+  padding: 10px 20px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.back-home-btn.fixed-top-left:hover {
+  background: #ff0000;
+  color: #000;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.footer-return-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 60px 0 20px;
+}
+
+.footer-return-btn {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.6);
+  padding: 15px 40px;
+  font-family: 'SimHei', serif;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.4s;
+  letter-spacing: 4px;
+}
+
+.footer-return-btn:hover {
+  border-color: #fff;
+  color: #fff;
+  text-shadow: 0 0 10px #fff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* Section 1: Hero */

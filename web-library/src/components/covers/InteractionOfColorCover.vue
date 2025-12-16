@@ -1,5 +1,5 @@
 <template>
-  <div class="visual-color" @mousemove="handleMouseMove" @mouseleave="resetParallax">
+  <div class="visual-color" :class="{ hero: mode === 'hero' }" @mousemove="handleMouseMove" @mouseleave="resetParallax">
     <!-- Albers Squares Composition -->
     <div class="squares-container" :style="containerStyle">
       <div class="square outer" :style="outerStyle"></div>
@@ -20,6 +20,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+
+const props = defineProps<{
+  mode?: 'card' | 'hero'
+}>();
 
 const mouseX = ref(0);
 const mouseY = ref(0);
@@ -133,11 +137,16 @@ onUnmounted(() => {
 }
 
 .cn-title {
-  font-size: 2.0rem;
+  font-size: 2.5rem;
   font-weight: 900;
-  letter-spacing: -1px;
-  line-height: 1;
-  white-space: nowrap;
+  margin: 0;
+  letter-spacing: 2px;
+  mix-blend-mode: exclusion;
+  transition: font-size 0.3s ease;
+}
+
+.interaction-cover:not(.hero) .cn-title {
+  font-size: 2rem;
 }
 
 .en-title {

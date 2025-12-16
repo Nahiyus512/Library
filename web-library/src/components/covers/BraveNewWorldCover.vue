@@ -185,11 +185,16 @@ const getParticleStyle = (n: number) => {
 }
 
 .title-cn {
-  font-size: 1.5rem;
+  font-size: 3.5rem;
   font-weight: 300;
   margin: 0;
   letter-spacing: 5px;
   opacity: 0.8;
+  transition: font-size 0.3s ease;
+}
+
+.brave-cover:not(.hero) .title-cn {
+  font-size: 1.8rem;
 }
 
 .particle {

@@ -54,6 +54,10 @@
       <div class="antenna left-ant"></div>
       <div class="antenna right-ant"></div>
     </div>
+
+    <div class="title-wrapper">
+      <h1 class="title-cn">娱乐至死</h1>
+    </div>
   </div>
 </template>
 
@@ -69,11 +73,33 @@ const isHovered = ref(false);
   height: 100%;
   background-color: #050505;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   overflow: hidden;
   position: relative;
   font-family: sans-serif;
+}
+
+.title-wrapper {
+  margin-top: -10px;
+  z-index: 10;
+  text-align: center;
+}
+
+.title-cn {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 3.5rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 4px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+  transition: font-size 0.3s ease;
+}
+
+.amusing-cover:not(.hero) .title-cn {
+  font-size: 2.2rem;
 }
 
 /* Background Grid */

@@ -2,6 +2,9 @@
   <div class="dune-page" ref="pageRef" @mousemove="handleMouseMove">
     <!-- Sticky Navigation -->
     <nav class="sticky-nav" :class="{ 'visible': showNav }">
+      <button class="nav-return-btn" @click="goBackHome">
+        <span>← LEAVE ARRAKIS</span>
+      </button>
       <ul>
         <li v-for="(section, index) in sections" :key="index">
           <a :href="`#${section.id}`" @click.prevent="scrollToSection(section.id)">{{ section.name }}</a>
@@ -199,19 +202,23 @@
       </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="page-footer">
-      <div class="footer-data">ANALYSIS COMPLETE. IMMERSION: 99.9%</div>
-      <button class="back-btn" @click="goBack">返回首页 // FOLD SPACE</button>
+    <!-- Section 4: Footer -->
+    <footer class="dune-footer">
+       <p class="final-words">"Fear is the mind-killer."</p>
+       <button class="footer-btn" @click="goBackHome">DEPART PLANET</button>
     </footer>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const goBackHome = () => {
+  router.push('/main');
+};
+
 const pageRef = ref<HTMLElement | null>(null);
 const sectionRefs = ref<HTMLElement[]>([]);
 const showNav = ref(false);
@@ -299,29 +306,89 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;700&display=swap');
 
-/* Global Page Styles */
 .dune-page {
-  height: 100vh;
-  overflow-y: auto;
-  background-color: #7B3306;
-  color: #FDF5E6;
-  font-family: 'Noto Serif SC', serif;
-  scroll-behavior: smooth;
-  position: relative;
+  --font-epic: 'Cinzel', serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
+  --font-tech: 'Montserrat', sans-serif; /* For HUD elements */
 }
 
-.mono { font-family: 'JetBrains Mono', monospace; }
-.mono-small { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; opacity: 0.7; }
+.dune-page {
+  width: 100%;
+  height: 100vh;
+  background-color: #0f0a06;
+  color: #e0c090;
+  overflow-x: hidden;
+  overflow-y: auto;
+  font-family: var(--font-text);
+  position: relative;
+  scroll-behavior: smooth;
+}
 
-/* Sticky Nav */
+/* Typography Updates */
+.hero-title {
+  font-family: var(--font-epic);
+  letter-spacing: 10px;
+}
+
+.hero-subtitle, .litany {
+  font-family: var(--font-text);
+  font-style: italic;
+}
+
+.section-header {
+  font-family: var(--font-ui); /* Or Cinzel for headers too? User said "Small titles use Heiti" */
+  font-weight: 900;
+}
+
+.sub-header {
+  font-family: var(--font-tech);
+  letter-spacing: 2px;
+}
+
+.meta-data, .nav-return-btn, .sticky-nav ul li a {
+  font-family: var(--font-ui);
+}
+
+/* Numbers */
+.meta-data {
+  font-family: var(--font-tech);
+}
+
+.mono { font-family: var(--font-tech); }
+.mono-small { font-family: var(--font-tech); font-size: 0.8rem; opacity: 0.7; }
+
+/* Return Buttons */
+.footer-btn {
+  background: transparent;
+  border: 2px solid #c89650;
+  color: #c89650;
+  padding: 15px 40px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 2px;
+  margin-top: 30px;
+  text-transform: uppercase;
+}
+
+.footer-btn:hover {
+  background: #c89650;
+  color: #000;
+  box-shadow: 0 0 30px #c89650;
+}
+
+/* Nav */
 .sticky-nav {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  padding: 15px;
+  padding: 15px 40px;
   background: rgba(123, 51, 6, 0.95);
   border-bottom: 1px solid rgba(253, 245, 230, 0.1);
   backdrop-filter: blur(10px);
@@ -330,6 +397,29 @@ onUnmounted(() => {
   transition: transform 0.3s ease;
   display: flex;
   justify-content: center;
+  align-items: center;
+}
+
+.nav-return-btn {
+  position: absolute;
+  left: 40px;
+  background: transparent;
+  border: 1px solid #c89650;
+  color: #c89650;
+  padding: 5px 15px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+}
+
+.nav-return-btn:hover {
+  background: #c89650;
+  color: #000;
+  box-shadow: 0 0 10px #c89650;
 }
 
 .sticky-nav.visible {

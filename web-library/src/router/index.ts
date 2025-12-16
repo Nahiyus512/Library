@@ -18,16 +18,16 @@ import Advice from "../views/Advice.vue"
 import BookClass from "../views/BookClass.vue";
 import CategoryPlaceholder from "../views/CategoryPlaceholder.vue";
 import ArtPlaceholder from "../views/ArtPlaceholder.vue";
-import ThreeBodyProblem from "../views/book/ThreeBodyProblem.vue";
+import ZenAndMotorcycle from "../views/book/Zen.vue";
+import ThreeBodyProblem from "../views/book/ThreeBody.vue";
 import Sapiens from "../views/book/Sapiens.vue";
 import HitchhikersGuide from "../views/book/HitchhikersGuide.vue";
 import InteractionOfColor from "../views/book/InteractionOfColor.vue";
 import NonDesignersDesignBook from "../views/book/NonDesignersDesignBook.vue";
 import GridSystems from "../views/book/GridSystems.vue";
 import Dune from "../views/book/Dune.vue";
-import Book1984 from "../views/book/Book1984.vue";
+import Book1984 from "../views/book/1984.vue";
 import BraveNewWorld from "../views/book/BraveNewWorld.vue";
-import ZenAndMotorcycle from "../views/book/ZenAndMotorcycle.vue";
 import AmusingOurselvesToDeath from "../views/book/AmusingOurselvesToDeath.vue";
 import Life30 from "../views/book/Life30.vue";
 
@@ -36,9 +36,9 @@ const router = createRouter({
     history:createWebHistory(),
     routes:[
         {
-            path: '/login',
-            name: 'Login',
-            component: Login
+            path:"/login",
+            name:"login",
+            component:Login
         },
         {
             path:"/home",
@@ -89,67 +89,6 @@ const router = createRouter({
                 }
             ]
         },
-        // Independent Book Pages (No Header/Nav)
-        {
-            path: "/book-page/three-body-problem",
-            name: "ThreeBodyProblem",
-            component: ThreeBodyProblem
-        },
-        {
-            path: "/book-page/sapiens",
-            name: "Sapiens",
-            component: Sapiens
-        },
-        {
-            path: "/book-page/hitchhikers-guide",
-            name: "HitchhikersGuide",
-            component: HitchhikersGuide
-        },
-        {
-            path: "/book-page/interaction-of-color",
-            name: "InteractionOfColor",
-            component: InteractionOfColor
-        },
-        {
-            path: "/book-page/non-designers-design-book",
-            name: "NonDesignersDesignBook",
-            component: NonDesignersDesignBook
-        },
-        {
-            path: "/book-page/grid-systems",
-            name: "GridSystems",
-            component: GridSystems
-        },
-        {
-            path: "/book-page/dune",
-            name: "Dune",
-            component: Dune
-        },
-        {
-            path: "/book-page/1984",
-            name: "Book1984",
-            component: Book1984
-        },
-        {
-            path: "/book-page/brave-new-world",
-            name: "BraveNewWorld",
-            component: BraveNewWorld
-        },
-        {
-            path: "/book-page/zen-and-motorcycle",
-            name: "ZenAndMotorcycle",
-            component: ZenAndMotorcycle
-        },
-        {
-            path: "/book-page/amusing-ourselves-to-death",
-            name: "AmusingOurselvesToDeath",
-            component: AmusingOurselvesToDeath
-        },
-        {
-            path: "/book-page/life-30",
-            name: "Life30",
-            component: Life30
-        },
         {
             path:"/admin",
             name:"admin",
@@ -192,6 +131,22 @@ const router = createRouter({
                 }
             ]
         },
+        {
+            path:"/book/zen-motorcycle",
+            name:"ZenAndMotorcycle",
+            component:ZenAndMotorcycle
+        },
+        { path: "/book/three-body", name: "ThreeBodyProblem", component: ThreeBodyProblem },
+        { path: "/book/sapiens", name: "Sapiens", component: Sapiens },
+        { path: "/book/hitchhikers-guide", name: "HitchhikersGuide", component: HitchhikersGuide },
+        { path: "/book/interaction-of-color", name: "InteractionOfColor", component: InteractionOfColor },
+        { path: "/book/non-designers-design-book", name: "NonDesignersDesignBook", component: NonDesignersDesignBook },
+        { path: "/book/grid-systems", name: "GridSystems", component: GridSystems },
+        { path: "/book/dune", name: "Dune", component: Dune },
+        { path: "/book/1984", name: "Book1984", component: Book1984 },
+        { path: "/book/brave-new-world", name: "BraveNewWorld", component: BraveNewWorld },
+        { path: "/book/amusing-ourselves-to-death", name: "AmusingOurselvesToDeath", component: AmusingOurselvesToDeath },
+        { path: "/book/life-30", name: "Life30", component: Life30 },
         {
             path:"/",
             component:Login

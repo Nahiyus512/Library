@@ -1,5 +1,10 @@
 <template>
   <div class="brave-vn-container" :class="sceneClass">
+    <!-- Top Left Return Button -->
+    <button class="return-btn fixed-top-left" @click="goBackHome">
+      <span>← EXIT SOMA</span>
+    </button>
+
     <div class="custom-cursor"></div>
     
     <!-- Global HUD -->
@@ -13,7 +18,7 @@
           </div>
         </div>
       </div>
-      <div class="return-btn" @click="goBack">返回图书馆</div>
+      <div class="return-btn" @click="goBackHome">返回图书馆</div>
     </div>
 
     <!-- Transition Overlay -->
@@ -30,12 +35,30 @@
     <transition name="fade-morph" mode="out-in">
 
       <!-- Scene 0: Intro (Home - Cover Style) -->
-      <div v-if="currentScene === 0" key="scene0" class="scene scene-intro" @click="startJourney">
-        <div class="cover-content">
-          <h1 class="title-en floating-title">BRAVE<br>NEW<br>WORLD</h1>
-          <div class="motto fade-in-delayed">COMMUNITY • IDENTITY • STABILITY</div>
-          <h2 class="title-cn fade-in-delayed-2">美丽新世界</h2>
+      <div v-if="currentScene === 0" key="scene0" class="scene scene-intro" @click="startJourney" @mousemove="handleMouseMove" @mouseleave="resetParallax">
+        <!-- Background Grid -->
+        <div class="grid-bg"></div>
+
+        <!-- Central Soma Pill -->
+        <div class="soma-pill-container" :style="pillStyle">
+          <div class="pill-body">
+            <div class="pill-highlight"></div>
+            <div class="pill-text">SOMA</div>
+          </div>
+          <div class="pill-glow"></div>
+        </div>
+
+        <!-- Title -->
+        <div class="title-container" :style="titleStyle">
+          <h1 class="title-en">BRAVE<br>NEW<br>WORLD</h1>
+          <div class="motto">COMMUNITY • IDENTITY • STABILITY</div>
+          <h2 class="title-cn">美丽新世界</h2>
           <div class="start-hint fade-in-delayed-3">点击开启旅程</div>
+        </div>
+
+        <!-- Floating Particles -->
+        <div class="particles">
+          <div v-for="n in 20" :key="n" class="particle" :style="getParticleStyle(n)"></div>
         </div>
       </div>
       
@@ -352,7 +375,7 @@
             <p>你在灯塔中孤独地守望，但你的灵魂属于你自己。</p>
           </div>
         </div>
-        <button class="interaction-btn restart-btn" @click="goBack">结束旅程</button>
+        <button class="interaction-btn restart-btn" @click="goBackHome">结束旅程</button>
       </div>
 
     </transition>
@@ -401,6 +424,44 @@ const chapters = [
 ];
 
 const sceneClass = computed(() => `scene-${currentScene.value}`);
+
+// Parallax Logic
+const mouseX = ref(0);
+const mouseY = ref(0);
+
+const handleMouseMove = (e: MouseEvent) => {
+  const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+  const x = (e.clientX - rect.left) / rect.width;
+  const y = (e.clientY - rect.top) / rect.height;
+  
+  mouseX.value = (x - 0.5) * 2; // -1 to 1
+  mouseY.value = (y - 0.5) * 2;
+};
+
+const resetParallax = () => {
+  mouseX.value = 0;
+  mouseY.value = 0;
+};
+
+const pillStyle = computed(() => ({
+  transform: `translate(${mouseX.value * 15}px, ${mouseY.value * 15}px) rotate(${mouseX.value * 5}deg)`
+}));
+
+const titleStyle = computed(() => ({
+  transform: `translate(${mouseX.value * -10}px, ${mouseY.value * -10}px)`
+}));
+
+const getParticleStyle = (n: number) => {
+  const size = Math.random() * 4 + 1;
+  return {
+    left: `${Math.random() * 100}%`,
+    top: `${Math.random() * 100}%`,
+    width: `${size}px`,
+    height: `${size}px`,
+    animationDelay: `${Math.random() * 5}s`,
+    opacity: Math.random() * 0.5 + 0.1
+  };
+};
 
 const startJourney = () => {
   transitionToNext(1, '孵化中心', '欢迎来到中心伦敦孵化与条件反射中心');
@@ -591,7 +652,7 @@ const chooseEnding = (choice: string) => {
 };
 
 // Navigation Logic
-const goBack = () => {
+const goBackHome = () => {
   router.push('/main');
 };
 
@@ -665,16 +726,90 @@ onUnmounted(() => {
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700;900&family=Playfair+Display:ital@1&family=Share+Tech+Mono&family=Noto+Serif+SC:wght@400;700;900&display=swap');
 
-/* Global Container */
 .brave-vn-container {
-  width: 100vw;
+  --font-hero: 'Montserrat', sans-serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Noto Serif SC', 'Songti SC', serif;
+  --font-tech: 'Share Tech Mono', monospace;
+}
+
+/* Global Container */
+/* Return Buttons */
+.return-btn.fixed-top-left {
+  position: fixed;
+  top: 100px;
+  left: 24px;
+  z-index: 2000;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #fff;
+  backdrop-filter: blur(10px);
+  text-shadow: 0 0 5px rgba(255,255,255,0.5);
+}
+
+.return-btn.fixed-top-left:hover {
+  background: #fff;
+  color: #0080ff;
+  box-shadow: 0 0 15px #0080ff;
+}
+
+.restart-btn {
+  margin-top: 20px;
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.restart-btn:hover {
+  background: #fff;
+  color: #ff0055;
+  box-shadow: 0 0 20px #ff0055;
+}
+
+.brave-vn-container {
+  width: 100%;
   height: 100vh;
+  background: #f0f4f8;
+  color: #2c3e50;
   overflow: hidden;
   position: relative;
-  background: #000;
-  font-family: 'Montserrat', 'Noto Serif SC', sans-serif;
-  color: #cffafe;
-  cursor: url('data:image/svg+xml;utf8,<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 2V22M2 2H22" stroke="%23cffafe" stroke-width="2"/></svg>') 12 12, auto;
+  font-family: var(--font-ui);
+  cursor: none; /* Custom cursor */
+}
+
+/* Typography */
+.title-en {
+  font-family: var(--font-hero);
+  font-weight: 900;
+  letter-spacing: 5px;
+}
+
+.title-cn, .motto, .scene-header {
+  font-family: var(--font-ui);
+}
+
+.story-text, .dialogue-text {
+  font-family: var(--font-text);
+}
+
+.date-display, .stability-meter, .id-rank {
+  font-family: var(--font-tech);
+}
+
+.return-btn, .start-hint, .choice-btn {
+  font-family: var(--font-ui);
 }
 
 /* Common SVG styles */
@@ -693,18 +828,126 @@ svg {
   align-items: center;
 }
 
-/* Scene 0: Intro */
+/* Scene 0: Intro (Cover Style) */
 .scene-intro {
   background: radial-gradient(circle at center, #1a2a3a 0%, #000000 100%);
   cursor: pointer;
+  overflow: hidden;
+  perspective: 1000px;
 }
-.cover-content {
-  text-align: center;
+
+.grid-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  perspective: 500px;
+  transform: scale(1.2);
+  z-index: 1;
+}
+
+.soma-pill-container {
+  position: absolute;
   z-index: 10;
+  transition: transform 0.1s ease-out;
 }
-.floating-title {
-  animation: float 4s ease-in-out infinite;
+
+.pill-body {
+  width: 160px;
+  height: 80px;
+  background: linear-gradient(135deg, #e0f7fa 0%, #00bcd4 100%);
+  border-radius: 50px;
+  position: relative;
+  box-shadow: 
+    inset 5px 5px 15px rgba(255,255,255,0.8),
+    inset -5px -5px 15px rgba(0,0,0,0.2),
+    0 10px 30px rgba(0, 255, 255, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
 }
+
+.pill-body::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  width: 2px; height: 100%;
+  background: rgba(0,0,0,0.1);
+}
+
+.pill-highlight {
+  position: absolute;
+  top: 15px; left: 20px;
+  width: 40px; height: 15px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 20px;
+  filter: blur(2px);
+}
+
+.pill-text {
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: rgba(0,0,0,0.3);
+  z-index: 2;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.pill-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 200px; height: 120px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.4) 0%, transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+  animation: pulse 3s infinite ease-in-out;
+}
+
+.title-container {
+  position: relative;
+  z-index: 20;
+  text-align: center;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+.title-en {
+  font-size: 5rem;
+  line-height: 0.9;
+  font-weight: 900;
+  letter-spacing: -2px;
+  margin: 0;
+  text-transform: uppercase;
+  background: linear-gradient(to bottom, #fff, #84ffff);
+  -webkit-background-clip: text;
+  color: transparent;
+  opacity: 0.9;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.motto {
+  font-size: 0.8rem;
+  letter-spacing: 5px;
+  margin: 20px 0;
+  color: #00bcd4;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.title-cn {
+  font-size: 2rem;
+  font-weight: 300;
+  margin: 0;
+  letter-spacing: 5px;
+  opacity: 0.8;
+  color: #fff;
+  font-family: 'Noto Serif SC', serif;
+}
+
 .start-hint {
   margin-top: 50px;
   font-size: 1rem;
@@ -712,34 +955,35 @@ svg {
   letter-spacing: 2px;
   text-transform: uppercase;
   animation: pulse-ring 2s infinite;
+  pointer-events: auto;
 }
-.fade-in-delayed { animation: fadeUp 1s ease-out 0.5s backwards; }
-.fade-in-delayed-2 { animation: fadeUp 1s ease-out 1s backwards; }
-.fade-in-delayed-3 { animation: fadeUp 1s ease-out 1.5s backwards; }
 
-.title-en {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 900;
-  font-size: 5rem;
-  line-height: 0.9;
-  letter-spacing: 0.5rem;
-  background: linear-gradient(to right, #fff, #7dd3fc);
-  -webkit-background-clip: text;
-  color: transparent;
-  margin-bottom: 20px;
+.particles {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none;
 }
-.motto {
-  font-size: 1.2rem;
-  letter-spacing: 0.5rem;
-  color: #38bdf8;
-  margin-bottom: 20px;
+
+.particle {
+  position: absolute;
+  background: #00bcd4;
+  border-radius: 50%;
+  animation: floatUp 10s linear infinite;
 }
-.title-cn {
-  font-family: 'Noto Serif SC', serif;
-  font-size: 3rem;
-  color: #fff;
-  font-weight: 300;
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.8; transform: translate(-50%, -50%) scale(1.1); }
 }
+
+@keyframes floatUp {
+  0% { transform: translateY(100vh); opacity: 0; }
+  20% { opacity: 0.5; }
+  80% { opacity: 0.5; }
+  100% { transform: translateY(-10vh); opacity: 0; }
+}
+
+.fade-in-delayed-3 { animation: fadeUp 1s ease-out 1.5s backwards; }
 
 /* Scene 1: Hatchery */
 .scene-decanting {

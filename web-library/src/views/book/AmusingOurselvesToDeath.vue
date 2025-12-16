@@ -1,5 +1,10 @@
 <template>
   <div class="amusing-page" ref="pageContainer" @scroll="handleScroll">
+    <!-- Top Left Return Button -->
+    <button class="return-btn fixed-top-left" @click="turnOffTv">
+      <span>← TURN OFF TV</span>
+    </button>
+
     <!-- CRT Overlay -->
     <div class="crt-overlay"></div>
     <div class="scanlines"></div>
@@ -188,6 +193,11 @@ import { ref, onMounted, computed, reactive, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+
+const goBackHome = () => {
+  router.push('/main');
+};
+
 const pageContainer = ref<HTMLElement | null>(null);
 const showIntro = ref(true);
 const scrollY = ref(0);
@@ -343,15 +353,95 @@ const tickerSpeed = ref(20);
 @import url('https://fonts.googleapis.com/css2?family=VT323&family=Press+Start+2P&display=swap');
 
 .amusing-page {
+  --font-pixel: 'Press Start 2P', cursive;
+  --font-mono: 'VT323', monospace;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
+}
+
+.amusing-page {
   width: 100%;
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
   background-color: #1a1a1a;
   color: #fff;
-  font-family: 'VT323', monospace;
+  font-family: var(--font-mono);
   position: relative;
   cursor: crosshair;
+}
+
+/* Typography Updates */
+.hero-title {
+  font-family: var(--font-pixel);
+  letter-spacing: -2px;
+}
+
+.subtitle, .side h2, .section-title, .stable-text h3 {
+  font-family: var(--font-ui);
+  font-weight: 900;
+}
+
+.fear-text, .pleasure-text, .decaying-paragraph, .intro-text {
+  font-family: var(--font-text);
+}
+
+.vcr-btn, .channel-display, .return-btn, .footer-btn {
+  font-family: var(--font-ui);
+}
+
+/* Numbers */
+.channel-display {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+}
+
+/* ... existing styles ... */
+
+/* Return Buttons */
+.return-btn.fixed-top-left {
+  position: fixed;
+  top: 100px;
+  left: 24px;
+  z-index: 2000;
+  background: #000;
+  border: 2px solid #00ff00;
+  padding: 10px 20px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #00ff00;
+  text-shadow: 0 0 5px #00ff00;
+  box-shadow: 0 0 5px #00ff00;
+}
+
+.return-btn.fixed-top-left:hover {
+  background: #003300;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.footer-btn {
+  margin-top: 20px;
+  background: transparent;
+  border: 2px solid #ff0055;
+  color: #ff0055;
+  padding: 15px 40px;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: 0 0 5px #ff0055;
+  box-shadow: 0 0 5px #ff0055;
+  text-transform: uppercase;
+}
+
+.footer-btn:hover {
+  background: #ff0055;
+  color: #000;
+  box-shadow: 0 0 20px #ff0055;
 }
 
 /* CRT Overlay */

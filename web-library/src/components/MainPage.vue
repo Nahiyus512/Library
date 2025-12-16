@@ -38,7 +38,7 @@
 
         <!-- Main Content Area -->
         <div class="content-area" :class="{ 'beige-grid': isMasonryExpanded }">
-          <button class="return-btn" v-if="isMasonryExpanded" @click.stop="collapseMasonry">←</button>
+          <button class="return-btn" v-if="isMasonryExpanded" @click.stop="collapseMasonry">⇒</button>
           <div class="bg-watermark" v-if="isMasonryExpanded">LIBRARY</div>
           
           <div class="scroll-container" ref="scrollContainer" :class="{ 'expanded-padding': isMasonryExpanded }">
@@ -55,6 +55,15 @@
 
               <!-- Column 2 (Middle) -->
               <div class="masonry-column middle-column">
+                <!-- Fancy Expand Button with Down Arrow -->
+                <div class="expand-action-wrapper" v-if="!isMasonryExpanded">
+                  <div class="arrow-hint">↓</div>
+                  <button class="fancy-expand-btn" @click.stop="expandMasonry">
+                    <span class="btn-icon">＋</span>
+                    <span class="btn-text">EXPLORE</span>
+                  </button>
+                </div>
+
                 <BookCard 
                   v-for="(book, index) in col2" 
                   :key="`${book.id}-${index}-2`"
@@ -119,7 +128,7 @@ interface BookItem {
 }
 
 const rawBooks = [
-  { id: 1, title: "Three-Body Problem", titleCN: "三体", quote: "给岁月以文明，而不是给文明以岁月。", author: "刘慈欣", category: "SCI-FI", colorTheme: "linear-gradient(to bottom right, #111827, #581c87, #000)" }, 
+  { id: 1, title: "Three-Body Problem", titleCN: "三体", quote: "给岁月以文明，而不是给文明以岁月。", author: "刘慈欣", category: "SCI-FI", colorTheme: "#000000" }, 
   { id: 2, title: "Sapiens: A Brief History of Humankind", titleCN: "人类简史", quote: "历史从无正义。", author: "尤瓦尔·赫拉利", category: "HISTORY", colorTheme: "#f0f0e6" }, 
   { id: 3, title: "The Hitchhiker's Guide to the Galaxy", titleCN: "银河系漫游指南", quote: "DON'T PANIC.", author: "道格拉斯·亚当斯", category: "SCI-FI", colorTheme: "#000000" }, 
   { id: 4, title: "Interaction of Color", titleCN: "色彩互动学", quote: "色彩是相对的。", author: "约瑟夫·阿尔伯斯", category: "LIFE", colorTheme: "#f5f5f5" }, 
@@ -392,6 +401,76 @@ onUnmounted(() => {
 
 .return-btn:active {
   transform: scale(0.95);
+}
+
+/* Custom Fancy Expand Button */
+.expand-action-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 8px;
+}
+
+.arrow-hint {
+  font-size: 20px;
+  color: #000;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+  40% {transform: translateY(-5px);}
+  60% {transform: translateY(-3px);}
+}
+
+.fancy-expand-btn {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  border-radius: 100px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 2px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.fancy-expand-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(255,255,255,0.1);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.fancy-expand-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+}
+
+.fancy-expand-btn:hover::before {
+  opacity: 1;
+}
+
+.fancy-expand-btn:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.btn-icon {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .panel-content {

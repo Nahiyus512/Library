@@ -4,6 +4,11 @@
     <div class="bg-texture"></div>
 
     <!-- TOP NAVIGATION -->
+    <!-- Exit Button (Fixed Top Left) -->
+    <button class="fixed-exit-btn" @click="goBackHome">
+      <span>← 退出历史</span>
+    </button>
+
     <nav class="sticky-nav" :class="{ 'nav-visible': showNav }">
       <div class="nav-content">
         <div 
@@ -230,9 +235,11 @@
         <h3 class="end-quote">“历史从无正义。”</h3>
       </div>
       
-      <button class="back-home-btn" @click="goBackHome">
-        <span>返回首页</span>
-      </button>
+      <div class="footer-action">
+        <button class="footer-home-btn" @click="goBackHome">
+          <span>回到当下</span>
+        </button>
+      </div>
     </section>
   </div>
 </template>
@@ -245,7 +252,7 @@ const router = useRouter();
 const containerRef = ref<HTMLElement | null>(null);
 
 // --- Navigation & Timeline ---
-const showNav = ref(true);
+const showNav = ref(false);
 const currentSection = ref(0);
 const scrollProgress = ref(0); // 0 to 1
 const activeTimelineIndex = ref(0); // Index in timelineYears
@@ -376,8 +383,12 @@ const handleScroll = (e: Event) => {
   
   currentSection.value = activeSecIndex;
 
-  // Nav visibility
-  showNav.value = true;
+  // Nav visibility: Show only after scrolling past the first section (Hero)
+  const heroSection = document.getElementById('section-0');
+  if (heroSection) {
+    // Show nav if scrolled past 80% of hero section
+    showNav.value = scrollTop > heroSection.clientHeight * 0.8;
+  }
 };
 
 
@@ -574,7 +585,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
 /* --- Hero Animation Styles --- */
 .evolution-spiral {
@@ -676,15 +687,49 @@ onUnmounted(() => {
 
 /* --- Global & Container --- */
 .sapiens-container {
-  width: 100vw;
+  --font-hero: 'Cinzel', serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
+  --font-number: 'Playfair Display', serif;
+}
+
+.sapiens-container {
+  width: 100%;
   height: 100vh;
-  overflow-y: auto;
+  background-color: #f4e4bc;
+  color: #2c241b;
   overflow-x: hidden;
-  background-color: #f0f0e6; /* Beige / Off-white */
-  color: #333; /* Dark text */
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  overflow-y: auto;
+  font-family: var(--font-text);
   position: relative;
   scroll-behavior: smooth;
+}
+
+/* Typography Updates */
+h1, h2, h3, h4 {
+  font-family: var(--font-hero);
+}
+
+.cn-title {
+  font-family: var(--font-hero); /* Cinzel works well for Latin, but for CN title maybe use Songti or a heavy serif */
+  font-weight: 900;
+}
+
+.en-title {
+  font-family: var(--font-hero);
+  letter-spacing: 0.5em;
+}
+
+.section-desc, .description-text, .quote-text {
+  font-family: var(--font-text);
+}
+
+.nav-item, .fixed-exit-btn, .dial-item, .scroll-text {
+  font-family: var(--font-ui);
+}
+
+.year-counter, .era-label, .timeline-year, .stat-value {
+  font-family: var(--font-number);
 }
 
 .bg-texture {
@@ -699,9 +744,58 @@ onUnmounted(() => {
   z-index: 0;
 }
 
+/* --- Fixed Exit Button --- */
+.fixed-exit-btn {
+  position: fixed;
+  top: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  padding: 10px 20px;
+  font-family: 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  border-radius: 4px;
+}
+
+.fixed-exit-btn:hover {
+  background: #000;
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.footer-action {
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-home-btn {
+  background: transparent;
+  border: 2px solid #333;
+  color: #333;
+  padding: 15px 40px;
+  font-size: 18px;
+  font-family: 'Times New Roman', serif;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 2px;
+}
+
+.footer-home-btn:hover {
+  background: #333;
+  color: #fff;
+}
+
 /* --- Navigation (Sticky Top) --- */
 .sticky-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
@@ -715,6 +809,11 @@ onUnmounted(() => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
   box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  transform: translateY(-100%);
+}
+
+.sticky-nav.nav-visible {
+  transform: translateY(0);
 }
 
 .nav-content {

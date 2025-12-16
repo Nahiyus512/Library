@@ -3,6 +3,11 @@
     <div class="hitchhiker-page" :style="pageStyle">
       <div class="scanlines"></div>
       
+      <!-- ABORT BUTTON (Fixed Top Left) -->
+      <button class="abort-btn fixed-top-left" @click="goBackHome">
+        <span class="blink-text">[ ABORT ]</span>
+      </button>
+
       <nav class="sticky-nav" :class="{ 'visible': showNav }">
         <div class="nav-content">
           <div class="nav-brand">GUIDE MK.V</div>
@@ -194,19 +199,28 @@
         </div>
       </section>
 
-      <footer class="footer">
-        <button @click="goHome" class="back-btn">返回首页</button>
+      <!-- Footer -->
+      <footer class="guide-footer">
+        <button class="return-normality-btn" @click="goBackHome">
+          RETURN TO NORMALITY
+        </button>
+        <div class="footer-msg">SHARE AND ENJOY</div>
       </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import HitchhikersGuideCover from '../../components/covers/HitchhikersGuideCover.vue';
 
 const router = useRouter();
+
+const goBackHome = () => {
+  router.push('/main');
+};
+
 const showNav = ref(false);
 const activeSection = ref('');
 const sectionRefs = ref<HTMLElement[]>([]);
@@ -422,7 +436,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=VT323&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=VT323&family=Comic+Neue:wght@400;700&display=swap');
 
 .hitchhiker-page-wrapper {
   position: fixed;
@@ -436,15 +450,48 @@ onUnmounted(() => {
   overflow-x: hidden;
   z-index: 2000;
   background-color: #000;
+  --font-guide: 'VT323', monospace;
+  --font-friendly: 'Fredoka One', cursive;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-text: 'Songti SC', 'SimSun', serif;
 }
 
 .hitchhiker-page {
-  background-color: #000;
-  color: #00ff00;
-  font-family: 'VT323', monospace;
+  width: 100%;
   min-height: 100vh;
-  position: relative;
+  background-color: #1a2a3a;
+  color: #c0d0e0;
   overflow-x: hidden;
+  font-family: var(--font-guide);
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+/* Typography Updates */
+.section-title {
+  font-family: var(--font-friendly);
+  letter-spacing: 1px;
+}
+
+.nav-brand {
+  font-family: var(--font-friendly);
+}
+
+.prompt-text, .sector-label, .system-status {
+  font-family: var(--font-guide);
+}
+
+.guide-entry p, .planet-desc, .destruction-msg {
+  font-family: var(--font-text);
+}
+
+.nav-links a, .abort-btn, .caption {
+  font-family: var(--font-ui);
+}
+
+/* Numbers */
+.nav-num {
+  font-family: var(--font-guide);
 }
 
 .scanlines {
@@ -454,6 +501,60 @@ onUnmounted(() => {
   background-size: 100% 2px, 3px 100%;
   pointer-events: none;
   z-index: 999;
+}
+
+/* ABORT BTN */
+.abort-btn.fixed-top-left {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 2000;
+  background: #000;
+  border: 2px solid #00ff00;
+  color: #00ff00;
+  padding: 8px 16px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 5px #00ff00;
+  transition: all 0.2s;
+}
+
+.abort-btn:hover {
+  background: #003300;
+  box-shadow: 0 0 15px #00ff00;
+}
+
+.guide-footer {
+  padding: 60px 0;
+  text-align: center;
+  background: #000;
+  border-top: 1px solid #003300;
+}
+
+.return-normality-btn {
+  background: #000;
+  color: #00ff00;
+  border: 2px solid #00ff00;
+  padding: 15px 30px;
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.return-normality-btn:hover {
+  background: #00ff00;
+  color: #000;
+  box-shadow: 0 0 20px #00ff00;
+}
+
+.footer-msg {
+  color: #005500;
+  font-size: 0.8rem;
 }
 
 /* Nav */

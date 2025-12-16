@@ -1,5 +1,10 @@
 <template>
   <div class="grid-page-wrapper" ref="pageWrapper" @scroll="handleScroll">
+    <!-- Top Left Return Button -->
+    <button class="return-btn fixed-top-left" @click="goBackHome">
+      <span>← EXIT GRID</span>
+    </button>
+
     <!-- Progress Bar -->
     <div class="scroll-progress" :style="{ width: scrollProgress + '%' }"></div>
 
@@ -174,6 +179,14 @@
         </button>
       </section>
 
+      <!-- 3. Footer -->
+      <footer class="grid-footer">
+        <div class="footer-grid-bg"></div>
+        <div class="footer-content">
+          <p class="swiss-quote">"Design is the method of putting form and content together."</p>
+          <button class="footer-btn" @click="goBackHome">RESTORE CHAOS</button>
+        </div>
+      </footer>
     </main>
   </div>
 </template>
@@ -371,20 +384,102 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Inter:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 
 .grid-page-wrapper {
-  background-color: #f4f4f0;
-  color: #000;
-  font-family: 'Inter', sans-serif;
+  --font-swiss: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  --font-ui: 'Microsoft YaHei', 'Heiti SC', sans-serif;
+  --font-serif: 'Songti SC', 'SimSun', serif; /* Though Grid Systems is pure sans, user rule applies */
+}
+
+.grid-page-wrapper {
+  width: 100%;
   height: 100vh;
-  width: 100vw;
+  background-color: #ffffff;
+  color: #1a1a1a;
   overflow-y: auto;
   overflow-x: hidden;
+  font-family: var(--font-swiss);
+  position: relative;
+  scroll-behavior: smooth;
+}
+
+/* Typography Updates */
+.section-heading, .section-subtitle, .nav-brand {
+  font-family: var(--font-swiss);
+  font-weight: 700;
+  letter-spacing: -1px;
+}
+
+.nav-text, .return-btn {
+  font-family: var(--font-ui);
+}
+
+.text-columns p {
+  font-family: var(--font-swiss); /* Keep English sans */
+}
+
+/* Apply Songti to Chinese text if we can target it, or generally to p tags if mixed */
+/* For Grid Systems, sticking to Sans is very thematic, but user asked for "Literary text, excerpts... use Songti". 
+   Philosophy text (p) here is kind of an excerpt. Let's use vars. */
+
+.text-columns .col:first-child p { /* Chinese column */
+   font-family: var(--font-serif);
+   font-weight: bold;
+}
+
+.control-header label, .control-val {
+  font-family: var(--font-ui);
+  font-weight: bold;
+}
+
+/* Numbers */
+.nav-num, .control-val {
+  font-family: var(--font-swiss);
+}
+
+/* Return Buttons */
+.return-btn.fixed-top-left {
   position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 100;
+  top: 24px;
+  left: 24px;
+  z-index: 2000;
+  background: #f0f0f0;
+  border: 1px solid #333;
+  padding: 10px 20px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+  color: #333;
+  letter-spacing: 1px;
+}
+
+.return-btn.fixed-top-left:hover {
+  background: #ff4500;
+  color: #fff;
+  border-color: #ff4500;
+}
+
+.footer-btn {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  padding: 15px 40px;
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  letter-spacing: 2px;
+  margin-top: 30px;
+  text-transform: uppercase;
+}
+
+.footer-btn:hover {
+  background: #fff;
+  color: #000;
 }
 
 .scroll-progress {

@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import {RouterView} from "vue-router";
+import TransitionOverlay from "./components/TransitionOverlay.vue";
 </script>
 
 <template>
   <div class="main">
     <RouterView></RouterView>
+    <TransitionOverlay />
   </div>
 </template>
 

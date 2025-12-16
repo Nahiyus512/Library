@@ -107,8 +107,10 @@ import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
 import myAxios from "../axios/index.js";
 import { useCookies } from '@vueuse/integrations/useCookies'
+import { useRoute } from 'vue-router'
 
 const cookie = useCookies()
+const route = useRoute()
 
 const ratingData = reactive({
   rating: 0,
@@ -150,6 +152,9 @@ const borrowData = reactive({
 const tableData = ref([])
 
 onMounted(() => {
+  if (route.query.q) {
+    pageInfo.bookName = route.query.q as string
+  }
   getBook()
   let username = cookie.get('username')
   borrowData.userName = username
