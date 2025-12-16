@@ -8,13 +8,13 @@
       <div class="brand-panel">
         <div class="brand-content">
           <h1 class="hero-text">
-            <span>图书</span>
-            <span class="highlight">管理系统</span>
+            <span class="highlight">图书馆</span>
+            <span class="highlight">Library</span>
           </h1>
-          <p class="brand-desc">精心挑选的知识宝库。</p>
+          <p class="brand-desc">万卷云霞静候君，此间灯火照书深</p>
           
           <div class="brand-footer">
-            <span>始于 2025</span>
+            <span>2025</span>
             <div class="line"></div>
           </div>
         </div>
@@ -56,8 +56,8 @@
               </div>
 
               <button class="cta-btn" @click="loginClick">
-                <span class="btn-text">验证登录</span>
-                <span class="btn-icon">→</span>
+                <span class="btn-text">登录</span>
+                <span class="btn-icon">↩︎</span>
               </button>
             </div>
 
@@ -84,7 +84,7 @@
               </div>
 
               <button class="cta-btn" @click="logonClick">
-                <span class="btn-text">加入系统</span>
+                <span class="btn-text">注册</span>
                 <span class="btn-icon">+</span>
               </button>
             </div>

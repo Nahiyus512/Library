@@ -1,5 +1,5 @@
 <template>
-  <div class="book-card-wrapper">
+  <div class="book-card-wrapper" @click="handleClick">
     <div class="book-shadow"></div>
     <div class="book-body unified-card" :class="{ 'expanded-mode': isExpanded }">
       <!-- Top Section (5%) -->
@@ -17,48 +17,37 @@
         <div class="category-tag">{{ book.category }}</div>
         
         <!-- Three-Body Problem -->
-        <div v-if="book.id === 1" class="visual-three-body">
-          <div class="universe-depth"></div>
-          <div class="three-body-system">
-            <div class="orbit-ring ring-1"></div>
-            <div class="orbit-ring ring-2"></div>
-            <div class="orbit-ring ring-3"></div>
-            <div class="sun sun-1"></div>
-            <div class="sun sun-2"></div>
-            <div class="sun sun-3"></div>
-          </div>
-          <div class="chaos-overlay"></div>
-        </div>
+        <ThreeBodyCover v-if="book.id === 1" />
 
         <!-- Sapiens -->
-        <div v-else-if="book.id === 2" class="visual-sapiens">
-          <div class="time-layers">
-            <div class="layer layer-primitive">
-              <div class="texture-noise"></div>
-              <div class="symbol-bone"></div>
-            </div>
-            <div class="layer layer-agriculture">
-              <div class="grid-lines"></div>
-              <div class="symbol-wheat"></div>
-            </div>
-            <div class="layer layer-scientific">
-              <div class="abstract-data"></div>
-              <div class="symbol-atom"></div>
-            </div>
-          </div>
-        </div>
+        <SapiensCover v-else-if="book.id === 2" />
 
         <!-- Hitchhiker -->
-        <div v-else-if="book.id === 3" class="visual-hitchhiker">
-          <div class="absurd-container">
-            <div class="float-item whale">🐋</div>
-            <div class="float-item pot">🪴</div>
-            <div class="float-item number-42">42</div>
-            <div class="float-item towel">DON'T PANIC</div>
-            <div class="geometry-chaos geo-1"></div>
-            <div class="geometry-chaos geo-2"></div>
-          </div>
-        </div>
+        <HitchhikersGuideCover v-else-if="book.id === 3" />
+
+        <!-- Interaction of Color -->
+        <InteractionOfColorCover v-else-if="book.id === 4" />
+
+        <!-- The Non-Designer's Design Book -->
+        <NonDesignersDesignBookCover v-else-if="book.id === 5" />
+
+        <!-- Grid Systems -->
+        <GridSystemsCover v-else-if="book.id === 6" />
+
+        <!-- Dune -->
+        <DuneCover v-else-if="book.id === 7" />
+
+        <!-- 1984 -->
+        <NineteenEightyFourCover v-else-if="book.id === 8" />
+
+        <!-- Brave New World -->
+        <BraveNewWorldCover v-else-if="book.id === 9" />
+
+        <!-- Amusing Ourselves to Death -->
+        <AmusingOurselvesToDeathCover v-else-if="book.id === 11" />
+
+        <!-- Life 3.0 -->
+        <Life30Cover v-else-if="book.id === 12" />
 
         <!-- Default -->
         <div v-else class="visual-default" :style="defaultStyle">
@@ -81,11 +70,69 @@
         </div>
       </div>
     </div>
+
+    <!-- Expansion Animation Overlay -->
+    <Teleport to="body">
+      <div v-if="isNavigating" class="expansion-overlay" :style="overlayStyle">
+        <div class="expansion-content" :style="getExpansionStyle(book)">
+           
+           <!-- Three-Body Transition -->
+           <div v-if="book.id === 1" class="transition-three-body">
+              <!-- Pure color block, no internal elements as requested -->
+           </div>
+
+           <!-- Amusing Ourselves Transition (White Noise) -->
+           <div v-else-if="book.id === 11" class="transition-amusing">
+              <!-- White Noise handled by background or CSS -->
+           </div>
+
+           <!-- Simplified Content for Transition -->
+           <h1 v-else class="expansion-title">{{ book.titleCN }}</h1>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, nextTick, onMounted, onUnmounted } from 'vue';
+import { useRouter } from 'vue-router';
+import ThreeBodyCover from './covers/ThreeBodyCover.vue';
+import SapiensCover from './covers/SapiensCover.vue';
+import NineteenEightyFourCover from './covers/NineteenEightyFourCover.vue';
+import HitchhikersGuideCover from './covers/HitchhikersGuideCover.vue';
+import InteractionOfColorCover from './covers/InteractionOfColorCover.vue';
+import NonDesignersDesignBookCover from './covers/NonDesignersDesignBookCover.vue';
+import GridSystemsCover from './covers/GridSystemsCover.vue';
+import DuneCover from './covers/DuneCover.vue';
+import BraveNewWorldCover from './covers/BraveNewWorldCover.vue';
+import Life30Cover from './covers/Life30Cover.vue';
+import AmusingOurselvesToDeathCover from './covers/AmusingOurselvesToDeathCover.vue';
+
+const router = useRouter();
+
+// --- Countdown Logic ---
+const remainingTime = ref(1194 * 3600 + 50 * 60 + 39); // Initial seconds
+const countdownDisplay = computed(() => {
+  if (remainingTime.value <= 0) return "00:00:00";
+  const h = Math.floor(remainingTime.value / 3600);
+  const m = Math.floor((remainingTime.value % 3600) / 60);
+  const s = Math.floor(remainingTime.value % 60);
+  return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+});
+
+let timer: any;
+
+onMounted(() => {
+  timer = setInterval(() => {
+    remainingTime.value--;
+  }, 1000);
+});
+
+onUnmounted(() => {
+  clearInterval(timer);
+});
+// --- End Countdown Logic ---
 
 interface BookItem {
   id: number;
@@ -103,6 +150,9 @@ const props = defineProps<{
   isExpanded?: boolean;
 }>();
 
+const isNavigating = ref(false);
+const overlayStyle = ref({});
+
 const formattedId = computed(() => {
   return props.book.id < 10 ? `0${props.book.id}` : `${props.book.id}`;
 });
@@ -115,9 +165,91 @@ const defaultStyle = computed(() => {
   }
   return style;
 });
+
+const getExpansionStyle = (book: BookItem) => {
+  if (book.id === 1) return { background: '#000' };
+  if (book.id === 11) return { background: '#fff' }; // White flash for Amusing Ourselves
+  return { background: book.colorTheme };
+};
+
+const handleClick = (event: MouseEvent) => {
+  if (!props.isExpanded) {
+    // If not expanded, do nothing here and let the event bubble up to the parent
+    // The parent (MainPage) handles the expansion logic via @click on the container
+    return;
+  }
+
+  // If already expanded, stop propagation and navigate
+  event.stopPropagation();
+  triggerNavigation(event);
+};
+
+const triggerNavigation = async (event: MouseEvent) => {
+  // 1. Calculate start position
+  const target = event.currentTarget as HTMLElement;
+  const rect = target.getBoundingClientRect();
+
+  // 2. Set initial style for the overlay (matching the card's position)
+  overlayStyle.value = {
+    top: `${rect.top}px`,
+    left: `${rect.left}px`,
+    width: `${rect.width}px`,
+    height: `${rect.height}px`,
+    opacity: 1,
+    transform: 'none',
+    borderRadius: '0px' // Assuming card has 0 border radius or match it
+  };
+
+  isNavigating.value = true;
+
+  // 3. Force reflow/wait for render
+  await nextTick();
+  
+  // Small delay to ensure the initial state is rendered before transitioning
+  setTimeout(() => {
+    // 4. Set final style (full screen)
+    overlayStyle.value = {
+      top: '0px',
+      left: '0px',
+      width: '100vw',
+      height: '100vh',
+      opacity: 1,
+      transform: 'scale(1)', // Just to be explicit
+      borderRadius: '0px'
+    };
+  }, 20);
+
+  // 5. Navigate after animation
+  setTimeout(() => {
+    const routeMap: Record<number, string> = {
+      1: 'ThreeBodyProblem',
+      2: 'Sapiens',
+      3: 'HitchhikersGuide',
+      4: 'InteractionOfColor',
+      5: 'NonDesignersDesignBook',
+      6: 'GridSystems',
+      7: 'Dune',
+      8: 'Book1984',
+      9: 'BraveNewWorld',
+      10: 'ZenAndMotorcycle',
+      11: 'AmusingOurselvesToDeath',
+      12: 'Life30',
+    };
+    const routeName = routeMap[props.book.id];
+    if (routeName) {
+      router.push({ name: routeName });
+    }
+    // Note: We don't set isNavigating to false here immediately to prevent flicker
+    // Ideally, the new page loads on top. 
+    // If we want to clean up, we can do it after a delay or let the component unmount.
+    // However, since this component might stay mounted (if cached) or unmounted, 
+    // it's safer to rely on the route change.
+  }, 600); // Match transition duration
+};
 </script>
 
 <style scoped>
+/* ... existing styles ... */
 /* Layout Structure */
 .book-card-wrapper {
   margin-bottom: 40px;
@@ -198,8 +330,42 @@ const defaultStyle = computed(() => {
 .card-middle {
   height: 55%;
   position: relative;
+}
+
+/* ... existing styles ... */
+
+.expansion-overlay {
+  position: fixed;
+  z-index: 9999;
+  transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background: #fff;
   overflow: hidden;
-  border-bottom: 1px solid #000;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  pointer-events: none; /* Prevent clicks during animation */
+}
+
+.expansion-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Add a gradient overlay effect */
+  background-image: linear-gradient(135deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 100%);
+}
+
+.expansion-title {
+  font-size: 3rem;
+  font-weight: 900;
+  color: #000;
+  opacity: 0;
+  animation: fadeIn 0.5s ease 0.2s forwards;
+  text-align: center;
+  padding: 20px;
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
 }
 
 .category-tag {
@@ -300,64 +466,6 @@ const defaultStyle = computed(() => {
 /* Animations CSS Copied */
 @keyframes fadeUp { from { opacity: 0; transform: translateY(50px); } to { opacity: 1; transform: translateY(0); } }
 
-/* --- Three-Body Problem --- */
-.visual-three-body {
-  width: 100%; height: 100%;
-  background: #000;
-  position: relative; overflow: hidden;
-  perspective: 600px;
-}
-.universe-depth {
-  position: absolute; width: 200%; height: 200%;
-  top: -50%; left: -50%;
-  background-image: radial-gradient(white, rgba(255,255,255,.1) 1px, transparent 2px), radial-gradient(white, rgba(255,255,255,.05) 1px, transparent 1.5px);
-  background-size: 100px 100px, 60px 60px;
-  animation: universeRotate 60s linear infinite;
-  opacity: 0.5;
-}
-.three-body-system {
-  position: absolute; top: 50%; left: 50%;
-  width: 100%; height: 100%;
-  transform: translate(-50%, -50%) scale(0.6);
-  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.orbit-ring {
-  position: absolute; top: 50%; left: 50%;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: all 0.8s ease;
-}
-.ring-1 { width: 60px; height: 60px; border-color: rgba(255,255,255,0.3); animation: orbitRotate 10s linear infinite reverse; }
-.ring-2 { width: 120px; height: 120px; animation: orbitRotate 15s linear infinite; }
-.ring-3 { width: 180px; height: 180px; animation: orbitRotate 20s linear infinite reverse; }
-
-.sun {
-  position: absolute; border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, #fff, #a855f7, #000);
-  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
-  transition: all 0.8s ease;
-}
-.sun-1 { width: 12px; height: 12px; top: 0; left: 50%; margin-left: -6px; animation: threeBodyChaos 4s ease-in-out infinite alternate; }
-.sun-2 { width: 8px; height: 8px; bottom: 20px; right: 20px; animation: threeBodyChaos 6s ease-in-out infinite alternate-reverse; }
-.sun-3 { width: 16px; height: 16px; top: 40%; left: 10%; background: radial-gradient(circle at 30% 30%, #fff, #ef4444, #000); animation: threeBodyChaos 5s ease-in-out infinite; }
-
-.chaos-overlay {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: radial-gradient(circle at center, transparent 30%, #000 90%);
-  pointer-events: none;
-}
-
-.book-card-wrapper:hover .three-body-system { transform: translate(-50%, -50%) scale(0.8) rotate(10deg); }
-.book-card-wrapper:hover .ring-1 { width: 70px; height: 90px; border-color: rgba(168, 85, 247, 0.6); }
-.book-card-wrapper:hover .ring-2 { border-style: dashed; animation-duration: 2s; }
-.book-card-wrapper:hover .sun-1 { box-shadow: 0 0 30px #a855f7; transform: scale(1.5); }
-.book-card-wrapper:hover .sun-3 { box-shadow: 0 0 40px #ef4444; transform: scale(1.2); }
-
-@keyframes universeRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-@keyframes orbitRotate { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
-@keyframes threeBodyChaos { 0% { transform: translate(0,0); } 100% { transform: translate(10px, -10px); } }
-
 /* --- Sapiens --- */
 .visual-sapiens {
   width: 100%; height: 100%;
@@ -451,4 +559,74 @@ const defaultStyle = computed(() => {
 .expanded-mode .barcode { height: 18px; gap: 2px; }
 .expanded-mode .bar { width: 2.5px; }
 .expanded-mode .read-entry-btn { font-size: 10px; padding: 6px 10px; }
+/* --- Transition Styles --- */
+.transition-three-body {
+  width: 100%; height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #000; /* Ensure transition bg matches */
+}
+
+.antenna-hero-transition {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 60vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  animation: slideUpHero 0.5s ease-out forwards;
+}
+
+.antenna-dish-large {
+  width: 300px; height: 300px;
+  border-bottom: 10px solid #222;
+  border-left: 5px solid #222;
+  border-radius: 0 0 0 100%;
+  transform: rotate(-45deg) translate(50px, 50px);
+  background: linear-gradient(45deg, #111 0%, #333 100%);
+  position: relative;
+  z-index: 2;
+}
+
+.antenna-tip-large {
+  position: absolute; top: 20px; right: 20px; width: 8px; height: 8px;
+  background: #ff0000; border-radius: 50%; box-shadow: 0 0 20px #ff0000;
+  animation: pulse 1s infinite;
+}
+
+.antenna-base-large {
+  width: 80px; height: 150px;
+  background: #111;
+  position: absolute;
+  bottom: 0;
+  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+}
+
+@keyframes slideUpHero {
+  from { transform: translateY(100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.transition-amusing {
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+  opacity: 0.5;
+  animation: noise 0.2s steps(4) infinite;
+}
+
+@keyframes noise {
+  0% { transform: translate(0,0); }
+  10% { transform: translate(-5%,-5%); }
+  20% { transform: translate(-10%,5%); }
+  30% { transform: translate(5%,-10%); }
+  40% { transform: translate(-5%,15%); }
+  50% { transform: translate(-10%,5%); }
+  60% { transform: translate(15%,0); }
+  70% { transform: translate(0,10%); }
+  80% { transform: translate(-15%,0); }
+  90% { transform: translate(10%,5%); }
+  100% { transform: translate(5%,0); }
+}
 </style>
