@@ -99,8 +99,8 @@
 import {ref, reactive, onMounted} from "vue";
 import {useRouter} from "vue-router";
 const router = useRouter();
-import myAxios from "../axios/index.js"
-import {setToken} from "../utils/token.js";
+import myAxios from "../axios/index.ts"
+import {setToken} from "../utils/token.ts";
 import {ElMessage} from "element-plus";
 import { useCookies } from '@vueuse/integrations/useCookies'
 const cookie = useCookies()
