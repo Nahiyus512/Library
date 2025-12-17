@@ -107,7 +107,7 @@ public class UserController {
         Page<User> page = new Page<>(pageParam.getPageNum(),pageParam.getPageSize(),true);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(User::getName,pageParam.getNameInfo());
-        int count = userMapper.selectCount(queryWrapper);
+        int count = Math.toIntExact(userMapper.selectCount(queryWrapper));
         IPage result = userService.page(page,queryWrapper);
         UserPageInfo info = new UserPageInfo();
         info.setUserList(result.getRecords());

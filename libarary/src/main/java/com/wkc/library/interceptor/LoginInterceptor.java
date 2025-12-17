@@ -1,21 +1,19 @@
 package com.wkc.library.interceptor;
 
+
 import com.wkc.library.common.Constant;
-import com.wkc.library.entity.R;
 import com.wkc.library.exception.MyException;
 import com.wkc.library.util.JwtUtil;
 import com.wkc.library.util.RedisUtil;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
 
 /**
  * @author xiaoniao

@@ -5,13 +5,13 @@ import com.wkc.library.common.Constant;
 import com.wkc.library.service.CaptchaService;
 import com.wkc.library.util.RedisUtil;
 import com.wkc.library.util.UUIDUtil;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FastByteArrayOutputStream;
 
-import javax.annotation.Resource;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
