@@ -5,11 +5,16 @@
       <button class="nav-return-btn" @click="goBackHome">
         <span>← LEAVE ARRAKIS</span>
       </button>
-      <ul>
-        <li v-for="(section, index) in sections" :key="index">
-          <a :href="`#${section.id}`" @click.prevent="scrollToSection(section.id)">{{ section.name }}</a>
-        </li>
-      </ul>
+      <div class="nav-links">
+        <a
+          v-for="(section, index) in sections"
+          :key="index"
+          :href="`#${section.id}`"
+          @click.prevent="scrollToSection(section.id)"
+        >
+          {{ section.name }}
+        </a>
+      </div>
     </nav>
 
     <!-- Hero Section -->
@@ -348,7 +353,7 @@ onUnmounted(() => {
   letter-spacing: 2px;
 }
 
-.meta-data, .nav-return-btn, .sticky-nav ul li a {
+.meta-data, .nav-return-btn, .sticky-nav a {
   font-family: var(--font-ui);
 }
 
@@ -388,7 +393,8 @@ onUnmounted(() => {
   top: 0;
   left: 0;
   width: 100%;
-  padding: 15px 40px;
+  height: 70px;
+  padding: 0;
   background: rgba(123, 51, 6, 0.95);
   border-bottom: 1px solid rgba(253, 245, 230, 0.1);
   backdrop-filter: blur(10px);
@@ -403,6 +409,8 @@ onUnmounted(() => {
 .nav-return-btn {
   position: absolute;
   left: 40px;
+  top: 50%;
+  transform: translateY(-50%);
   background: transparent;
   border: 1px solid #c89650;
   color: #c89650;
@@ -426,15 +434,14 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
-.sticky-nav ul {
+.nav-links {
   display: flex;
-  list-style: none;
-  gap: 30px;
+  gap: 3rem;
   margin: 0;
   padding: 0;
 }
 
-.sticky-nav a {
+.nav-links a {
   color: #FDF5E6;
   text-decoration: none;
   font-size: 14px;
