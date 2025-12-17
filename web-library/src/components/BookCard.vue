@@ -89,18 +89,18 @@ const props = defineProps<{
 
 const navigateToBook = () => {
   const bookRoutes: Record<number, string> = {
-    1: '/book/three-body',
-    2: '/book/sapiens',
-    3: '/book/hitchhikers-guide',
-    4: '/book/interaction-of-color',
-    5: '/book/non-designers-design-book',
-    6: '/book/grid-systems',
-    7: '/book/dune',
-    8: '/book/1984',
-    9: '/book/brave-new-world',
-    10: '/book/zen-motorcycle',
-    11: '/book/amusing-ourselves-to-death',
-    12: '/book/life-30'
+    1: '/book/ThreeBody',
+    2: '/book/Sapiens',
+    3: '/book/HitchhikersGuide',
+    4: '/book/InteractionOfColor',
+    5: '/book/NonDesignersDesignBook',
+    6: '/book/GridSystems',
+    7: '/book/Dune',
+    8: '/book/NineteenEightyFour',
+    9: '/book/BraveNewWorld',
+    10: '/book/Zen',
+    11: '/book/AmusingOurselvesToDeath',
+    12: '/book/Life30'
   };
 
   const path = bookRoutes[props.book.id];

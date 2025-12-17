@@ -18,18 +18,18 @@ import Advice from "../views/Advice.vue"
 import BookClass from "../views/BookClass.vue";
 import CategoryPlaceholder from "../views/CategoryPlaceholder.vue";
 import ArtPlaceholder from "../views/ArtPlaceholder.vue";
-import ZenAndMotorcycle from "../views/book/Zen.vue";
-import ThreeBodyProblem from "../views/book/ThreeBody.vue";
-import Sapiens from "../views/book/Sapiens.vue";
+import AmusingOurselvesToDeath from "../views/book/AmusingOurselvesToDeath.vue";
+import BraveNewWorld from "../views/book/BraveNewWorld.vue";
+import Dune from "../views/book/Dune.vue";
+import GridSystems from "../views/book/GridSystems.vue";
 import HitchhikersGuide from "../views/book/HitchhikersGuide.vue";
 import InteractionOfColor from "../views/book/InteractionOfColor.vue";
-import NonDesignersDesignBook from "../views/book/NonDesignersDesignBook.vue";
-import GridSystems from "../views/book/GridSystems.vue";
-import Dune from "../views/book/Dune.vue";
-import Book1984 from "../views/book/1984.vue";
-import BraveNewWorld from "../views/book/BraveNewWorld.vue";
-import AmusingOurselvesToDeath from "../views/book/AmusingOurselvesToDeath.vue";
 import Life30 from "../views/book/Life30.vue";
+import NineteenEightyFour from "../views/book/NineteenEightyFour.vue";
+import NonDesignersDesignBook from "../views/book/NonDesignersDesignBook.vue";
+import Sapiens from "../views/book/Sapiens.vue";
+import ThreeBody from "../views/book/ThreeBody.vue";
+import Zen from "../views/book/Zen.vue";
 
 
 const router = createRouter({
@@ -131,22 +131,18 @@ const router = createRouter({
                 }
             ]
         },
-        {
-            path:"/book/zen-motorcycle",
-            name:"ZenAndMotorcycle",
-            component:ZenAndMotorcycle
-        },
-        { path: "/book/three-body", name: "ThreeBodyProblem", component: ThreeBodyProblem },
-        { path: "/book/sapiens", name: "Sapiens", component: Sapiens },
-        { path: "/book/hitchhikers-guide", name: "HitchhikersGuide", component: HitchhikersGuide },
-        { path: "/book/interaction-of-color", name: "InteractionOfColor", component: InteractionOfColor },
-        { path: "/book/non-designers-design-book", name: "NonDesignersDesignBook", component: NonDesignersDesignBook },
-        { path: "/book/grid-systems", name: "GridSystems", component: GridSystems },
-        { path: "/book/dune", name: "Dune", component: Dune },
-        { path: "/book/1984", name: "Book1984", component: Book1984 },
-        { path: "/book/brave-new-world", name: "BraveNewWorld", component: BraveNewWorld },
-        { path: "/book/amusing-ourselves-to-death", name: "AmusingOurselvesToDeath", component: AmusingOurselvesToDeath },
-        { path: "/book/life-30", name: "Life30", component: Life30 },
+        { path: "/book/AmusingOurselvesToDeath", name: "AmusingOurselvesToDeath", component: AmusingOurselvesToDeath },
+        { path: "/book/BraveNewWorld", name: "BraveNewWorld", component: BraveNewWorld },
+        { path: "/book/Dune", name: "Dune", component: Dune },
+        { path: "/book/GridSystems", name: "GridSystems", component: GridSystems },
+        { path: "/book/HitchhikersGuide", name: "HitchhikersGuide", component: HitchhikersGuide },
+        { path: "/book/InteractionOfColor", name: "InteractionOfColor", component: InteractionOfColor },
+        { path: "/book/Life30", name: "Life30", component: Life30 },
+        { path: "/book/NineteenEightyFour", name: "NineteenEightyFour", component: NineteenEightyFour },
+        { path: "/book/NonDesignersDesignBook", name: "NonDesignersDesignBook", component: NonDesignersDesignBook },
+        { path: "/book/Sapiens", name: "Sapiens", component: Sapiens },
+        { path: "/book/ThreeBody", name: "ThreeBody", component: ThreeBody },
+        { path: "/book/Zen", name: "Zen", component: Zen },
         {
             path:"/",
             component:Login
