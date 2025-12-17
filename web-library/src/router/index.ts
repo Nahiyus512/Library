@@ -1,5 +1,5 @@
 //创建一个路由器，并且暴露出去
-import {createRouter,createWebHistory,createWebHashHistory} from "vue-router";
+import {createRouter,createWebHistory} from "vue-router";
 
 import Login from "../components/Login.vue"
 import Home from "../components/Home.vue"

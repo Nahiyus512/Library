@@ -5,7 +5,8 @@
       <div class="profile-card">
         <div class="profile-header">
           <div class="avatar-placeholder">
-            {{ userInfo.userName.charAt(0).toUpperCase() }}
+            {{ String(userInfo.userName ?? '').charAt(0).toUpperCase() }}
+
           </div>
           <h2 class="username">{{ userInfo.userName }}</h2>
           <p class="user-role">读者</p>
@@ -44,11 +45,9 @@
         </div>
 
         <div class="table-container">
-          <el-table 
-            :data="borrowData" 
-            style="width: 100%" 
-            :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }"
-          >
+          <el-table ref="tableRef" :data="borrowData" row-key="id" style="width: 100%"
+            :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }">
+
             <el-table-column prop="bookName" label="书名" min-width="150" />
             <el-table-column prop="borrowTime" label="借阅天数" width="100" align="center" />
             <el-table-column prop="beginTime" label="借阅时间" width="180" />
@@ -69,13 +68,7 @@
     </div>
 
     <!-- Edit Profile Dialog -->
-    <el-dialog
-      v-model="editDialogVisible"
-      title="修改个人信息"
-      width="400px"
-      align-center
-      class="custom-dialog"
-    >
+    <el-dialog v-model="editDialogVisible" title="修改个人信息" width="400px" align-center class="custom-dialog">
       <div class="form-container">
         <div class="form-group">
           <label>账号</label>
@@ -103,13 +96,7 @@
     </el-dialog>
 
     <!-- Renew Dialog -->
-    <el-dialog
-      v-model="borrowDialogVisible"
-      title="续借书籍"
-      width="400px"
-      align-center
-      class="custom-dialog"
-    >
+    <el-dialog v-model="borrowDialogVisible" title="续借书籍" width="400px" align-center class="custom-dialog">
       <p class="dialog-desc">请输入您想要续借的天数。</p>
       <div class="form-group">
         <el-input v-model.number="borrowDay" placeholder="请输入天数" type="number" />
@@ -123,14 +110,8 @@
     </el-dialog>
 
     <!-- Return Dialog -->
-    <el-dialog
-      v-model="backDialogVisible"
-      title="归还书籍"
-      width="400px"
-      align-center
-      class="custom-dialog"
-    >
-      <p class="dialog-desc">确认归还书籍 <strong>{{borrowSum.bookName}}</strong> 吗？</p>
+    <el-dialog v-model="backDialogVisible" title="归还书籍" width="400px" align-center class="custom-dialog">
+      <p class="dialog-desc">确认归还书籍 <strong>{{ borrowSum.bookName }}</strong> 吗？</p>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="backDialogVisible = false">取消</el-button>
@@ -142,10 +123,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watchEffect, nextTick } from 'vue'
 import { useRouter } from "vue-router";
 import { useCookies } from '@vueuse/integrations/useCookies'
-import myAxios from "../axios/index.js";
+import myAxios from "../axios/index.ts";
+
+
 import { ElMessage } from "element-plus";
 
 const router = useRouter();
@@ -170,6 +153,13 @@ const userInfo = reactive({
 })
 
 const borrowData = ref([])
+const tableRef = ref<any>(null)
+
+
+watchEffect(() => {
+  console.log("表格绑定 borrowData =", borrowData.value, Array.isArray(borrowData.value))
+})
+
 const borrowTime = ref<number>(0)
 const borrowDay = ref<number>(0)
 const borrowDays = ref(0);
@@ -177,15 +167,18 @@ const borrowSum = reactive({
   userName: '',
   bookName: '',
   beginTime: '',
-  endTime:  '',
+  endTime: '',
 })
 
-onMounted(()=>{
-  inputValue.userName = cookie.get('username')
-  userInfo.userName = cookie.get('username')
-  getUserInfo()
-  getBorrowInfo()
+onMounted(async () => {
+  const uname = cookie.get('username') || ''
+  inputValue.userName = uname
+  userInfo.userName = uname
+
+  await getUserInfo()     // 这里会把 userInfo.userName 更新为后端的 name
+  await getBorrowInfo()   // 用更新后的 userInfo.userName 去查借阅
 })
+
 
 const openEditDialog = () => {
   editDialogVisible.value = true
@@ -216,11 +209,14 @@ const changeBack = (row: any) => {
 // Get User Info
 const getUserInfo = async () => {
   try {
-    let res = await myAxios.get('http://localhost:8080/user/getUserByName?name='+userInfo.userName)
-    if(res.data.code == 200){
+    let res = await myAxios.get('http://localhost:8080/user/getUserByName?name=' + userInfo.userName)
+    if (res.data.code == 200) {
+      userInfo.userName = res.data.data.name
       userInfo.password = res.data.data.password
       userInfo.age = res.data.data.age
       userInfo.address = res.data.data.address
+
+      inputValue.userName = res.data.data.name
       inputValue.password = res.data.data.password
       inputValue.age = res.data.data.age
       inputValue.address = res.data.data.address
@@ -239,13 +235,13 @@ const updateUser = async () => {
       age: inputValue.age,
       address: inputValue.address
     })
-   if(res.data.code == 200){
-     ElMessage.success(res.data.data)
-     await getUserInfo()
-     editDialogVisible.value = false
-   } else {
-     ElMessage.error(res.data.data)
-   }
+    if (res.data.code == 200) {
+      ElMessage.success(res.data.msg)
+      await getUserInfo()
+      editDialogVisible.value = false
+    } else {
+      ElMessage.error(res.data.msg)
+    }
   } catch (e) {
     console.log(e)
   }
@@ -254,9 +250,12 @@ const updateUser = async () => {
 // Get Borrow Info
 const getBorrowInfo = async () => {
   try {
-    let res = await myAxios.get('http://localhost:8080/bookBorrow/getBorrowInfo?username='+userInfo.userName)
-    if(res.data.code == 200){
+    let res = await myAxios.get('http://localhost:8080/bookBorrow/getBorrowInfo?username=' + userInfo.userName)
+    console.log('借阅接口返回：', res.data)
+    if (res.data.code == 200) {
       borrowData.value = res.data.data
+      await nextTick()
+      tableRef.value?.doLayout?.()
     }
   } catch (e) {
     console.log(e)
@@ -273,8 +272,8 @@ const borrow = async () => {
       borrowTime: borrowDays.value,
       beginTime: borrowSum.beginTime,
     })
-    if(res.data.code == 200){
-      ElMessage.success(res.data.data)
+    if (res.data.code == 200) {
+      ElMessage.success(res.data.msg)
       await getBorrowInfo()
       borrowDialogVisible.value = false
     } else {
@@ -293,8 +292,8 @@ const back = async () => {
       bookName: borrowSum.bookName,
       beginTime: borrowSum.beginTime,
     })
-    if(res.data.code == 200){
-      ElMessage.success(res.data.data)
+    if (res.data.code == 200) {
+      ElMessage.success(res.data.msg)
       await getBorrowInfo()
       backDialogVisible.value = false
     } else {
@@ -329,7 +328,7 @@ const logout = () => {
   border-radius: 12px;
   padding: 40px;
   text-align: center;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   position: sticky;
   top: 20px;
 }
@@ -424,7 +423,7 @@ const logout = () => {
   background: #fff;
   border-radius: 12px;
   padding: 40px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
 }
 
 .section-header {
@@ -466,7 +465,7 @@ const logout = () => {
   .user-layout {
     grid-template-columns: 1fr;
   }
-  
+
   .profile-card {
     position: static;
   }
