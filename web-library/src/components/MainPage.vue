@@ -8,6 +8,7 @@
       <CategoryNav 
         :is-expanded="activeSide === 'left'"
         @toggle-expand="expandLeftPanel"
+        @collapse="collapseLeftPanel"
         @select="navigateToCategory"
       />
     </div>
@@ -145,6 +146,10 @@ const isLightColor = (color: string) => {
 
 const expandLeftPanel = () => {
   activeSide.value = 'left';
+};
+
+const collapseLeftPanel = () => {
+  activeSide.value = null;
 };
 
 const handlePanelClick = (side: string) => {
