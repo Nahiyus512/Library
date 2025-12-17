@@ -153,7 +153,6 @@ const goBackHome = () => {
   router.push('/main');
 };
 
-const pageRef = ref<HTMLElement | null>(null);
 const isNavStuck = ref(false);
 const activeSection = ref('intro');
 
@@ -186,18 +185,6 @@ const scrollTo = (id: string) => {
   const el = document.getElementById(id);
   if (el) {
     el.scrollIntoView({ behavior: 'smooth' });
-  }
-};
-
-const handleProximityMove = (e: MouseEvent) => {
-  const target = e.target as HTMLElement;
-  const container = target.closest('.proximity-demo');
-  if (container) {
-     const rect = container.getBoundingClientRect();
-     const centerX = rect.left + rect.width / 2;
-     const centerY = rect.top + rect.height / 2;
-     const dist = Math.hypot(e.clientX - centerX, e.clientY - centerY);
-     isGathered.value = dist < 150;
   }
 };
 

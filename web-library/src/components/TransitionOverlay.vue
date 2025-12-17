@@ -4,7 +4,13 @@
     :class="{ 'active': transitionState.isActive }"
     :style="{ background: transitionState.color }"
   >
-    <h1 class="transition-title" :class="{ 'show': showTitle }">{{ transitionState.title }}</h1>
+    <h1 
+      class="transition-title" 
+      :class="{ 'show': showTitle }" 
+      :style="{ color: transitionState.textColor }"
+    >
+      {{ transitionState.title }}
+    </h1>
   </div>
 </template>
 
@@ -55,7 +61,6 @@ watch(() => transitionState.isActive, (newVal) => {
   transform: translateY(20px);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   text-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  mix-blend-mode: difference; /* Ensures visibility on any background */
 }
 
 .transition-title.show {

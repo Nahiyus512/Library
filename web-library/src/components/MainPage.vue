@@ -4,22 +4,12 @@
     <div 
       class="panel left-panel" 
       :class="{ 'expanded': activeSide === 'left', 'shrunk': activeSide === 'right' || isMasonryExpanded }"
-      @click="handlePanelClick('left')"
     >
-      <div class="panel-content category-content">
-        <h2 class="section-title">Collections</h2>
-        <ul class="category-list">
-          <li 
-            v-for="(item, index) in categories" 
-            :key="index"
-            class="category-item"
-            @click.stop="navigateToCategory(item)"
-          >
-            <span class="category-index">0{{ index + 1 }}</span>
-            <span class="category-name">{{ item }}</span>
-          </li>
-        </ul>
-      </div>
+      <CategoryNav 
+        :is-expanded="activeSide === 'left'"
+        @toggle-expand="expandLeftPanel"
+        @select="navigateToCategory"
+      />
     </div>
 
     <!-- Right Panel: AI Prompt Books Masonry -->
@@ -45,12 +35,17 @@
             <div class="masonry-wrapper">
               <!-- Column 1 -->
               <div class="masonry-column">
-                <BookCard 
-                  v-for="(book, index) in col1" 
-                  :key="`${book.id}-${index}-1`"
-                  :book="book"
-                  :is-expanded="isMasonryExpanded"
-                />
+                <template v-for="(book, index) in col1" :key="`${book.id}-${index}-1`">
+                  <InteractiveWidget 
+                    v-if="book.widgetType" 
+                    :type="book.widgetType"
+                  />
+                  <BookCard 
+                    v-else
+                    :book="book"
+                    :is-expanded="isMasonryExpanded"
+                  />
+                </template>
               </div>
 
               <!-- Column 2 (Middle) -->
@@ -64,22 +59,32 @@
                   </button>
                 </div>
 
-                <BookCard 
-                  v-for="(book, index) in col2" 
-                  :key="`${book.id}-${index}-2`"
-                  :book="book"
-                  :is-expanded="isMasonryExpanded"
-                />
+                <template v-for="(book, index) in col2" :key="`${book.id}-${index}-2`">
+                  <InteractiveWidget 
+                    v-if="book.widgetType" 
+                    :type="book.widgetType"
+                  />
+                  <BookCard 
+                    v-else
+                    :book="book"
+                    :is-expanded="isMasonryExpanded"
+                  />
+                </template>
               </div>
 
               <!-- Column 3 -->
               <div class="masonry-column">
-                <BookCard 
-                  v-for="(book, index) in col3" 
-                  :key="`${book.id}-${index}-3`"
-                  :book="book"
-                  :is-expanded="isMasonryExpanded"
-                />
+                <template v-for="(book, index) in col3" :key="`${book.id}-${index}-3`">
+                  <InteractiveWidget 
+                    v-if="book.widgetType" 
+                    :type="book.widgetType"
+                  />
+                  <BookCard 
+                    v-else
+                    :book="book"
+                    :is-expanded="isMasonryExpanded"
+                  />
+                </template>
               </div>
             </div>
             <!-- Loading Sentinel -->
@@ -101,6 +106,8 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import BookCard from './BookCard.vue';
+import InteractiveWidget from './widgets/InteractiveWidget.vue';
+import CategoryNav from './CategoryNav.vue';
 import { books as rawBooks, type BookItem } from '../data/books';
 
 const router = useRouter();
@@ -112,11 +119,7 @@ const sentinel = ref<HTMLElement | null>(null);
 const col1 = ref<BookItem[]>([]);
 const col2 = ref<BookItem[]>([]);
 const col3 = ref<BookItem[]>([]);
-
-const categories = [
-  "经典", "哲学", "知识", "历史", "生活", "科幻", "玄幻"
-];
-
+const loopCount = ref(0);
 
 const getBookStyle = (book: BookItem) => {
   const style: any = { background: book.colorTheme };
@@ -140,9 +143,13 @@ const isLightColor = (color: string) => {
   return color === '#ffffff' || color.includes('#fef3c7') || color.includes('#cffafe');
 };
 
+const expandLeftPanel = () => {
+  activeSide.value = 'left';
+};
+
 const handlePanelClick = (side: string) => {
   if (side === 'left' && activeSide.value !== 'left') {
-     // Optional: Logic for left panel interaction if needed
+     expandLeftPanel();
   }
 };
 
@@ -176,16 +183,39 @@ const distributeBooks = (books: BookItem[]) => {
   });
 };
 
+const prepareBatch = () => {
+  const batch = [...rawBooks];
+  const widgetType = loopCount.value % 2 === 0 ? 'bookshelf' : 'radio';
+  
+  // Create widget item
+  const widgetItem: BookItem = {
+    id: -1 - loopCount.value, // unique negative ID
+    title: 'Interactive Widget',
+    titleCN: 'Interactive Widget',
+    author: '',
+    quote: '',
+    categories: [],
+    colorTheme: '#fff',
+    path: '',
+    widgetType: widgetType as 'bookshelf' | 'radio'
+  };
+
+  // Insert at index 4 (5th position)
+  batch.splice(4, 0, widgetItem);
+  
+  loopCount.value++;
+  return batch;
+};
+
 const loadMore = () => {
-  // Simulate network delay for effect, or just add instantly
-  // Adding rawBooks again to cycle
-  distributeBooks(rawBooks);
+  const newBatch = prepareBatch();
+  distributeBooks(newBatch);
 };
 
 let observer: IntersectionObserver;
 
 onMounted(() => {
-  distributeBooks(rawBooks); // Initial load
+  loadMore(); // Initial load
 
   observer = new IntersectionObserver((entries) => {
     if (entries[0].isIntersecting) {

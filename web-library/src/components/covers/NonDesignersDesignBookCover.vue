@@ -1,207 +1,245 @@
 <template>
-  <div class="cover-container">
-    <div class="background-pattern"></div>
+  <div class="cover-container" ref="containerRef" @mousemove="handleMouseMove" @mouseleave="resetTransform">
+    <div class="background-grid"></div>
     
-    <!-- Title Group -->
-    <div class="title-group" ref="titleRef">
-      <div class="main-title">
-        <span class="char c1">写</span>
-        <span class="char c2">给</span>
-        <span class="char c3">大</span>
-        <span class="char c4">家</span>
-        <span class="char c5">看</span>
-        <span class="char c6">的</span>
+    <!-- Visual CRAP Representation -->
+    <div class="design-layout" :style="contentStyle">
+      <!-- Contrast: Big bold black vs small light gray -->
+      <div class="contrast-section">
+        <div class="big-circle"></div>
+        <div class="small-text">contrast</div>
       </div>
-      <div class="design-title">
-        <span class="d-char d1">设</span>
-        <span class="d-char d2">计</span>
-        <span class="d-char d3">书</span>
+
+      <!-- Repetition: Repeated shapes -->
+      <div class="repetition-section">
+        <div class="repeat-shape" v-for="n in 3" :key="n"></div>
+        <div class="small-text">repetition</div>
       </div>
-      <div class="subtitle">The Non-Designer's Design Book</div>
+
+      <!-- Alignment: Strong alignment line -->
+      <div class="alignment-section">
+        <div class="align-line"></div>
+        <div class="align-content">
+          <div class="align-box"></div>
+          <div class="align-text">alignment</div>
+        </div>
+      </div>
+
+      <!-- Proximity: Grouped elements -->
+      <div class="proximity-section">
+        <div class="prox-group">
+          <div class="prox-dot"></div>
+          <div class="prox-dot"></div>
+          <div class="prox-dot"></div>
+        </div>
+        <div class="small-text">proximity</div>
+      </div>
     </div>
 
-    <!-- Visual Metaphors for CRAP -->
-    <div class="visual-elements">
-      <!-- Contrast: Black Circle vs Small White Dot -->
-      <div class="element contrast-circle"></div>
-      
-      <!-- Repetition: 3 Lines -->
-      <div class="element repetition-lines">
-        <div class="r-line"></div>
-        <div class="r-line"></div>
-        <div class="r-line"></div>
-      </div>
-
-      <!-- Alignment: Vertical Line -->
-      <div class="element alignment-guide"></div>
-
-      <!-- Proximity: Group of squares -->
-      <div class="element proximity-group">
-        <div class="p-sq"></div>
-        <div class="p-sq"></div>
-        <div class="p-sq"></div>
-      </div>
+    <!-- Title Overlay -->
+    <div class="title-overlay" :style="titleStyle">
+      <div class="main-title-cn">写给大家看的设计书</div>
+      <div class="sub-title-en">The Non-Designer's Design Book</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
+import { ref, computed } from 'vue';
 
-const titleRef = ref<HTMLElement | null>(null);
+const containerRef = ref<HTMLElement | null>(null);
+const mouseX = ref(0);
+const mouseY = ref(0);
 
 const handleMouseMove = (e: MouseEvent) => {
-  if (!titleRef.value) return;
-  const { clientX, clientY } = e;
-  const { innerWidth, innerHeight } = window;
-  
-  const x = (clientX - innerWidth / 2) / 20;
-  const y = (clientY - innerHeight / 2) / 20;
-  
-  titleRef.value.style.transform = `translate(${x}px, ${y}px)`;
+  if (!containerRef.value) return;
+  const rect = containerRef.value.getBoundingClientRect();
+  // Calculate relative position (-1 to 1) within the card
+  mouseX.value = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouseY.value = ((e.clientY - rect.top) / rect.height) * 2 - 1;
 };
 
-onMounted(() => {
-  window.addEventListener('mousemove', handleMouseMove);
-});
+const resetTransform = () => {
+  mouseX.value = 0;
+  mouseY.value = 0;
+};
 
-onUnmounted(() => {
-  window.removeEventListener('mousemove', handleMouseMove);
-});
+const contentStyle = computed(() => ({
+  transform: `perspective(500px) rotateX(${mouseY.value * -5}deg) rotateY(${mouseX.value * 5}deg) translateZ(-10px)`
+}));
+
+const titleStyle = computed(() => ({
+  transform: `translate(${mouseX.value * 10}px, ${mouseY.value * 10}px)`
+}));
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+SC:wght@300;900&display=swap');
 
 .cover-container {
   width: 100%;
   height: 100%;
-  background-color: #f5f5f7;
+  background-color: #f0f0f0;
   position: relative;
   overflow: hidden;
-  font-family: 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
-  color: #1d1d1f;
+  font-family: 'Inter', sans-serif;
+  cursor: default;
+}
+
+.background-grid {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background-image: radial-gradient(#ccc 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.3;
+}
+
+.design-layout {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  transition: transform 0.1s ease-out;
+}
+
+/* Common Text */
+.small-text {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Sections */
+.contrast-section {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-}
-
-.title-group {
-  z-index: 10;
-  text-align: center;
-  transition: transform 0.1s ease-out;
-  mix-blend-mode: multiply;
-}
-
-.main-title {
-  font-size: 1.2rem;
-  font-weight: 300;
-  letter-spacing: 0.2em;
-  margin-bottom: 0.5rem;
-  display: flex;
   justify-content: center;
-  gap: 0.2em;
+  background: #fff;
+  padding: 10px;
 }
 
-.design-title {
-  font-size: 2.5rem;
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: -0.05em;
-  margin-bottom: 0.5rem;
-  display: flex;
-  justify-content: center;
-  gap: 0.1em;
-  transition: font-size 0.3s ease;
-}
-
-.cover-container:not(.hero) .design-title {
-  font-size: 2.0rem;
-}
-
-.d-char {
-  display: inline-block;
-  position: relative;
-}
-
-/* Contrast in Title */
-.d1 { color: #000; }
-.d2 { color: #333; transform: translateY(-5px); }
-.d3 { color: #1d1d1f; }
-
-.subtitle {
-  font-size: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  opacity: 0.6;
-  font-family: 'Inter', sans-serif;
-}
-
-/* Visual Elements */
-.visual-elements {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-/* Contrast */
-.contrast-circle {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 100px;
-  height: 100px;
+.big-circle {
+  width: 40px;
+  height: 40px;
   background: #000;
   border-radius: 50%;
-  opacity: 0.1;
 }
 
-/* Repetition */
-.repetition-lines {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
+.repetition-section {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #fff;
 }
-.r-line {
-  width: 40px;
-  height: 2px;
-  background: #1d1d1f;
-  opacity: 0.2;
+.repetition-section .small-text { color: #aaa; }
+
+.repeat-shape {
+  width: 20px;
+  height: 4px;
+  background: #fff;
+  margin: 2px 0;
 }
 
-/* Alignment */
-.alignment-guide {
+.alignment-section {
+  position: relative;
+  background: #e0e0e0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.align-line {
   position: absolute;
-  top: 0;
-  left: 50%;
+  left: 20px;
+  top: 10px;
+  bottom: 10px;
   width: 1px;
-  height: 100%;
-  background: rgba(0,0,0,0.05);
-  transform: translateX(-50%);
+  background: #f00;
+  opacity: 0.5;
 }
 
-/* Proximity */
-.proximity-group {
-  position: absolute;
-  top: 20%;
-  left: 10%;
+.align-content {
+  margin-left: 15px; /* Visual alignment to line */
+}
+
+.align-box {
+  width: 20px;
+  height: 20px;
+  background: #333;
+  margin-bottom: 5px;
+}
+
+.align-text {
+  font-size: 8px;
+  font-weight: 700;
+}
+
+.proximity-section {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.prox-group {
   display: flex;
   gap: 2px;
-  flex-wrap: wrap;
-  width: 20px;
-}
-.p-sq {
-  width: 6px;
-  height: 6px;
-  background: #d2e603; /* Yellow-green accent */
 }
 
-/* Hover Effects handled by parent mainly, but internal ones here */
+.prox-dot {
+  width: 8px;
+  height: 8px;
+  background: #000;
+  border-radius: 50%;
+}
+
+/* Title Overlay */
+.title-overlay {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  text-align: right;
+  z-index: 10;
+  mix-blend-mode: exclusion;
+  pointer-events: none;
+  transition: transform 0.1s ease-out;
+}
+
+.main-title-cn {
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 900;
+  font-size: 24px;
+  color: #fff; /* Mix-blend-mode handles color */
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.sub-title-en {
+  font-size: 8px;
+  color: #fff;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+
+/* Hero Mode Adjustments */
+.hero .main-title-cn { font-size: 48px; }
+.hero .sub-title-en { font-size: 14px; }
+.hero .design-layout { gap: 20px; }
+.hero .big-circle { width: 80px; height: 80px; }
+.hero .repeat-shape { width: 40px; height: 8px; }
+.hero .align-box { width: 40px; height: 40px; }
+.hero .prox-dot { width: 16px; height: 16px; }
+.hero .small-text { font-size: 12px; }
 </style>

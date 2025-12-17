@@ -1,5 +1,5 @@
 //创建一个路由器，并且暴露出去
-import {createRouter,createWebHistory,createWebHashHistory} from "vue-router";
+import {createRouter,createWebHistory} from "vue-router";
 
 import Login from "../components/Login.vue"
 import Home from "../components/Home.vue"
@@ -30,6 +30,8 @@ import NonDesignersDesignBook from "../views/book/NonDesignersDesignBook.vue";
 import Sapiens from "../views/book/Sapiens.vue";
 import ThreeBody from "../views/book/ThreeBody.vue";
 import Zen from "../views/book/Zen.vue";
+import JourneyToTheWest from "../views/book/JourneyToTheWest.vue";
+import ThreeKingdoms from "../views/book/ThreeKingdoms.vue";
 
 
 const router = createRouter({
@@ -143,6 +145,8 @@ const router = createRouter({
         { path: "/book/Sapiens", name: "Sapiens", component: Sapiens },
         { path: "/book/ThreeBody", name: "ThreeBody", component: ThreeBody },
         { path: "/book/Zen", name: "Zen", component: Zen },
+        { path: "/book/JourneyToTheWest", name: "JourneyToTheWest", component: JourneyToTheWest },
+        { path: "/book/ThreeKingdoms", name: "ThreeKingdoms", component: ThreeKingdoms },
         {
             path:"/",
             component:Login

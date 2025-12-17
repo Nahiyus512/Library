@@ -6,8 +6,10 @@ export interface BookItem {
   quote: string;
   categories: string[];
   colorTheme: string;
+  textColor?: string;
   isBorder?: boolean;
   path: string;
+  widgetType?: 'bookshelf' | 'radio';
 }
 
 export const books: BookItem[] = [
@@ -19,6 +21,7 @@ export const books: BookItem[] = [
     author: "刘慈欣", 
     categories: ["科幻"], 
     colorTheme: "#000000",
+    textColor: "#FFFFFF",
     path: '/book/ThreeBody'
   }, 
   { 
@@ -29,6 +32,7 @@ export const books: BookItem[] = [
     author: "尤瓦尔·赫拉利", 
     categories: ["哲学", "历史"], 
     colorTheme: "#f0f0e6",
+    textColor: "#000000",
     path: '/book/Sapiens'
   }, 
   { 
@@ -39,6 +43,7 @@ export const books: BookItem[] = [
     author: "道格拉斯·亚当斯", 
     categories: ["科幻"], 
     colorTheme: "#000000",
+    textColor: "#00FF00",
     path: '/book/HitchhikersGuide'
   }, 
   { 
@@ -49,6 +54,7 @@ export const books: BookItem[] = [
     author: "约瑟夫·阿尔伯斯", 
     categories: ["知识"], 
     colorTheme: "#f5f5f5",
+    textColor: "#000000",
     path: '/book/InteractionOfColor'
   }, 
   { 
@@ -59,6 +65,7 @@ export const books: BookItem[] = [
     author: "罗宾·威廉姆斯", 
     categories: ["知识"], 
     colorTheme: "#f5f5f7", 
+    textColor: "#000000",
     isBorder: true,
     path: '/book/NonDesignersDesignBook'
   }, 
@@ -70,6 +77,7 @@ export const books: BookItem[] = [
     author: "约瑟夫·米勒-布罗克曼", 
     categories: ["知识"], 
     colorTheme: "#f4f4f0",
+    textColor: "#000000",
     path: '/book/GridSystems'
   }, 
   { 
@@ -80,6 +88,7 @@ export const books: BookItem[] = [
     author: "弗兰克·赫伯特", 
     categories: ["科幻"], 
     colorTheme: "#7B3306",
+    textColor: "#FFD700",
     path: '/book/Dune'
   }, 
   { 
@@ -90,6 +99,7 @@ export const books: BookItem[] = [
     author: "乔治·奥威尔", 
     categories: ["科幻"], 
     colorTheme: "#050505",
+    textColor: "#028b3bff",
     path: '/book/NineteenEightyFour'
   }, 
   { 
@@ -99,9 +109,10 @@ export const books: BookItem[] = [
     quote: "共有•统一•安定。", 
     author: "阿道司·赫胥黎", 
     categories: ["科幻"], 
-    colorTheme: "#cffafe",
+    colorTheme: "#000000ff",
+    textColor: "#61dafbff",
     path: '/book/BraveNewWorld'
-  }, 
+  },
   { 
     id: 10, 
     title: "Zen and the Art of Motorcycle Maintenance", 
@@ -110,6 +121,7 @@ export const books: BookItem[] = [
     author: "罗伯特·波西格", 
     categories: ["哲学", "生活"], 
     colorTheme: "#047857",
+    textColor: "#FFFFFF",
     path: '/book/Zen'
   }, 
   { 
@@ -120,6 +132,7 @@ export const books: BookItem[] = [
     author: "尼尔·波兹曼", 
     categories: ["哲学", "生活"], 
     colorTheme: "#121212",
+    textColor: "#FFFFFF",
     path: '/book/AmusingOurselvesToDeath'
   }, 
   { 
@@ -130,6 +143,29 @@ export const books: BookItem[] = [
     author: "迈克斯·泰格马克", 
     categories: ["科幻"], 
     colorTheme: "#000000",
+    textColor: "#FFFFFF",
     path: '/book/Life30'
   }, 
+  { 
+    id: 13, 
+    title: "Journey to the West", 
+    titleCN: "西游记", 
+    quote: "心生，种种魔生；心灭，种种魔灭。", 
+    author: "吴承恩", 
+    categories: ["经典"], 
+    colorTheme: "#FFD700",
+    textColor: "#ff0000ff",
+    path: '/book/JourneyToTheWest'
+  },
+  { 
+    id: 14, 
+    title: "Three Kingdoms", 
+    titleCN: "三国演义", 
+    quote: "天下大势，分久必合，合久必分。", 
+    author: "罗贯中", 
+    categories: ["经典"], 
+    colorTheme: "#8E2323",
+    textColor: "#ffffffff",
+    path: '/book/ThreeKingdoms'
+  }
 ];

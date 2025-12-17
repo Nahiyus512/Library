@@ -27,6 +27,8 @@
         <div class="cover-wrapper" v-else-if="book.id === 10"><ZenCover :mode="isExpanded ? 'hero' : 'card'" /></div>
         <div class="cover-wrapper" v-else-if="book.id === 11"><AmusingOurselvesToDeathCover :mode="isExpanded ? 'hero' : 'card'" /></div>
         <div class="cover-wrapper" v-else-if="book.id === 12"><Life30Cover :mode="isExpanded ? 'hero' : 'card'" /></div>
+        <div class="cover-wrapper" v-else-if="book.id === 13"><JourneyToTheWestCover :mode="isExpanded ? 'hero' : 'card'" /></div>
+        <div class="cover-wrapper" v-else-if="book.id === 14"><ThreeKingdomsCover :mode="isExpanded ? 'hero' : 'card'" /></div>
         
         <!-- Default -->
         <div v-else class="visual-default" :style="defaultStyle"></div>
@@ -78,6 +80,8 @@ import NineteenEightyFourCover from './covers/NineteenEightyFourCover.vue';
 import BraveNewWorldCover from './covers/BraveNewWorldCover.vue';
 import AmusingOurselvesToDeathCover from './covers/AmusingOurselvesToDeathCover.vue';
 import Life30Cover from './covers/Life30Cover.vue';
+import JourneyToTheWestCover from './covers/JourneyToTheWestCover.vue';
+import ThreeKingdomsCover from './covers/ThreeKingdomsCover.vue';
 
 const router = useRouter();
 
@@ -91,7 +95,11 @@ const navigateToBook = () => {
   
   if (path) {
     // Trigger transition animation
-    transitionState.startAnimation(props.book.colorTheme, props.book.titleCN);
+    transitionState.startAnimation(
+      props.book.colorTheme, 
+      props.book.titleCN,
+      props.book.textColor || '#ffffff'
+    );
     
     // Wait for animation to cover screen before navigating
     setTimeout(() => {

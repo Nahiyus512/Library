@@ -1,12 +1,16 @@
 <template>
-  <div class="dune-cover">
-    <div class="sand-layer layer-1"></div>
-    <div class="sand-layer layer-2"></div>
-    <div class="sand-layer layer-3"></div>
-    <div class="sun"></div>
-    <div class="title-container">
+  <div class="dune-cover" ref="coverRef" @mousemove="handleMouseMove" @mouseleave="resetState">
+    <div class="sand-layer layer-1" :style="layer1Style"></div>
+    <div class="sand-layer layer-2" :style="layer2Style"></div>
+    <div class="sand-layer layer-3" :style="layer3Style"></div>
+    
+    <!-- The Eye (Hidden until interaction?) or Sun -->
+    <div class="sun" :style="sunStyle"></div>
+    
+    <div class="title-container" :style="titleStyle">
       <h1 class="title">沙丘</h1>
     </div>
+    
     <div class="particles">
       <div v-for="n in 20" :key="n" class="particle" :style="getParticleStyle(n)"></div>
     </div>
@@ -14,9 +18,50 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed } from 'vue';
+
 const props = defineProps<{
   mode?: 'card' | 'hero'
 }>();
+
+const coverRef = ref<HTMLElement | null>(null);
+const mouseX = ref(0);
+const mouseY = ref(0);
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (!coverRef.value) return;
+  const rect = coverRef.value.getBoundingClientRect();
+  // Normalize -1 to 1
+  mouseX.value = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouseY.value = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+};
+
+const resetState = () => {
+  // Optional: slowly return to center or leave as is
+  // mouseX.value = 0; 
+  // mouseY.value = 0;
+};
+
+// Computed styles for parallax effect
+const layer1Style = computed(() => ({
+  transform: `translate(${mouseX.value * 10}px, ${mouseY.value * 5}px)`
+}));
+
+const layer2Style = computed(() => ({
+  transform: `translate(${mouseX.value * 20}px, ${mouseY.value * 10}px)`
+}));
+
+const layer3Style = computed(() => ({
+  transform: `translate(${mouseX.value * 30}px, ${mouseY.value * 15}px)`
+}));
+
+const sunStyle = computed(() => ({
+  transform: `translate(${mouseX.value * -15}px, ${mouseY.value * -15}px)`
+}));
+
+const titleStyle = computed(() => ({
+  transform: `translate(${mouseX.value * 5}px, ${mouseY.value * 5}px)`
+}));
 
 const getParticleStyle = (n: number) => {
   const size = Math.random() * 3 + 1;
