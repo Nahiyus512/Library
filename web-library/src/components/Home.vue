@@ -107,8 +107,7 @@ onMounted(() => {
 
 .app-main {
   flex: 1;
-  padding: 0 40px 40px 40px;
-  max-width: 1600px;
+  padding: 0 0px 0px 0px;
   width: 100%;
   margin: 0 auto;
   overflow: hidden;
