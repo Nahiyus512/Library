@@ -18,6 +18,14 @@ import UserCenter from "@/views/client/UserCenter.vue"
 import CategoryPlaceholder from "@/views/client/CategoryPlaceholder.vue"
 import ArtPlaceholder from "@/views/client/ArtPlaceholder.vue"
 
+// Category Views
+import ClassicCategory from "@/views/categories/ClassicCategory.vue";
+import PhilosophyCategory from "@/views/categories/PhilosophyCategory.vue";
+import KnowledgeCategory from "@/views/categories/KnowledgeCategory.vue";
+import HistoryCategory from "@/views/categories/HistoryCategory.vue";
+import LifeCategory from "@/views/categories/LifeCategory.vue";
+import SciFiCategory from "@/views/categories/SciFiCategory.vue";
+
 // Admin Views
 import BookInfo from "@/views/admin/BookInfo.vue"
 import UserInfo from "@/views/admin/UserInfo.vue"
@@ -61,6 +69,36 @@ const router = createRouter({
                     path: "/main",
                     name: "main",
                     component: MainPage
+                },
+                {
+                    path: "/category/经典",
+                    name: "category-classic",
+                    component: ClassicCategory
+                },
+                {
+                    path: "/category/哲学",
+                    name: "category-philosophy",
+                    component: PhilosophyCategory
+                },
+                {
+                    path: "/category/知识",
+                    name: "category-knowledge",
+                    component: KnowledgeCategory
+                },
+                {
+                    path: "/category/历史",
+                    name: "category-history",
+                    component: HistoryCategory
+                },
+                {
+                    path: "/category/生活",
+                    name: "category-life",
+                    component: LifeCategory
+                },
+                {
+                    path: "/category/科幻",
+                    name: "category-scifi",
+                    component: SciFiCategory
                 },
                 {
                     path: "/category/:id",

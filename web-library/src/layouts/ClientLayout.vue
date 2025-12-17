@@ -1,6 +1,6 @@
   <template>
   <div class="app-container">
-    <header class="app-header">
+    <header class="app-header" v-if="!hideNav">
       <div class="brand">
         <span class="brand-text">图书馆</span>
         <span class="user-greeting" v-if="username"> / {{ username }}</span>
@@ -25,14 +25,19 @@
 </template>
 
 <script setup lang="ts">
-import { RouterView, RouterLink } from "vue-router";
-import { onMounted, ref } from "vue";
+import { RouterView, RouterLink, useRoute } from "vue-router";
+import { onMounted, ref, computed } from "vue";
 import bus from "@/bus/index";
 import { ElMessage } from "element-plus";
 import { useCookies } from '@vueuse/integrations/useCookies'
 
 const cookie = useCookies()
 const username = ref('')
+const route = useRoute();
+
+const hideNav = computed(() => {
+  return route.path.startsWith('/category/');
+});
 
 onMounted(() => {
   username.value = cookie.get('username')

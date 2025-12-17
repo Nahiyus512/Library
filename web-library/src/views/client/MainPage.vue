@@ -111,6 +111,8 @@ import InteractiveWidget from '@/components/common/InteractiveWidget.vue';
 import CategoryNav from '@/components/business/CategoryNav.vue';
 import { books as rawBooks, type BookItem } from '@/data/books';
 
+import { transitionState } from '@/store/transitionStore';
+
 const router = useRouter();
 const activeSide = ref<string | null>(null);
 const isMasonryExpanded = ref(false);
@@ -170,11 +172,19 @@ const collapseMasonry = () => {
   activeSide.value = null;
 };
 
-const navigateToCategory = (category: string) => {
+const navigateToCategory = (payload: { name: string, color: string }) => {
   activeSide.value = 'left';
+  
+  // Trigger transition
+  transitionState.startAnimation(payload.color, payload.name, '#fff');
+
   setTimeout(() => {
-    router.push(`/category/${category}`);
-  }, 600);
+    router.push(`/category/${payload.name}`);
+    // We don't end animation here; the destination page should handle it or we end it after push
+    setTimeout(() => {
+        transitionState.endAnimation();
+    }, 800);
+  }, 800);
 };
 
 const distributeBooks = (books: BookItem[]) => {

@@ -129,7 +129,7 @@ const handleBlockClick = (cat: any, index: number) => {
     emit('toggle-expand');
     hoveredIndex.value = index;
   } else {
-    emit('select', cat.name);
+    emit('select', { name: cat.name, color: cat.color });
   }
 };
 
