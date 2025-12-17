@@ -5,12 +5,10 @@
       {{ countdownDisplay }}
     </div>
 
-    <!-- Back to Home Button (Fixed Top Left) -->
-    <button class="back-home-btn fixed-top-left" @click="goBackHome">
-      <span>[脱离游戏]</span>
-    </button>
-
     <nav class="sticky-nav" :class="{ 'nav-visible': showNav }">
+      <button class="back-home-btn nav-back-btn" @click="goBackHome">
+        <span>[脱离游戏]</span>
+      </button>
       <div 
         v-for="(section, index) in sections" 
         :key="index"
@@ -282,23 +280,32 @@ onUnmounted(() => {
 /* Sticky Navigation */
 .sticky-nav {
   position: fixed;
-  top: -60px;
+  top: 0;
   left: 0;
   width: 100%;
-  height: 60px;
-  background: rgba(0, 0, 0, 0.9);
-  border-bottom: 1px solid #333;
+  padding: 20px 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 40px;
-  z-index: 100;
-  transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(10px);
+  z-index: 1000;
+  transform: translateY(-100%);
+  transition: transform 0.3s ease;
+  border-bottom: 1px solid rgba(255, 0, 0, 0.3);
 }
 
 .sticky-nav.nav-visible {
-  top: 0;
+  transform: translateY(0);
+}
+
+.nav-back-btn {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
 }
 
 .nav-item {
@@ -508,7 +515,7 @@ onUnmounted(() => {
 
 /* Back Button */
 .back-home-btn {
-  margin-top: 40px;
+  margin-top: 0px;
   padding: 12px 30px;
   background: transparent;
   border: 1px solid #fff;

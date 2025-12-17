@@ -13,8 +13,6 @@
 
       <!-- Middle Section (55%) -->
       <div class="card-middle">
-        <!-- Category Tag -->
-        <div class="category-tag">{{ book.category }}</div>
         
         <!-- Dynamic Covers -->
         <div class="cover-wrapper" v-if="book.id === 1"><ThreeBodyCover :mode="isExpanded ? 'hero' : 'card'" /></div>
@@ -32,6 +30,17 @@
         
         <!-- Default -->
         <div v-else class="visual-default" :style="defaultStyle"></div>
+
+        <!-- Category Tags -->
+        <div class="category-tags-container">
+          <div 
+            v-for="(tag, index) in book.categories" 
+            :key="index" 
+            class="category-tag"
+          >
+            {{ tag }}
+          </div>
+        </div>
       </div>
 
       <!-- Bottom Section (30%) -->
@@ -56,6 +65,7 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { transitionState } from '../stores/transitionStore';
+import type { BookItem } from '../data/books';
 import ZenCover from './covers/ZenCover.vue';
 import ThreeBodyCover from './covers/ThreeBodyCover.vue';
 import SapiensCover from './covers/SapiensCover.vue';
@@ -71,39 +81,13 @@ import Life30Cover from './covers/Life30Cover.vue';
 
 const router = useRouter();
 
-interface BookItem {
-  id: number;
-  title: string;
-  titleCN: string;
-  author: string;
-  quote: string;
-  category: string;
-  colorTheme: string;
-  isBorder?: boolean;
-}
-
 const props = defineProps<{
   book: BookItem;
   isExpanded?: boolean;
 }>();
 
 const navigateToBook = () => {
-  const bookRoutes: Record<number, string> = {
-    1: '/book/ThreeBody',
-    2: '/book/Sapiens',
-    3: '/book/HitchhikersGuide',
-    4: '/book/InteractionOfColor',
-    5: '/book/NonDesignersDesignBook',
-    6: '/book/GridSystems',
-    7: '/book/Dune',
-    8: '/book/NineteenEightyFour',
-    9: '/book/BraveNewWorld',
-    10: '/book/Zen',
-    11: '/book/AmusingOurselvesToDeath',
-    12: '/book/Life30'
-  };
-
-  const path = bookRoutes[props.book.id];
+  const path = props.book.path;
   
   if (path) {
     // Trigger transition animation
@@ -222,20 +206,33 @@ const defaultStyle = computed(() => {
   border-bottom: 1px solid #000;
 }
 
-.category-tag {
+.category-tags-container {
   position: absolute;
   top: 10px;
   right: 10px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.category-tag {
   background: #000;
   color: #fff;
   padding: 3px 6px;
   font-size: 6px;
   font-weight: 700;
   text-transform: uppercase;
-  z-index: 10;
   transform: rotate(5deg);
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   letter-spacing: 0.5px;
+  width: fit-content;
+}
+
+.expanded-mode .category-tag {
+  font-size: 10px;
+  padding: 4px 8px;
 }
 
 .book-card-wrapper:hover .category-tag {

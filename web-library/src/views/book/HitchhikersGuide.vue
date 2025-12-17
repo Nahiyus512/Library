@@ -3,14 +3,12 @@
     <div class="hitchhiker-page" :style="pageStyle">
       <div class="scanlines"></div>
       
-      <!-- ABORT BUTTON (Fixed Top Left) -->
-      <button class="abort-btn fixed-top-left" @click="goBackHome">
-        <span class="blink-text">[ ABORT ]</span>
-      </button>
-
       <nav class="sticky-nav" :class="{ 'visible': showNav }">
+        <button class="abort-btn nav-back-btn" @click="goBackHome">
+          <span>[DON'T PANIC]</span>
+        </button>
         <div class="nav-content">
-          <div class="nav-brand">GUIDE MK.V</div>
+          <div class="nav-brand">THE GUIDE</div>
           <ul class="nav-links">
             <li v-for="section in sections" :key="section.id">
               <a :href="`#${section.id}`" @click.prevent="scrollTo(section.id)" :class="{ active: activeSection === section.id }">
@@ -504,10 +502,8 @@ onUnmounted(() => {
 }
 
 /* ABORT BTN */
-.abort-btn.fixed-top-left {
-  position: fixed;
-  top: 20px;
-  left: 20px;
+.abort-btn {
+  /* Position handled by nav-back-btn when inside nav */
   z-index: 2000;
   background: #000;
   border: 2px solid #00ff00;
@@ -518,6 +514,13 @@ onUnmounted(() => {
   cursor: pointer;
   box-shadow: 0 0 5px #00ff00;
   transition: all 0.2s;
+}
+
+.nav-back-btn {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .abort-btn:hover {

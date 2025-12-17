@@ -4,12 +4,10 @@
     <div class="bg-texture"></div>
 
     <!-- TOP NAVIGATION -->
-    <!-- Exit Button (Fixed Top Left) -->
-    <button class="fixed-exit-btn" @click="goBackHome">
-      <span>← 退出历史</span>
-    </button>
-
     <nav class="sticky-nav" :class="{ 'nav-visible': showNav }">
+      <button class="fixed-exit-btn nav-back-btn" @click="goBackHome">
+        <span>← 退出历史</span>
+      </button>
       <div class="nav-content">
         <div 
           v-for="(section, index) in sections" 
@@ -746,9 +744,7 @@ h1, h2, h3, h4 {
 
 /* --- Fixed Exit Button --- */
 .fixed-exit-btn {
-  position: fixed;
-  top: 24px;
-  left: 24px;
+  /* Position handled by nav-back-btn when inside nav */
   z-index: 2000;
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid #ddd;
@@ -762,10 +758,18 @@ h1, h2, h3, h4 {
   border-radius: 4px;
 }
 
+.nav-back-btn {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+}
+
 .fixed-exit-btn:hover {
   background: #000;
   color: #fff;
-  transform: translateY(-2px);
+  /* transform: translateY(-2px); Removed hover move */
   box-shadow: 0 6px 15px rgba(0,0,0,0.15);
 }
 

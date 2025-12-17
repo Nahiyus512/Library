@@ -1,10 +1,26 @@
 <script setup lang="ts">
-import {RouterView} from "vue-router";
+import { computed } from "vue";
+import { RouterView, useRoute } from "vue-router";
 import TransitionOverlay from "./components/TransitionOverlay.vue";
+import ReadingProgressBar from "./components/ReadingProgressBar.vue";
+import { books } from "./data/books";
+
+const route = useRoute();
+
+const currentBook = computed(() => {
+  return books.find(b => b.path === route.path);
+});
+
+const isBookPage = computed(() => !!currentBook.value);
+const bookColor = computed(() => currentBook.value?.colorTheme || '#000000');
 </script>
 
 <template>
   <div class="main">
+    <ReadingProgressBar 
+      :is-active="isBookPage"
+      :color="bookColor"
+    />
     <RouterView></RouterView>
     <TransitionOverlay />
   </div>

@@ -1,10 +1,5 @@
 <template>
   <div class="grid-page-wrapper" ref="pageWrapper" @scroll="handleScroll">
-    <!-- Top Left Return Button -->
-    <button class="return-btn fixed-top-left" @click="goBackHome">
-      <span>← EXIT GRID</span>
-    </button>
-
     <!-- Progress Bar -->
     <div class="scroll-progress" :style="{ width: scrollProgress + '%' }"></div>
 
@@ -19,6 +14,9 @@
 
     <!-- Sticky Navigation -->
     <nav class="sticky-nav" :class="{ visible: showNav }">
+      <button class="return-btn nav-back-btn" @click="goBackHome">
+        <span>← EXIT GRID</span>
+      </button>
       <div class="nav-content">
         <div class="nav-brand">GRID SYSTEMS</div>
         <ul class="nav-links">
@@ -439,10 +437,8 @@ onUnmounted(() => {
 }
 
 /* Return Buttons */
-.return-btn.fixed-top-left {
-  position: fixed;
-  top: 24px;
-  left: 24px;
+.return-btn {
+  /* Position handled by nav-back-btn when inside nav */
   z-index: 2000;
   background: #f0f0f0;
   border: 1px solid #333;
@@ -456,7 +452,15 @@ onUnmounted(() => {
   letter-spacing: 1px;
 }
 
-.return-btn.fixed-top-left:hover {
+.nav-back-btn {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+}
+
+.return-btn:hover {
   background: #ff4500;
   color: #fff;
   border-color: #ff4500;

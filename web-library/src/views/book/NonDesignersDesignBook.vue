@@ -1,10 +1,5 @@
 <template>
   <div class="book-page" ref="pageRef" @scroll="handleScroll">
-    <!-- Top Left Return Button -->
-    <button class="return-btn fixed-top-left" @click="goBackHome">
-      <span>← CLOSE BOOK</span>
-    </button>
-
     <!-- Fixed Background -->
     <div class="fixed-bg"></div>
 
@@ -32,6 +27,9 @@
 
     <!-- Sticky Navigation -->
     <nav class="sticky-nav" :class="{ 'is-stuck': isNavStuck }">
+      <button class="return-btn nav-back-btn" @click="goBackHome">
+        <span>← CLOSE BOOK</span>
+      </button>
       <div class="nav-links">
         <a href="#intro" :class="{ active: activeSection === 'intro' }" @click.prevent="scrollTo('intro')">启蒙</a>
         <a href="#contrast" :class="{ active: activeSection === 'contrast' }" @click.prevent="scrollTo('contrast')">对比</a>
@@ -233,10 +231,8 @@ onMounted(() => {
 }
 
 /* Return Buttons */
-.return-btn.fixed-top-left {
-  position: fixed;
-  top: 24px;
-  left: 24px;
+.return-btn {
+  /* Position handled by nav-back-btn when inside nav */
   z-index: 2000;
   background: #000;
   border: 2px solid #fff;
@@ -249,7 +245,15 @@ onMounted(() => {
   color: #fff;
 }
 
-.return-btn.fixed-top-left:hover {
+.nav-back-btn {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+}
+
+.return-btn:hover {
   background: #fff;
   color: #000;
   box-shadow: 4px 4px 0 rgba(0,0,0,0.2);
