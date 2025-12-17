@@ -69,7 +69,7 @@ const contentStyle = computed(() => ({
 }));
 
 const titleStyle = computed(() => ({
-  transform: `translate(${mouseX.value * 10}px, ${mouseY.value * 10}px)`
+  transform: `perspective(500px) rotateX(${mouseY.value * -5}deg) rotateY(${mouseX.value * 5}deg) translateZ(50px)`
 }));
 </script>
 

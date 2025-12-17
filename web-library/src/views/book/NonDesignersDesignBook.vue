@@ -1,29 +1,53 @@
 <template>
-  <div class="book-page" ref="pageRef" @scroll="handleScroll">
+  <div class="book-page" ref="pageRef" @scroll="handleScroll" @wheel="handleWheel">
     <!-- Fixed Background -->
     <div class="fixed-bg"></div>
 
     <!-- Hero Section -->
-    <section class="hero-section">
-      <div class="hero-content" :style="{ transform: `translateY(${scrollY * 0.5}px)` }">
-        <h1 class="hero-title">
-          <span class="block-reveal">写给</span>
-          <span class="block-reveal">大家看的</span>
-          <span class="block-reveal highlight">设计书</span>
-        </h1>
-        <p class="hero-subtitle">The Non-Designer's Design Book</p>
-        <div class="hero-scroll-indicator">
-          <span>SCROLL TO LEARN</span>
-          <div class="line"></div>
+    <div id="hero" class="hero-wrapper">
+      <div class="hero-cover" ref="heroContainerRef" @mousemove="handleHeroMouseMove" @mouseleave="resetHeroTransform">
+        <div class="hero-background-grid"></div>
+
+        <div class="hero-design-layout" :style="heroContentStyle">
+          <div class="hero-contrast-section">
+            <div class="hero-big-circle"></div>
+            <div class="hero-small-text">contrast</div>
+          </div>
+
+          <div class="hero-repetition-section">
+            <div class="hero-repeat-shape" v-for="n in 3" :key="n"></div>
+            <div class="hero-small-text">repetition</div>
+          </div>
+
+          <div class="hero-alignment-section">
+            <div class="hero-align-line"></div>
+            <div class="hero-align-content">
+              <div class="hero-align-box"></div>
+              <div class="hero-align-text">alignment</div>
+            </div>
+          </div>
+
+          <div class="hero-proximity-section">
+            <div class="hero-prox-group">
+              <div class="hero-prox-dot"></div>
+              <div class="hero-prox-dot"></div>
+              <div class="hero-prox-dot"></div>
+            </div>
+            <div class="hero-small-text">proximity</div>
+          </div>
+        </div>
+
+        <div class="hero-title-overlay" :style="heroTitleStyle">
+          <div class="hero-main-title-cn">写给大家看的设计书</div>
+          <div class="hero-sub-title-en">The Non-Designer's Design Book</div>
         </div>
       </div>
       
-      <!-- Decorative Elements (Parallax) -->
-      <div class="hero-shapes">
-        <div class="shape circle" :style="{ transform: `translateY(${scrollY * -0.2}px)` }"></div>
-        <div class="shape square" :style="{ transform: `translateY(${scrollY * -0.1}px) rotate(${scrollY * 0.1}deg)` }"></div>
+      <div class="scroll-hint" :style="{ opacity: Math.max(0, 1 - scrollY / 300) }">
+        <span>SCROLL TO LEARN</span>
+        <div class="line"></div>
       </div>
-    </section>
+    </div>
 
     <!-- Sticky Navigation -->
     <nav class="sticky-nav" :class="{ 'is-stuck': isNavStuck }">
@@ -81,8 +105,11 @@
           <h3>Repetition</h3>
         </div>
         <div class="repetition-container">
-          <div class="pattern-row" v-for="i in 5" :key="i" :style="{ transform: `translateX(${i % 2 === 0 ? scrollY * 0.1 : scrollY * -0.1}px)` }">
-            <span v-for="j in 20" :key="j" class="pattern-item">REPEAT</span>
+          <div class="pattern-row" v-for="i in 6" :key="i" :class="{ 'dir-right': i % 2 === 0 }">
+            <div class="pattern-track">
+              <span v-for="j in 24" :key="`a-${i}-${j}`" class="pattern-item">REPEAT</span>
+              <span v-for="j in 24" :key="`b-${i}-${j}`" class="pattern-item">REPEAT</span>
+            </div>
           </div>
         </div>
         <div class="text-block">
@@ -142,10 +169,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const pageRef = ref<HTMLElement | null>(null);
 const scrollY = ref(0);
 const proximityEnabled = ref(false);
 
@@ -154,38 +182,84 @@ const goBackHome = () => {
 };
 
 const isNavStuck = ref(false);
-const activeSection = ref('intro');
+const activeSection = ref('hero');
 
 // Interactive States
 const contrastEnabled = ref(false);
 const alignmentEnabled = ref(false);
-const isGathered = ref(false);
+
+const heroContainerRef = ref<HTMLElement | null>(null);
+const heroMouseX = ref(0);
+const heroMouseY = ref(0);
+
+const handleHeroMouseMove = (e: MouseEvent) => {
+  if (!heroContainerRef.value) return;
+  const rect = heroContainerRef.value.getBoundingClientRect();
+  heroMouseX.value = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  heroMouseY.value = ((e.clientY - rect.top) / rect.height) * 2 - 1;
+};
+
+const resetHeroTransform = () => {
+  heroMouseX.value = 0;
+  heroMouseY.value = 0;
+};
+
+const heroContentStyle = computed(() => ({
+  transform: `perspective(900px) rotateX(${heroMouseY.value * -6}deg) rotateY(${heroMouseX.value * 6}deg) translateZ(-20px)`
+}));
+
+const heroTitleStyle = computed(() => ({
+  transform: `translate(-50%, -50%) perspective(900px) rotateX(${heroMouseY.value * -6}deg) rotateY(${heroMouseX.value * 6}deg) translateZ(60px)`
+}));
+
+const sectionOrder = ['hero', 'intro', 'contrast', 'repetition', 'alignment', 'proximity'] as const;
+const isWheelLocked = ref(false);
+
+const scrollToIndex = (index: number) => {
+  if (!pageRef.value) return;
+  const safeIndex = Math.min(sectionOrder.length - 1, Math.max(0, index));
+  pageRef.value.scrollTo({ top: safeIndex * window.innerHeight, behavior: 'smooth' });
+};
+
+const handleWheel = (e: WheelEvent) => {
+  e.preventDefault();
+  if (isWheelLocked.value) return;
+
+  const currentIndex = sectionOrder.indexOf(activeSection.value as (typeof sectionOrder)[number]);
+  const direction = e.deltaY > 0 ? 1 : -1;
+  const nextIndex = Math.min(sectionOrder.length - 1, Math.max(0, currentIndex + direction));
+  if (nextIndex === currentIndex) return;
+
+  isWheelLocked.value = true;
+  activeSection.value = sectionOrder[nextIndex];
+  scrollToIndex(nextIndex);
+  window.setTimeout(() => {
+    isWheelLocked.value = false;
+  }, 900);
+};
 
 const handleScroll = (e: Event) => {
   const target = e.target as HTMLElement;
   scrollY.value = target.scrollTop;
   
   // Sticky Nav Logic
-  isNavStuck.value = scrollY.value > window.innerHeight - 100;
-
-  // Active Section Logic
-  const sections = ['intro', 'contrast', 'repetition', 'alignment', 'proximity'];
-  for (const section of sections) {
-    const el = document.getElementById(section);
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight / 2 && rect.bottom > window.innerHeight / 2) {
-        activeSection.value = section;
-      }
-    }
-  }
+  const vh = Math.max(1, window.innerHeight);
+  const index = Math.round(target.scrollTop / vh);
+  const safeIndex = Math.min(sectionOrder.length - 1, Math.max(0, index));
+  activeSection.value = sectionOrder[safeIndex];
+  isNavStuck.value = safeIndex > 0;
 };
 
 const scrollTo = (id: string) => {
-  const el = document.getElementById(id);
-  if (el) {
-    el.scrollIntoView({ behavior: 'smooth' });
+  const index = sectionOrder.indexOf(id as (typeof sectionOrder)[number]);
+  if (index >= 0) {
+    activeSection.value = sectionOrder[index];
+    scrollToIndex(index);
+    return;
   }
+
+  const el = document.getElementById(id);
+  el?.scrollIntoView({ behavior: 'smooth' });
 };
 
 onMounted(() => {
@@ -197,14 +271,24 @@ onMounted(() => {
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap');
 
 .book-page {
+  --nav-h: 70px;
   width: 100%;
+  max-width: 100%;
   height: 100vh;
   overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: var(--nav-h);
   background-color: #f5f5f7;
   color: #1d1d1f;
   font-family: 'Microsoft YaHei', 'Noto Sans SC', sans-serif;
   position: relative;
-  scroll-behavior: smooth;
+}
+
+.book-page,
+.book-page * {
+  box-sizing: border-box;
 }
 
 .fixed-bg {
@@ -269,52 +353,176 @@ onMounted(() => {
   color: #000;
 }
 
-/* Hero Section */
-.hero-section {
+/* Hero Wrapper */
+.hero-wrapper {
   height: 100vh;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   overflow: hidden;
+  background-color: #f5f5f7;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
-.hero-content {
-  text-align: center;
-  z-index: 2;
+.hero-cover {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  font-family: 'Helvetica Neue', sans-serif;
+  cursor: default;
+  isolation: isolate;
 }
 
-.hero-title {
-  font-size: 8rem;
-  font-weight: 900;
-  line-height: 1;
-  margin-bottom: 1rem;
+.hero-background-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#ccc 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.35;
+}
+
+.hero-design-layout {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  height: 80%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 20px;
+  transition: transform 0.1s ease-out;
+}
+
+.hero-small-text {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #666;
+  margin-top: 8px;
+}
+
+.hero-contrast-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  text-shadow: 10px 10px 0px rgba(0,0,0,0.05);
+  justify-content: center;
+  background: #fff;
+  padding: 20px;
 }
 
-.block-reveal {
-  display: block;
+.hero-big-circle {
+  width: 80px;
+  height: 80px;
+  background: #000;
+  border-radius: 50%;
 }
 
-.hero-title .highlight {
-  color: #d2e603; /* Yellow Green */
-  -webkit-text-stroke: 2px #000;
-  text-shadow: 15px 15px 0px #000;
-  transform: skewX(-10deg);
+.hero-repetition-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #fff;
 }
 
-.hero-subtitle {
-  font-size: 1.5rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  font-weight: 300;
-  margin-top: 2rem;
+.hero-repetition-section .hero-small-text {
+  color: #aaa;
 }
 
-.hero-scroll-indicator {
+.hero-repeat-shape {
+  width: 40px;
+  height: 8px;
+  background: #fff;
+  margin: 4px 0;
+}
+
+.hero-alignment-section {
+  position: relative;
+  background: #e0e0e0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.hero-align-line {
+  position: absolute;
+  left: 32px;
+  top: 20px;
+  bottom: 20px;
+  width: 1px;
+  background: #f00;
+  opacity: 0.5;
+}
+
+.hero-align-content {
+  margin-left: 26px;
+}
+
+.hero-align-box {
+  width: 40px;
+  height: 40px;
+  background: #333;
+  margin-bottom: 10px;
+}
+
+.hero-align-text {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.hero-proximity-section {
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-prox-group {
+  display: flex;
+  gap: 6px;
+}
+
+.hero-prox-dot {
+  width: 16px;
+  height: 16px;
+  background: #000;
+  border-radius: 50%;
+}
+
+.hero-title-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  text-align: center;
+  z-index: 10;
+  mix-blend-mode: difference;
+  pointer-events: none;
+  transition: transform 0.1s ease-out;
+}
+
+.hero-main-title-cn {
+  font-weight: 900;
+  font-size: 48px;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+
+.hero-sub-title-en {
+  font-size: 14px;
+  color: #fff;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+
+.scroll-hint {
   position: absolute;
   bottom: 40px;
   left: 50%;
@@ -323,12 +531,16 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  font-size: 0.8rem;
-  letter-spacing: 0.1em;
-  opacity: 0.6;
+  z-index: 10;
+  pointer-events: none;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #000;
 }
 
-.line {
+.scroll-hint .line {
   width: 1px;
   height: 60px;
   background: #000;
@@ -341,55 +553,58 @@ onMounted(() => {
   100% { height: 60px; opacity: 0; transform: translateY(60px); }
 }
 
-.hero-shapes .shape {
-  position: absolute;
-  opacity: 0.1;
-  z-index: 1;
-}
-
-.circle {
-  width: 400px; height: 400px;
-  border: 40px solid #000;
-  border-radius: 50%;
-  top: -100px; left: -100px;
-}
-
-.square {
-  width: 300px; height: 300px;
-  background: #2563eb; /* Blue */
-  bottom: 10%; right: 10%;
-}
-
 /* Sticky Nav */
 .sticky-nav {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
   width: 100%;
-  background: rgba(245, 245, 247, 0.8);
+  height: 70px;
+  background: rgba(245, 245, 247, 0.92);
   backdrop-filter: blur(20px);
   z-index: 100;
-  padding: 20px 0;
+  padding: 0;
   border-bottom: 1px solid rgba(0,0,0,0.05);
   transition: all 0.3s ease;
+  transform: translateY(-100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sticky-nav.is-stuck {
+  transform: translateY(0);
 }
 
 .nav-links {
   display: flex;
   justify-content: center;
   gap: 40px;
+  flex-wrap: wrap;
+  padding: 0 20px;
 }
 
 .nav-links a {
   text-decoration: none;
-  color: #666;
   font-weight: 700;
   font-size: 1rem;
   position: relative;
-  transition: color 0.3s;
+  
+  /* Gradient Text Effect */
+  background: linear-gradient(120deg, #333 0%, #000 50%, #d2e603 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: #666; /* Hides gradient by default */
+  
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition-delay: 0.2s; /* Delay when returning to inactive */
 }
 
 .nav-links a.active, .nav-links a:hover {
-  color: #000;
+  color: transparent; /* Reveals gradient */
+  background-position: 100% center;
+  transition-delay: 0s; /* Immediate when becoming active */
 }
 
 .nav-links a.active::after {
@@ -399,38 +614,44 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: #000;
+  background: linear-gradient(90deg, #000, #d2e603);
 }
 
 /* Content Sections */
 .content-wrapper {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .content-section {
-  min-height: 80vh;
-  padding: 100px 0;
+  height: 100vh;
+  padding: clamp(20px, 4vh, 56px) 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
 }
 
 .section-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: clamp(18px, 4vh, 60px);
 }
 
 .section-header h2 {
-  font-size: 4rem;
+  font-size: clamp(2.2rem, 6vw, 4rem);
   font-weight: 900;
   margin: 0;
   line-height: 1;
 }
 
 .section-header h3 {
-  font-size: 1.2rem;
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
   font-weight: 300;
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -439,15 +660,15 @@ onMounted(() => {
 }
 
 .text-block {
-  max-width: 600px;
+  max-width: min(600px, 90vw);
   text-align: center;
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
   line-height: 1.8;
 }
 
 .chinese-text {
   font-weight: 700;
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 /* Contrast Demo */
@@ -457,7 +678,8 @@ onMounted(() => {
 
 .demo-card {
   width: 500px;
-  padding: 40px;
+  max-width: 100%;
+  padding: clamp(20px, 4vw, 40px);
   background: #e5e5e5;
   color: #999;
   border-radius: 20px;
@@ -484,7 +706,7 @@ onMounted(() => {
 }
 
 .toggle-btn {
-  margin-top: 30px;
+  margin-top: 20px;
   padding: 15px 30px;
   border: 2px solid currentColor;
   background: transparent;
@@ -500,29 +722,58 @@ onMounted(() => {
 
 /* Repetition Demo */
 .repetition-container {
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
-  margin: 40px 0;
+  max-width: 1200px;
+  margin: 18px auto 10px;
+  transform: translateY(-10px);
 }
 
 .pattern-row {
-  white-space: nowrap;
-  font-size: 4rem;
+  width: 100%;
+  overflow: hidden;
+  font-size: clamp(2.2rem, 6vw, 4rem);
   font-weight: 900;
   color: rgba(0,0,0,0.05);
   line-height: 1;
-  transition: transform 0.1s linear;
+}
+
+.pattern-track {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  width: max-content;
+  animation: repeatMarqueeLeft 16s linear infinite;
+}
+
+.pattern-row.dir-right .pattern-track {
+  animation-name: repeatMarqueeRight;
 }
 
 .pattern-item {
-  margin-right: 40px;
+  margin-right: clamp(16px, 3vw, 40px);
+}
+
+.repetition-section .text-block {
+  transform: translateY(-8px);
+}
+
+@keyframes repeatMarqueeLeft {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes repeatMarqueeRight {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
 }
 
 /* Alignment Demo */
 .alignment-demo {
   position: relative;
   width: 500px;
-  height: 400px;
+  max-width: 100%;
+  height: min(400px, 45vh);
   border: 2px dashed #ccc;
   display: flex;
   align-items: center;
@@ -556,7 +807,7 @@ onMounted(() => {
 
 .align-btn {
   position: absolute;
-  bottom: -60px;
+  bottom: 16px;
   padding: 15px 30px;
   background: #000;
   color: #fff;
@@ -581,6 +832,7 @@ onMounted(() => {
 
 .business-card {
   width: 400px;
+  max-width: 100%;
   height: 250px;
   background: #fff;
   border: 1px solid #ddd;
