@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { RouterView, useRoute } from "vue-router";
-import TransitionOverlay from "./components/TransitionOverlay.vue";
-import ReadingProgressBar from "./components/ReadingProgressBar.vue";
-import { books } from "./data/books";
+import TransitionOverlay from "@/components/common/TransitionOverlay.vue";
+import ReadingProgressBar from "@/components/common/ReadingProgressBar.vue";
+import { books } from "@/data/books";
 
 const route = useRoute();
 
