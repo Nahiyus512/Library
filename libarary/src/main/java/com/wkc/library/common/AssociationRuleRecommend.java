@@ -33,11 +33,11 @@ public class AssociationRuleRecommend {
      */
     public List<Integer> recommend(Integer userId, int topN) {
         // 1. 获取目标用户的喜爱记录
-        User user = userMapper.selectById(userId);
-        if (user == null) return Collections.emptyList();
+        // User user = userMapper.selectById(userId);
+        // if (user == null) return Collections.emptyList();
 
         LambdaQueryWrapper<BookLike> myLikeWrapper = new LambdaQueryWrapper<>();
-        myLikeWrapper.eq(BookLike::getUserName, user.getName())
+        myLikeWrapper.eq(BookLike::getUserId, userId)
                      .ge(BookLike::getLikeLevel, 1); // 只统计还行和想看
         List<BookLike> myLikes = bookLikeMapper.selectList(myLikeWrapper);
         
@@ -51,10 +51,10 @@ public class AssociationRuleRecommend {
         LambdaQueryWrapper<BookLike> allWrapper = new LambdaQueryWrapper<>();
         allWrapper.ge(BookLike::getLikeLevel, 1);
         List<BookLike> allLikes = bookLikeMapper.selectList(allWrapper);
-        Map<String, Set<Integer>> userTransactions = new HashMap<>();
+        Map<Integer, Set<Integer>> userTransactions = new HashMap<>();
         
         for (BookLike like : allLikes) {
-            userTransactions.computeIfAbsent(like.getUserName(), k -> new HashSet<>())
+            userTransactions.computeIfAbsent(like.getUserId(), k -> new HashSet<>())
                     .add(like.getBookId());
         }
 

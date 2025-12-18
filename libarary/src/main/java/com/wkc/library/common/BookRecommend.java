@@ -1,7 +1,7 @@
 package com.wkc.library.common;
 
-import com.wkc.library.entity.BookScore;
-import com.wkc.library.mapper.BookScoreMapper;
+import com.wkc.library.entity.BookLike;
+import com.wkc.library.mapper.BookLikeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,15 +11,15 @@ import java.util.*;
 public class BookRecommend {
 
     @Autowired
-    private BookScoreMapper bookScoreMapper;
+    private BookLikeMapper bookLikeMapper;
 
     // 加载用户评分数据的方法
     public Map<Integer, Map<Integer, Double>> loadRatings() {
         Map<Integer, Map<Integer, Double>> userRatings = new HashMap<>();
-        List<BookScore> bookScores = bookScoreMapper.selectList(null);
-        for (BookScore score : bookScores) {
-            userRatings.computeIfAbsent(score.getUserId(), k -> new HashMap<>())
-                       .put(score.getBookId(), score.getScore().doubleValue());
+        List<BookLike> bookLikes = bookLikeMapper.selectList(null);
+        for (BookLike like : bookLikes) {
+            userRatings.computeIfAbsent(like.getUserId(), k -> new HashMap<>())
+                       .put(like.getBookId(), like.getLikeLevel() != null ? like.getLikeLevel().doubleValue() : 0.0);
         }
         return userRatings;
     }
@@ -91,7 +91,7 @@ public class BookRecommend {
         List<Map.Entry<Integer, Integer>> sortedBooks = new ArrayList<>(bookVotes.entrySet());
         sortedBooks.sort(Map.Entry.<Integer, Integer>comparingByValue().reversed());
         List<Map.Entry<Integer, Integer>> recommendBook = new ArrayList<>();
-        // System.out.println("为用户 " + targetUserId + " 推荐的图书：");
+        // System.out.println("为用户 " + targetUserName + " 推荐的图书：");
         for (int i = 0; i < Math.min(5, sortedBooks.size()); i++) {
             recommendBook.add(sortedBooks.get(i));
             // System.out.println("图书ID: " + sortedBooks.get(i).getKey() + ", 被推荐次数: " + sortedBooks.get(i).getValue());

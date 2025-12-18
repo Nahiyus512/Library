@@ -2,9 +2,9 @@ package com.wkc.library.common;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wkc.library.entity.Book;
-import com.wkc.library.entity.BookScore;
+import com.wkc.library.entity.BookLike;
+import com.wkc.library.mapper.BookLikeMapper;
 import com.wkc.library.mapper.BookMapper;
-import com.wkc.library.mapper.BookScoreMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,16 +23,17 @@ public class ContentBasedRecommend {
     private BookMapper bookMapper;
 
     @Autowired
-    private BookScoreMapper bookScoreMapper;
+    private BookLikeMapper bookLikeMapper;
 
     /**
      * 为指定用户推荐图书
      */
     public List<Book> recommend(Integer userId, int topN) {
-        // 1. 获取用户评分历史
-        LambdaQueryWrapper<BookScore> scoreWrapper = new LambdaQueryWrapper<>();
-        scoreWrapper.eq(BookScore::getUserId, userId);
-        List<BookScore> userHistory = bookScoreMapper.selectList(scoreWrapper);
+        // 1. 获取用户喜爱历史
+        LambdaQueryWrapper<BookLike> likeWrapper = new LambdaQueryWrapper<>();
+        likeWrapper.eq(BookLike::getUserId, userId)
+                   .ge(BookLike::getLikeLevel, 1); // 只统计还行和想看
+        List<BookLike> userHistory = bookLikeMapper.selectList(likeWrapper);
 
         if (userHistory.isEmpty()) {
             return Collections.emptyList();
@@ -50,12 +51,12 @@ public class ContentBasedRecommend {
 
         Set<Integer> watchedBookIds = new HashSet<>();
 
-        for (BookScore score : userHistory) {
-            Book book = bookMap.get(score.getBookId());
+        for (BookLike like : userHistory) {
+            Book book = bookMap.get(like.getBookId());
             if (book == null) continue;
 
             watchedBookIds.add(book.getBookId());
-            double rating = score.getScore(); // 1-5分
+            double rating = like.getLikeLevel() != null ? like.getLikeLevel().doubleValue() : 0.0;
             // 归一化评分权重，例如：(评分 - 3.0) * 权重，或者直接用评分作为权重
             double weight = rating; 
 

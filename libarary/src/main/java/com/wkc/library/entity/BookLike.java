@@ -17,6 +17,7 @@ public class BookLike {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+    private Integer userId;
     private String userName;
     private Integer bookId;
     private String bookName;

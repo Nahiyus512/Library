@@ -1,7 +1,7 @@
 package com.wkc.library.common;
 
-import com.wkc.library.entity.BookScore;
-import com.wkc.library.mapper.BookScoreMapper;
+import com.wkc.library.entity.BookLike;
+import com.wkc.library.mapper.BookLikeMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class ItemCFRecommend {
 
     @Autowired
-    private BookScoreMapper bookScoreMapper;
+    private BookLikeMapper bookLikeMapper;
 
     /**
      * 为指定用户推荐图书
@@ -26,7 +26,7 @@ public class ItemCFRecommend {
      * @return 推荐的图书ID列表
      */
     public List<Integer> recommend(Integer targetUserId, int topN) {
-        List<BookScore> allScores = bookScoreMapper.selectList(null);
+        List<BookLike> allLikes = bookLikeMapper.selectList(null);
 
         // 1. 构建用户-物品倒排表：用户 -> 评分过的物品列表
         Map<Integer, List<Integer>> userToBooks = new HashMap<>();
@@ -35,12 +35,12 @@ public class ItemCFRecommend {
         // 记录用户对物品的评分
         Map<Integer, Map<Integer, Double>> userBookRatings = new HashMap<>();
 
-        for (BookScore score : allScores) {
-            userToBooks.computeIfAbsent(score.getUserId(), k -> new ArrayList<>()).add(score.getBookId());
-            bookToUsers.computeIfAbsent(score.getBookId(), k -> new ArrayList<>()).add(score.getUserId());
+        for (BookLike like : allLikes) {
+            userToBooks.computeIfAbsent(like.getUserId(), k -> new ArrayList<>()).add(like.getBookId());
+            bookToUsers.computeIfAbsent(like.getBookId(), k -> new ArrayList<>()).add(like.getUserId());
             
-            userBookRatings.computeIfAbsent(score.getUserId(), k -> new HashMap<>())
-                    .put(score.getBookId(), score.getScore().doubleValue());
+            userBookRatings.computeIfAbsent(like.getUserId(), k -> new HashMap<>())
+                    .put(like.getBookId(), like.getLikeLevel() != null ? like.getLikeLevel().doubleValue() : 0.0);
         }
 
         List<Integer> targetUserLikedBooks = userToBooks.getOrDefault(targetUserId, Collections.emptyList());

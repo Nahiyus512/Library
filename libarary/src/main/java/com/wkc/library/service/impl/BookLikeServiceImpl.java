@@ -17,7 +17,7 @@ public class BookLikeServiceImpl extends ServiceImpl<BookLikeMapper, BookLike> i
     @Override
     public Boolean likeBook(BookLike bookLike) {
         LambdaQueryWrapper<BookLike> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookLike::getUserName, bookLike.getUserName())
+        wrapper.eq(BookLike::getUserId, bookLike.getUserId())
                .eq(BookLike::getBookId, bookLike.getBookId());
         
         BookLike exist = this.getOne(wrapper);

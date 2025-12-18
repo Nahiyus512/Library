@@ -62,31 +62,15 @@ public class BookScoreController {
     /**
      * 协同过滤算法推荐图书
      * @param userId
+     * @param strategy 推荐策略 (可选)
      * @return
      */
     @GetMapping("/recommend")
-    public R<List<Book>> recommendBook(@RequestParam Integer userId) {
-        LambdaQueryWrapper<BookScore> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(BookScore::getUserId,userId);
-        List<BookScore> bookScoreList = bookService.list(queryWrapper);
-
-        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
-        wrapper.orderBy(true,true,Book::getBookPrice);
-        wrapper.last("LIMIT 5");
-        //如果用户从未评价过书本推荐价格最高的5本书，评价过书则按协同过滤算法进行推荐
-        if(bookScoreList.isEmpty()) {
-            List<Book> books = bookMapper.selectList(wrapper);
-            return R.success(books);
-        }else {
-            List<Book> list = bookService.recommend(userId);
-            if(list.isEmpty()){
-                //如果所有书籍都评价过，则推荐5本价格最高的书
-                List<Book> books = bookMapper.selectList(wrapper);
-                return R.success(books);
-            }else {
-                return R.success(list);
-            }
-        }
+    public R<List<Book>> recommendBook(@RequestParam Integer userId, @RequestParam(required = false, defaultValue = "user_cf") String strategy) {
+        // 直接调用协同过滤算法进行推荐（基于用户的喜爱程度 BookLike）
+        // 若无喜爱记录或无推荐结果，返回空列表
+        List<Book> list = bookService.recommend(userId, strategy);
+        return R.success(list);
     }
 
 

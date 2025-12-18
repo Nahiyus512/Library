@@ -39,9 +39,9 @@ public class BookLikeController {
     }
 
     @GetMapping("/list")
-    public R<List<Map<String, Object>>> getBookshelf(@RequestParam String userName) {
+    public R<List<Map<String, Object>>> getBookshelf(@RequestParam Integer userId) {
         LambdaQueryWrapper<BookLike> likeWrapper = new LambdaQueryWrapper<>();
-        likeWrapper.eq(BookLike::getUserName, userName);
+        likeWrapper.eq(BookLike::getUserId, userId);
         List<BookLike> likes = bookLikeService.list(likeWrapper);
 
         if (likes.isEmpty()) {
@@ -81,9 +81,9 @@ public class BookLikeController {
     }
 
     @GetMapping("/status")
-    public R<Integer> getLikeStatus(@RequestParam String userName, @RequestParam Integer bookId) {
+    public R<Integer> getLikeStatus(@RequestParam Integer userId, @RequestParam Integer bookId) {
         LambdaQueryWrapper<BookLike> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookLike::getUserName, userName)
+        wrapper.eq(BookLike::getUserId, userId)
                .eq(BookLike::getBookId, bookId);
         BookLike one = bookLikeService.getOne(wrapper);
         if (one != null) {

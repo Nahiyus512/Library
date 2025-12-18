@@ -2,11 +2,24 @@
   <div class="page-container">
     <div class="scroll-container">
       <div class="header-section">
-        <h2 class="page-title">为您推荐</h2>
-        <p class="page-subtitle">根据您的阅读历史和偏好精心挑选。</p>
+        <div class="header-content">
+          <div>
+            <h2 class="page-title">为您推荐</h2>
+            <p class="page-subtitle">根据您的阅读历史和偏好精心挑选。</p>
+          </div>
+          <div class="filter-group">
+            <span class="filter-label">推荐算法：</span>
+            <el-select v-model="currentStrategy" @change="handleStrategyChange" placeholder="选择推荐算法" style="width: 180px">
+              <el-option label="基于用户协同过滤" value="user_cf" />
+              <el-option label="基于物品协同过滤" value="item_cf" />
+              <el-option label="基于内容推荐" value="content_based" />
+              <el-option label="关联规则推荐" value="association_rule" />
+            </el-select>
+          </div>
+        </div>
       </div>
 
-      <div class="books-grid">
+      <div class="books-grid" v-if="recommendBook.length > 0">
         <div 
           class="book-card" 
           v-for="book in recommendBook" 
@@ -25,6 +38,16 @@
             <h3 class="book-title">{{ book.bookName }}</h3>
           </div>
         </div>
+      </div>
+
+      <div v-else class="empty-state">
+        <el-empty description="暂无推荐书籍">
+          <template #description>
+             <p class="empty-text">暂时没有为您找到推荐书籍。</p>
+             <p class="empty-subtext">可能是因为您还没有标记感兴趣的书籍，快去首页挑选吧！</p>
+          </template>
+          <el-button type="primary" @click="router.push('/')">去首页看看</el-button>
+        </el-empty>
       </div>
       
       <div class="info-section">
@@ -107,10 +130,13 @@ import myAxios from "@/api/index"
 import { ref, reactive, onMounted } from "vue";
 import { useCookies } from '@vueuse/integrations/useCookies'
 import { ElMessage } from "element-plus";
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const cookie = useCookies()
 
 const recommendBook = ref([]);
+const currentStrategy = ref('user_cf');
 const centerDialogVisible = ref(false)
 const userName = reactive({
   userId: '',
@@ -169,11 +195,18 @@ const getUserByName = async () => {
   }
 }
 
+const handleStrategyChange = async () => {
+  if (userName.userId) {
+    await getRecommendBook(userName.userId);
+  }
+}
+
 const getRecommendBook = async (userId: any) => {
   try {
     let res = await myAxios.get('http://localhost:8080/bookScore/recommend', {
       params: {
-        userId: userId
+        userId: userId,
+        strategy: currentStrategy.value
       }
     })
     recommendBook.value = res.data.data
@@ -269,6 +302,23 @@ const findRating = async () => {
   padding: 0 20px;
 }
 
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #606266;
+}
+
 .page-title {
   font-size: 24px;
   font-weight: 300;
@@ -288,6 +338,24 @@ const findRating = async () => {
   gap: 40px;
   margin-bottom: 80px;
   padding: 0 20px;
+}
+
+.empty-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 0;
+}
+
+.empty-text {
+  font-size: 16px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.empty-subtext {
+  font-size: 14px;
+  color: #999;
 }
 
 .book-card {
