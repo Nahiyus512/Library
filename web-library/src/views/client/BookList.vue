@@ -66,35 +66,37 @@
             </div>
           </div>
 
-          <div class="rating-section">
-            <span class="section-label">您的评分</span>
-            <div class="stars" @click="rate($event)">
-              <input
-                v-for="n in 5"
-                :key="n"
-                type="radio"
-                :id="'star' + n"
-                :value="n"
-                hidden
-              />
-              <label
-                v-for="n in 5"
-                :key="n"
-                :for="'star' + n"
-                :class="{ filled: n <= ratingData.rating }"
-              >
-                ★
-              </label>
+          <div class="rating-action-row">
+            <div class="rating-group">
+              <span class="section-label">您的评分</span>
+              <div class="stars" @click="rate($event)">
+                <input
+                  v-for="n in 5"
+                  :key="n"
+                  type="radio"
+                  :id="'star' + n"
+                  :value="n"
+                  hidden
+                />
+                <label
+                  v-for="n in 5"
+                  :key="n"
+                  :for="'star' + n"
+                  :class="{ filled: n <= ratingData.rating }"
+                >
+                  ★
+                </label>
+              </div>
             </div>
-          </div>
 
-          <div class="action-buttons">
-            <button class="action-btn outline" @click="inputScore">
-              评分
-            </button>
-            <button class="action-btn primary" @click="borrow" :disabled="bookData.bookNum <= 0">
-              {{ bookData.bookNum > 0 ? '借阅' : '暂无库存' }}
-            </button>
+            <div class="action-right">
+              <button class="action-btn primary small-btn" @click="addToBookshelf" v-if="likeLevel !== 2">
+                加入书架
+              </button>
+              <button class="action-btn primary small-btn" disabled v-else>
+                已加入
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -111,6 +113,8 @@ import { useRoute } from 'vue-router'
 
 const cookie = useCookies()
 const route = useRoute()
+
+const likeLevel = ref(-1)
 
 const ratingData = reactive({
   rating: 0,
@@ -189,6 +193,40 @@ const clickBook = (book: any) => {
   ratingData.bookId = book.bookId
   ratingData.bookName = book.bookName
   findRating()
+  getLikeStatus()
+}
+
+const getLikeStatus = async () => {
+  try {
+    let res = await myAxios.get('http://localhost:8080/bookLike/status', {
+      params: {
+        userName: borrowData.userName,
+        bookId: bookData.bookId
+      }
+    })
+    likeLevel.value = res.data.data
+  } catch (e) {
+    console.log(e)
+  }
+}
+
+const addToBookshelf = async () => {
+  try {
+    let res = await myAxios.put('http://localhost:8080/bookLike/like', {
+      userName: borrowData.userName,
+      bookId: bookData.bookId,
+      bookName: bookData.bookName,
+      likeLevel: 2
+    })
+    if (res.data.code === 200) {
+        ElMessage.success("加入书架成功")
+        likeLevel.value = 2
+    } else {
+        ElMessage.error(res.data.msg || "操作失败")
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 const handleCurrentChange = (val: number) => {
@@ -242,11 +280,16 @@ const borrow = async () => {
   }
 }
 
-const rate = (event: MouseEvent) => {
+const rate = async (event: MouseEvent) => {
   const target = event.target as HTMLElement;
   if (target.tagName === 'LABEL') {
     const starIndex = parseInt(target.getAttribute('for')!.slice(-1), 10);
+    // If clicking same star, could optionally clear it, but usually just updates.
+    // Here we just update.
     ratingData.rating = starIndex;
+    
+    // Call inputScore directly
+    await inputScore();
   }
 };
 
@@ -365,7 +408,7 @@ const inputScore = async () => {
   padding: 20px;
   flex-shrink: 0;
   border-top: 1px solid rgba(0,0,0,0.05);
-  background-color: #f9f9f9; /* Match app background */
+  background-color: #fff;
 }
 
 /* Dialog Styles */
@@ -420,15 +463,23 @@ const inputScore = async () => {
   font-weight: 500;
 }
 
-.rating-section {
-  margin-bottom: 30px;
+.rating-action-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.rating-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .section-label {
   display: block;
   font-size: 12px;
   color: #999;
-  margin-bottom: 5px;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -455,20 +506,24 @@ const inputScore = async () => {
   color: #000;
 }
 
-.action-buttons {
+.action-right {
   display: flex;
-  gap: 15px;
-  margin-top: auto;
+  gap: 10px;
 }
 
 .action-btn {
-  flex: 1;
-  padding: 12px;
+  padding: 8px 16px;
   border: none;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
+  border-radius: 4px;
+}
+
+.action-btn.small-btn {
+  padding: 8px 16px;
+  height: 40px;
 }
 
 .action-btn.outline {

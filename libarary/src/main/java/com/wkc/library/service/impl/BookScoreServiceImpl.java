@@ -69,27 +69,26 @@ public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore
     @Override
     public boolean updateScore(BookScore bookScore) {
         LambdaQueryWrapper<BookScore> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BookScore::getUserId,bookScore.getUserId());
-        wrapper.eq(BookScore::getBookId,bookScore.getBookId());
-        BookScore selectOne = bookScoreMapper.selectOne(wrapper);
-        LocalDate date = LocalDate.now(); // get the current date
+        wrapper.eq(BookScore::getUserId, bookScore.getUserId())
+               .eq(BookScore::getBookId, bookScore.getBookId());
+        
+        BookScore existingScore = bookScoreMapper.selectOne(wrapper);
+        
+        LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        bookScore.setTime(date.format(formatter));
-        if(selectOne != null) {
-            LambdaQueryWrapper<BookScore> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(BookScore::getUserId,bookScore.getUserId());
-            int update = bookScoreMapper.update(bookScore, lambdaQueryWrapper);
-            if(update == 0){
-                return false;
-            }
-            return true;
-        }else {
-            //bookScore.setId(UUIDUtil.generateUUID());
-            Integer integer = bookScoreMapper.insetScore(bookScore);
-            if(integer == 0){
-                return false;
-            }
-            return true;
+        String currentTime = date.format(formatter);
+        bookScore.setTime(currentTime);
+
+        if (existingScore != null) {
+            // Update existing record
+            existingScore.setScore(bookScore.getScore());
+            existingScore.setTime(currentTime);
+            int update = bookScoreMapper.updateById(existingScore);
+            return update > 0;
+        } else {
+            // Insert new record
+            int insert = bookScoreMapper.insetScore(bookScore);
+            return insert > 0;
         }
     }
 }

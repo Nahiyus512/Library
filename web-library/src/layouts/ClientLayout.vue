@@ -10,6 +10,7 @@
         <RouterLink to="/main" class="nav-item" active-class="active">首页</RouterLink>
         <RouterLink to="/userIndex" class="nav-item" active-class="active">仪表盘</RouterLink>
         <RouterLink to="/book" class="nav-item" active-class="active">图书库</RouterLink>
+        <RouterLink to="/bookshelf" class="nav-item" active-class="active">我的书架</RouterLink>
         <RouterLink to="/bookRecommend" class="nav-item" active-class="active">推荐</RouterLink>
         <RouterLink to="/suggest" class="nav-item" active-class="active">建议</RouterLink>
         <RouterLink to="/user" class="nav-item" active-class="active">个人中心</RouterLink>

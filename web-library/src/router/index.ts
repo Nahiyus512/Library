@@ -12,6 +12,7 @@ import Login from "@/views/auth/Login.vue"
 import MainPage from "@/views/client/MainPage.vue"
 import UserIndex from "@/views/client/UserIndex.vue"
 import BookList from "@/views/client/BookList.vue"
+import Bookshelf from "@/views/client/Bookshelf.vue"
 import BookRecommend from "@/views/client/BookRecommend.vue"
 import Suggest from "@/views/client/Suggest.vue"
 import UserCenter from "@/views/client/UserCenter.vue"
@@ -120,7 +121,11 @@ const router = createRouter({
                     name: "book",
                     component: BookList
                 },
-
+                {
+                    path: "/bookshelf",
+                    name: "bookshelf",
+                    component: Bookshelf
+                },
                 {
                     path: "/bookRecommend",
                     name: "bookRecommend",
