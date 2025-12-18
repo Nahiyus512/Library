@@ -208,14 +208,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 300px; /* Doubled from ~200px */
+  width: 200px;
   opacity: 0;
   transition: all 0.8s ease;
 }
 
 .book-wrapper {
   width: 100%;
-  max-width: 300px; /* Doubled from 220px */
+  max-width: 200px;
 }
 
 .event-item.top {
