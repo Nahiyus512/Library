@@ -51,4 +51,11 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         List<Book> books = bookMapper.selectList(bookLambdaQueryWrapper);
         return books;
     }
+
+    @Override
+    public List<Book> searchBookByCategoryName(String categoryName) {
+        LambdaQueryWrapper<Book> wrapper = new LambdaQueryWrapper<>();
+        wrapper.like(Book::getBookClassify,categoryName);
+        return bookMapper.selectList(wrapper);
+    }
 }

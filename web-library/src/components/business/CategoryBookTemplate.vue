@@ -123,17 +123,21 @@ const wrapperStyle = computed(() => ({
 }));
 
 const handleClick = () => {
-  if (props.routePath) {
-    transitionState.startAnimation(props.themeColor, props.title, '#fff');
+  if (!props.routePath) return;
+
+  transitionState.startAnimation(
+    props.themeColor,
+    props.title,
+    '#ffffff'
+  );
+
+  setTimeout(() => {
+    router.push(props.routePath);
+
     setTimeout(() => {
-      if (props.routePath) {
-        router.push(props.routePath);
-        setTimeout(() => {
-          transitionState.endAnimation();
-        }, 500);
-      }
-    }, 350);
-  }
+      transitionState.endAnimation();
+    }, 500);
+  }, 350);
 };
 </script>
 
@@ -564,7 +568,7 @@ const handleClick = () => {
   color: white;
   background: rgba(0, 20, 40, 0.6);
   overflow: hidden;
-  clip: rect(0, 900px, 0, 0); 
+  clip: rect(0, 900px, 0, 0);
   animation: noise-anim-2 3s infinite linear alternate-reverse;
 }
 
@@ -577,7 +581,7 @@ const handleClick = () => {
   color: white;
   background: rgba(0, 20, 40, 0.6);
   overflow: hidden;
-  clip: rect(0, 900px, 0, 0); 
+  clip: rect(0, 900px, 0, 0);
   animation: noise-anim 2s infinite linear alternate-reverse;
 }
 

@@ -7,9 +7,9 @@
         <span class="page-subtitle">管理图书馆的所有书籍分类</span>
       </div>
       <div class="header-right">
-        <el-input 
-          v-model="headSearchInput" 
-          placeholder="搜索分类名称..." 
+        <el-input
+          v-model="headSearchInput"
+          placeholder="搜索分类名称..."
           class="search-input"
           :prefix-icon="Search"
           clearable
@@ -157,12 +157,12 @@ const findClass = async () => {
   dataInfo.name = headSearchInput.value;
   await getClass();
   // Filter locally if backend doesn't support search by name on this endpoint
-  // But based on previous code, it seems it just refreshes. 
+  // But based on previous code, it seems it just refreshes.
   // If the backend API `class/get` doesn't take params, we might need client-side filtering.
   // Assuming previous code `findClass` calling `getClass` implies `getClass` uses `dataInfo.name`?
   // Wait, previous `getClass` call `myAxios.get("http://localhost:8080/class/get")` without params.
   // Previous `findClass` just set `dataInfo.name` and called `getClass`.
-  // It seems search wasn't really implemented in previous code? 
+  // It seems search wasn't really implemented in previous code?
   // I will leave it as is, but if user wants search, I might need to implement client-side filtering if backend doesn't support it.
   // For now I'll just keep the structure.
 };
@@ -322,12 +322,12 @@ const clickAddOk = async () => {
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  
+
   .warning-icon {
     font-size: 24px;
     color: #e6a23c;
   }
-  
+
   span {
     font-size: 16px;
     color: #606266;

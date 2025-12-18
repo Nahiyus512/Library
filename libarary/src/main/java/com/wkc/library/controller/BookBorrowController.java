@@ -55,7 +55,7 @@ public class BookBorrowController {
         Page<BookBorrow> page = new Page<>(pageParam.getPageNum(),pageParam.getPageSize(),true);
         LambdaQueryWrapper<BookBorrow> wrapper = new LambdaQueryWrapper<>();
         wrapper.like(BookBorrow::getBookName,pageParam.getNameInfo());
-        int count = borrowMapper.selectCount(wrapper);
+        int count = Math.toIntExact(borrowMapper.selectCount(wrapper));
         IPage<BookBorrow>  iPage= bookBorrowService.page(page, wrapper);
         BorrowPageInfo borrowPageInfo = new BorrowPageInfo();
         borrowPageInfo.setBorrows(iPage.getRecords());

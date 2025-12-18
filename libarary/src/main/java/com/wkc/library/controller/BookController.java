@@ -56,7 +56,7 @@ public class BookController {
         Page<Book> page = new Page<>(pageParam.getPageNum(),pageParam.getPageSize(),true);
         LambdaQueryWrapper<Book> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.like(Book::getBookName,pageParam.getNameInfo());
-        int count = bookMapper.selectCount(queryWrapper);
+        int count = Math.toIntExact(bookMapper.selectCount(queryWrapper));
         IPage result = bookService.page(page,queryWrapper);
         BookPageInfo info = new BookPageInfo();
         info.setBookList(result.getRecords());

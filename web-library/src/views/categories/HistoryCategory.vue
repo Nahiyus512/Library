@@ -134,6 +134,7 @@ onUnmounted(() => {
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 800px; /* Ensure enough height */
 }
 
 .return-btn {
@@ -182,12 +183,14 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   width: 100%;
+  overflow-x: auto; /* Enable horizontal scroll */
+  padding: 0 0px; /* Add padding for scroll start/end */
 }
 
 .timeline-line {
   position: absolute;
-  top: 50%; left: 10%;
-  width: 80%; height: 2px;
+  top: 50%; left: 0%;
+  width: 100%; height: 2px; /* Full width */
   background: rgba(255, 255, 255, 0.3);
   z-index: 0;
 }
@@ -205,14 +208,14 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 200px; /* Base width */
+  width: 300px; /* Doubled from ~200px */
   opacity: 0;
   transition: all 0.8s ease;
 }
 
 .book-wrapper {
   width: 100%;
-  max-width: 220px; /* Constrain size */
+  max-width: 300px; /* Doubled from 220px */
 }
 
 .event-item.top {
@@ -270,5 +273,16 @@ onUnmounted(() => {
 
 @keyframes fadeUp {
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* Enhanced Hover Animation for Covers - Suspended Right-Bottom Movement */
+:deep(.shell-history .cover-history-container) {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+:deep(.shell-history:hover .cover-history-container) {
+  transform: translate(8px, 8px) rotate(2deg);
+  /* Adjust shadow to enhance suspended 3D effect */
+  box-shadow: -2px -2px 10px rgba(0,0,0,0.1);
 }
 </style>

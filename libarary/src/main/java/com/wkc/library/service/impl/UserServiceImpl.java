@@ -1,5 +1,6 @@
 package com.wkc.library.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wkc.library.mapper.UserMapper;
 import com.wkc.library.service.UserService;
@@ -35,5 +36,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if(result > 0)
             return true;
         return false;
+    }
+
+    @Override
+    public User getUserByUserName(String username) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<User>();
+        queryWrapper.eq(User::getName, username);
+        return userMapper.selectOne(queryWrapper);
     }
 }
