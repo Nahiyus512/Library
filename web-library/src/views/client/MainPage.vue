@@ -172,18 +172,18 @@ const collapseMasonry = () => {
   activeSide.value = null;
 };
 
-const navigateToCategory = (payload: { name: string, color: string }) => {
+const navigateToCategory = (payload: { name: string, color: string, path: string }) => {
   activeSide.value = 'left';
   
   // Trigger transition
   transitionState.startAnimation(payload.color, payload.name, '#fff');
 
   setTimeout(() => {
-    router.push(`/category/${payload.name}`);
+    router.push(`/category/${payload.path}`);
     // We don't end animation here; the destination page should handle it or we end it after push
     setTimeout(() => {
         transitionState.endAnimation();
-    }, 800);
+    }, 100);
   }, 800);
 };
 

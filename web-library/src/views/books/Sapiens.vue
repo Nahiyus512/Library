@@ -271,7 +271,7 @@ const scrollToSection = (index: number) => {
 };
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 // --- Timeline Dial Logic ---

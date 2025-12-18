@@ -71,32 +71,32 @@ const router = createRouter({
                     component: MainPage
                 },
                 {
-                    path: "/category/经典",
+                    path: "/category/classic",
                     name: "category-classic",
                     component: ClassicCategory
                 },
                 {
-                    path: "/category/哲学",
+                    path: "/category/philosophy",
                     name: "category-philosophy",
                     component: PhilosophyCategory
                 },
                 {
-                    path: "/category/知识",
+                    path: "/category/knowledge",
                     name: "category-knowledge",
                     component: KnowledgeCategory
                 },
                 {
-                    path: "/category/历史",
+                    path: "/category/history",
                     name: "category-history",
                     component: HistoryCategory
                 },
                 {
-                    path: "/category/生活",
+                    path: "/category/life",
                     name: "category-life",
                     component: LifeCategory
                 },
                 {
-                    path: "/category/科幻",
+                    path: "/category/scifi",
                     name: "category-scifi",
                     component: SciFiCategory
                 },

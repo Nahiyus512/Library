@@ -269,7 +269,7 @@ const scrollToSection = (id: string) => {
 };
 
 const goBack = () => {
-  router.push('/main');
+  router.back();
 };
 
 const borrowArrows = () => {

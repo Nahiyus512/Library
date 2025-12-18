@@ -59,36 +59,42 @@ const hoveredIndex = ref(-1);
 const categories = [
   { 
     name: '经典', 
+    path: 'classic',
     color: '#B8A99A',
     textColor: '#000',
     iconPath: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' 
   },
   { 
     name: '哲学', 
+    path: 'philosophy',
     color: '#4E5A6A',
     textColor: '#fff',
     iconPath: 'M6 4h12v2H6zm2 2h8v12H8zm-2 12h12v2H6z' 
   },
   { 
     name: '知识', 
+    path: 'knowledge',
     color: '#6C7A89',
     textColor: '#fff',
     iconPath: 'M9 18h6M10 22h4M12 2a7 7 0 0 0-7 7c0 2 2 3 2 5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2c0-2 2-3 2-5a7 7 0 0 0-7-7z' 
   },
   { 
     name: '历史', 
+    path: 'history',
     color: '#8C6D62',
     textColor: '#fff',
     iconPath: 'M5 2h14v4L12 12l7 6v4H5v-4l7-6-7-6V2z' 
   },
   { 
     name: '生活', 
+    path: 'life',
     color: '#8F9A8C',
     textColor: '#000',
     iconPath: 'M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10z' 
   },
   { 
     name: '科幻', 
+    path: 'scifi',
     color: '#5C6473',
     textColor: '#fff',
     iconPath: 'M12 4l10 16H2L12 4z' 
@@ -129,7 +135,7 @@ const handleBlockClick = (cat: any, index: number) => {
     emit('toggle-expand');
     hoveredIndex.value = index;
   } else {
-    emit('select', { name: cat.name, color: cat.color });
+    emit('select', { name: cat.name, color: cat.color, path: cat.path });
   }
 };
 

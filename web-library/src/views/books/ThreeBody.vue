@@ -190,7 +190,7 @@ const scrollToSection = (index: number) => {
 };
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 // Countdown Logic

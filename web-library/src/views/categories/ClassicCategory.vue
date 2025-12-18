@@ -18,11 +18,11 @@
         <div class="book-item scroll-reveal" style="--delay: 0.1s">
           <CategoryBookTemplate
             :cover-component="JourneyToTheWestCover"
-            title="西游记"
-            author="吴承恩"
-            theme-color="#B8A99A"
+            :title="getBook(13).titleCN"
+            :author="getBook(13).author"
+            :theme-color="getBook(13).colorTheme"
             variant="classic"
-            route-path="/book/JourneyToTheWest"
+            :route-path="getBook(13).path"
           />
         </div>
 
@@ -30,11 +30,11 @@
         <div class="book-item scroll-reveal" style="--delay: 0.3s">
           <CategoryBookTemplate
             :cover-component="ThreeKingdomsCover"
-            title="三国演义"
-            author="罗贯中"
-            theme-color="#B8A99A"
+            :title="getBook(14).titleCN"
+            :author="getBook(14).author"
+            :theme-color="getBook(14).colorTheme"
             variant="classic"
-            route-path="/book/ThreeKingdoms"
+            :route-path="getBook(14).path"
           />
         </div>
         
@@ -42,11 +42,11 @@
         <div class="book-item scroll-reveal" style="--delay: 0.2s">
           <CategoryBookTemplate
             :cover-component="NineteenEightyFourCover"
-            title="1984"
-            author="乔治·奥威尔"
-            theme-color="#B8A99A"
+            :title="getBook(8).titleCN"
+            :author="getBook(8).author"
+            :theme-color="getBook(8).colorTheme"
             variant="classic"
-            route-path="/book/NineteenEightyFour"
+            :route-path="getBook(8).path"
           />
         </div>
 
@@ -54,11 +54,11 @@
         <div class="book-item scroll-reveal" style="--delay: 0.4s">
           <CategoryBookTemplate
             :cover-component="BraveNewWorldCover"
-            title="美丽新世界"
-            author="奥尔德斯·赫胥黎"
-            theme-color="#B8A99A"
+            :title="getBook(9).titleCN"
+            :author="getBook(9).author"
+            :theme-color="getBook(9).colorTheme"
             variant="classic"
-            route-path="/book/BraveNewWorld"
+            :route-path="getBook(9).path"
           />
         </div>
       </div>
@@ -74,9 +74,14 @@ import ThreeKingdomsCover from '@/components/business/covers/ThreeKingdomsCover.
 import JourneyToTheWestCover from '@/components/business/covers/JourneyToTheWestCover.vue';
 import NineteenEightyFourCover from '@/components/business/covers/NineteenEightyFourCover.vue';
 import BraveNewWorldCover from '@/components/business/covers/BraveNewWorldCover.vue';
+import { books } from '@/data/books';
+
+import { transitionState } from '@/store/transitionStore';
 
 const router = useRouter();
 const pageRef = ref<HTMLElement | null>(null);
+
+const getBook = (id: number) => books.find(b => b.id === id)!;
 
 const goBack = () => {
   router.push('/main');
@@ -85,6 +90,10 @@ const goBack = () => {
 let observer: IntersectionObserver;
 
 onMounted(() => {
+  setTimeout(() => {
+    transitionState.endAnimation();
+  }, 500);
+
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {

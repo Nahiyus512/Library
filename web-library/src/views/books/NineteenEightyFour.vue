@@ -122,7 +122,7 @@
 
     <!-- Footer -->
     <footer class="page-footer">
-      <button class="return-home" @click="router.push('/main')">返回首页</button>
+      <button class="return-home" @click="goBackHome">返回首页</button>
     </footer>
 
     <!-- Global CRT Overlay -->
@@ -137,7 +137,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const pageContainer = ref<HTMLElement | null>(null);

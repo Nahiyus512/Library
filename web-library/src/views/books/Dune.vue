@@ -221,7 +221,7 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const pageRef = ref<HTMLElement | null>(null);
@@ -273,7 +273,7 @@ const scrollToSection = (id: string) => {
 };
 
 const goBack = () => {
-  router.push('/main');
+  router.back();
 };
 
 // Scroll Observer

@@ -216,7 +216,7 @@ const scrollTo = (id: string) => {
 };
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 // --- Interactive Grid Tool ---

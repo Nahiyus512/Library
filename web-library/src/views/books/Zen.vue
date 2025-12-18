@@ -360,7 +360,7 @@ const getWindLineStyle = (n: number) => {
 };
 
 // Navigation & Scroll
-const goBack = () => router.push('/main');
+const goBack = () => router.back();
 
 let observer: IntersectionObserver;
 let navObserver: IntersectionObserver;

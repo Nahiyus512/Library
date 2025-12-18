@@ -225,7 +225,7 @@ const stars = ref(Array.from({ length: 50 }, () => ({
 })));
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const showNav = ref(false);
@@ -405,10 +405,6 @@ const activateDrive = () => {
 const scrollTo = (id: string) => {
   const el = document.getElementById(id);
   if (el) el.scrollIntoView({ behavior: 'smooth' });
-};
-
-const goHome = () => {
-  router.push('/main');
 };
 
 // Intersection Observer for Nav

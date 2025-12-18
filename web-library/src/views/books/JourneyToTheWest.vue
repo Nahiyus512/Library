@@ -296,7 +296,7 @@ const triggerTransition = (title: string, subtitle: string, nextSceneIdx: number
 };
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const sceneClass = computed(() => {

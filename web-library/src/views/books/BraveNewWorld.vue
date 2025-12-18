@@ -653,7 +653,7 @@ const chooseEnding = (choice: string) => {
 
 // Navigation Logic
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const changeScene = (id: number) => {

@@ -22,11 +22,11 @@
           <div class="holo-item delay-1">
              <CategoryBookTemplate
               :cover-component="ThreeBodyCover"
-              title="三体"
-              author="刘慈欣"
-              theme-color="#00F0FF"
+              :title="getBook(1).titleCN"
+              :author="getBook(1).author"
+              :theme-color="getBook(1).colorTheme"
               variant="scifi"
-              route-path="/book/ThreeBody"
+              :route-path="getBook(1).path"
             />
           </div>
 
@@ -34,11 +34,11 @@
           <div class="holo-item delay-2">
             <CategoryBookTemplate
               :cover-component="DuneCover"
-              title="沙丘"
-              author="Frank Herbert"
-              theme-color="#00F0FF"
+              :title="getBook(7).titleCN"
+              :author="getBook(7).author"
+              :theme-color="getBook(7).colorTheme"
               variant="scifi"
-              route-path="/book/Dune"
+              :route-path="getBook(7).path"
             />
           </div>
 
@@ -46,11 +46,11 @@
           <div class="holo-item delay-3">
              <CategoryBookTemplate
               :cover-component="HitchhikersGuideCover"
-              title="银河系漫游指南"
-              author="Douglas Adams"
-              theme-color="#00F0FF"
+              :title="getBook(3).titleCN"
+              :author="getBook(3).author"
+              :theme-color="getBook(3).colorTheme"
               variant="scifi"
-              route-path="/book/HitchhikersGuide"
+              :route-path="getBook(3).path"
             />
           </div>
         </div>
@@ -66,13 +66,22 @@ import CategoryBookTemplate from '@/components/business/CategoryBookTemplate.vue
 import ThreeBodyCover from '@/components/business/covers/ThreeBodyCover.vue';
 import DuneCover from '@/components/business/covers/DuneCover.vue';
 import HitchhikersGuideCover from '@/components/business/covers/HitchhikersGuideCover.vue';
+import { books } from '@/data/books';
+
+import { transitionState } from '@/store/transitionStore';
 
 const router = useRouter();
 const goBack = () => router.push('/main');
 
+const getBook = (id: number) => books.find(b => b.id === id)!;
+
 let observer: IntersectionObserver;
 
 onMounted(() => {
+  setTimeout(() => {
+    transitionState.endAnimation();
+  }, 500);
+
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -90,6 +99,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+@import url('https://fonts.googleapis.com/css2?family=DotGothic16&display=swap');
+
 .category-page {
   height: 100vh;
   background-color: #050510;
@@ -154,18 +165,20 @@ onUnmounted(() => {
 
 .scifi-header {
   text-align: center;
-  margin-top: 30px;
-  margin-bottom: 20px;
+  margin-top: 100px;
+  margin-bottom: 40px;
   position: relative;
   z-index: 1;
   text-shadow: 0 0 10px #00F0FF;
   flex-shrink: 0;
+  font-family: 'DotGothic16', monospace;
 }
 .glitch-text {
-  font-size: 4rem;
+  font-size: 8rem;
   margin: 0;
   position: relative;
   animation: glitch 3s infinite;
+  font-family: 'DotGothic16', monospace;
 }
 .glitch-text::before, .glitch-text::after {
   content: attr(data-text);
@@ -175,22 +188,23 @@ onUnmounted(() => {
 }
 .glitch-text::before {
   left: 2px;
-  text-shadow: -1px 0 red;
+  text-shadow: -2px 0 red;
   clip: rect(24px, 550px, 90px, 0);
   animation: glitch-anim-1 2.5s infinite linear alternate-reverse;
 }
 .glitch-text::after {
   left: -2px;
-  text-shadow: -1px 0 blue;
+  text-shadow: -2px 0 blue;
   clip: rect(85px, 550px, 140px, 0);
   animation: glitch-anim-2 3s infinite linear alternate-reverse;
 }
 
 .system-status {
-  font-size: 0.9rem;
-  letter-spacing: 4px;
-  margin-top: 10px;
-  opacity: 0.8;
+  font-size: 1.5rem;
+  letter-spacing: 6px;
+  margin-top: 15px;
+  opacity: 0.9;
+  font-family: 'DotGothic16', monospace;
 }
 
 .content-container {

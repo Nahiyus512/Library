@@ -237,7 +237,7 @@ const futureScenarios = [
 ];
 
 const goBack = () => {
-  router.push('/main');
+  router.back();
 };
 
 // --- Parallax Logic ---

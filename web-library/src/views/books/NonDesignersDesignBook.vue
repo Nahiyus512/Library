@@ -178,7 +178,7 @@ const scrollY = ref(0);
 const proximityEnabled = ref(false);
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const isNavStuck = ref(false);

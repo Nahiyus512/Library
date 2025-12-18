@@ -20,11 +20,11 @@
             <div class="book-wrapper">
               <CategoryBookTemplate
                 :cover-component="SapiensCover"
-                title="人类简史"
-                author="尤瓦尔·赫拉利"
-                theme-color="#8C6D62"
+                :title="getBook(2).titleCN"
+                :author="getBook(2).author"
+                :theme-color="getBook(2).colorTheme"
                 variant="history"
-                route-path="/book/Sapiens"
+                :route-path="getBook(2).path"
               />
             </div>
           </div>
@@ -35,11 +35,11 @@
              <div class="book-wrapper">
               <CategoryBookTemplate
                 :cover-component="ThreeKingdomsCover"
-                title="三国演义"
-                author="罗贯中"
-                theme-color="#8C6D62"
+                :title="getBook(14).titleCN"
+                :author="getBook(14).author"
+                :theme-color="getBook(14).colorTheme"
                 variant="history"
-                route-path="/book/ThreeKingdoms"
+                :route-path="getBook(14).path"
               />
             </div>
           </div>
@@ -50,11 +50,11 @@
             <div class="book-wrapper">
               <CategoryBookTemplate
                 :cover-component="NineteenEightyFourCover"
-                title="1984"
-                author="乔治·奥威尔"
-                theme-color="#8C6D62"
+                :title="getBook(8).titleCN"
+                :author="getBook(8).author"
+                :theme-color="getBook(8).colorTheme"
                 variant="history"
-                route-path="/book/NineteenEightyFour"
+                :route-path="getBook(8).path"
               />
             </div>
           </div>
@@ -65,11 +65,11 @@
             <div class="book-wrapper">
               <CategoryBookTemplate
                 :cover-component="Life30Cover"
-                title="生命3.0"
-                author="迈克斯·泰格马克"
-                theme-color="#8C6D62"
+                :title="getBook(12).titleCN"
+                :author="getBook(12).author"
+                :theme-color="getBook(12).colorTheme"
                 variant="history"
-                route-path="/book/Life30"
+                :route-path="getBook(12).path"
               />
             </div>
           </div>
@@ -87,13 +87,21 @@ import SapiensCover from '@/components/business/covers/SapiensCover.vue';
 import ThreeKingdomsCover from '@/components/business/covers/ThreeKingdomsCover.vue';
 import NineteenEightyFourCover from '@/components/business/covers/NineteenEightyFourCover.vue';
 import Life30Cover from '@/components/business/covers/Life30Cover.vue';
+import { books } from '@/data/books';
+import { transitionState } from '@/store/transitionStore';
 
 const router = useRouter();
 const goBack = () => router.push('/main');
 
+const getBook = (id: number) => books.find(b => b.id === id)!;
+
 let observer: IntersectionObserver;
 
 onMounted(() => {
+  setTimeout(() => {
+    transitionState.endAnimation();
+  }, 500);
+
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
@@ -209,8 +217,9 @@ onUnmounted(() => {
 
 .event-item.top {
   transform: translateY(-20px);
-  justify-content: flex-end;
+  justify-content: flex-start; /* Changed from flex-end to align with column-reverse (start=bottom) */
   margin-bottom: 40px; /* Push up from line */
+  flex-direction: column-reverse; /* Put date below book */
 }
 .event-item.bottom {
   transform: translateY(20px);
@@ -225,9 +234,12 @@ onUnmounted(() => {
 
 .date-marker {
   font-family: 'Cinzel', serif;
-  font-size: 1.2rem;
-  color: rgba(255,255,255,0.9);
-  margin: 10px 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  margin: 15px 0;
+  letter-spacing: 1px;
 }
 
 /* Connectors */

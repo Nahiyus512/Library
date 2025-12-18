@@ -18,11 +18,11 @@
         <div class="book-item float-anim delay-0">
           <CategoryBookTemplate
             :cover-component="ZenCover"
-            title="禅与摩托车维修艺术"
-            author="罗伯特·皮尔西格"
-            theme-color="#4E5A6A"
+            :title="getBook(10).titleCN"
+            :author="getBook(10).author"
+            :theme-color="getBook(10).colorTheme"
             variant="philosophy"
-            route-path="/book/Zen"
+            :route-path="getBook(10).path"
           />
         </div>
         
@@ -34,11 +34,11 @@
         <div class="book-item float-anim delay-2">
            <CategoryBookTemplate
             :cover-component="SapiensCover"
-            title="人类简史：从动物到上帝"
-            author="尤瓦尔·赫拉利"
-            theme-color="#4E5A6A"
+            :title="getBook(2).titleCN"
+            :author="getBook(2).author"
+            :theme-color="getBook(2).colorTheme"
             variant="philosophy"
-            route-path="/book/Sapiens"
+            :route-path="getBook(2).path"
           />
         </div>
 
@@ -46,11 +46,11 @@
         <div class="book-item float-anim delay-0">
            <CategoryBookTemplate
             :cover-component="AmusingOurselvesToDeathCover"
-            title="娱乐至死"
-            author="尼尔·波兹曼"
-            theme-color="#4E5A6A"
+            :title="getBook(11).titleCN"
+            :author="getBook(11).author"
+            :theme-color="getBook(11).colorTheme"
             variant="philosophy"
-            route-path="/book/AmusingOurselvesToDeath"
+            :route-path="getBook(11).path"
           />
         </div>
       </div>
@@ -65,13 +65,21 @@ import CategoryBookTemplate from '@/components/business/CategoryBookTemplate.vue
 import ZenCover from '@/components/business/covers/ZenCover.vue';
 import SapiensCover from '@/components/business/covers/SapiensCover.vue';
 import AmusingOurselvesToDeathCover from '@/components/business/covers/AmusingOurselvesToDeathCover.vue';
+import { books } from '@/data/books';
+import { transitionState } from '@/store/transitionStore';
 
 const router = useRouter();
 const goBack = () => router.push('/main');
 
+const getBook = (id: number) => books.find(b => b.id === id)!;
+
 let observer: IntersectionObserver;
 
 onMounted(() => {
+  setTimeout(() => {
+    transitionState.endAnimation();
+  }, 500);
+
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {

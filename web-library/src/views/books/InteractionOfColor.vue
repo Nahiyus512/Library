@@ -238,7 +238,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 // --- Hero / Cover Logic ---

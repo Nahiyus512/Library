@@ -195,7 +195,7 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const goBackHome = () => {
-  router.push('/main');
+  router.back();
 };
 
 const pageContainer = ref<HTMLElement | null>(null);
@@ -340,7 +340,7 @@ const calculateStaticOpacity = () => {
 const turnOffTv = () => {
     isPoweredOff.value = true;
     setTimeout(() => {
-        router.push('/main');
+        router.back();
     }, 2000);
 };
 

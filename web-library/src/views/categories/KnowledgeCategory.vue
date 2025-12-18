@@ -21,36 +21,39 @@
         </header>
 
         <div class="blueprint-grid">
-          <div class="blueprint-item scroll-reveal">
-            <CategoryBookTemplate
+          <!-- 《写给大家看的设计书》 -->
+           <div class="blueprint-item scroll-reveal">
+             <CategoryBookTemplate
               :cover-component="NonDesignersDesignBookCover"
-              title="写给大家看的设计书"
-              author="罗宾·威廉姆斯"
-              theme-color="#6C7A89"
+              :title="getBook(5).titleCN"
+              :author="getBook(5).author"
+              :theme-color="getBook(5).colorTheme"
               variant="knowledge"
-              route-path="/book/NonDesignersDesignBook"
+              :route-path="getBook(5).path"
             />
           </div>
 
+          <!-- 《平面设计中的网格系统》 -->
           <div class="blueprint-item scroll-reveal delay-2">
             <CategoryBookTemplate
               :cover-component="GridSystemsCover"
-              title="平面设计中的网格系统"
-              author="约瑟夫·米勒-布罗克曼"
-              theme-color="#6C7A89"
+              :title="getBook(6).titleCN"
+              :author="getBook(6).author"
+              :theme-color="getBook(6).colorTheme"
               variant="knowledge"
-              route-path="/book/GridSystems"
+              :route-path="getBook(6).path"
             />
           </div>
           
+           <!-- 《色彩互动学》 -->
            <div class="blueprint-item scroll-reveal delay-3">
             <CategoryBookTemplate
               :cover-component="InteractionOfColorCover"
-              title="色彩互动学"
-              author="约瑟夫·阿尔伯斯"
-              theme-color="#6C7A89"
+              :title="getBook(4).titleCN"
+              :author="getBook(4).author"
+              :theme-color="getBook(4).colorTheme"
               variant="knowledge"
-              route-path="/book/InteractionOfColor"
+              :route-path="getBook(4).path"
             />
           </div>
         </div>
@@ -66,13 +69,21 @@ import CategoryBookTemplate from '@/components/business/CategoryBookTemplate.vue
 import GridSystemsCover from '@/components/business/covers/GridSystemsCover.vue';
 import InteractionOfColorCover from '@/components/business/covers/InteractionOfColorCover.vue';
 import NonDesignersDesignBookCover from '@/components/business/covers/NonDesignersDesignBookCover.vue';
+import { books } from '@/data/books';
+import { transitionState } from '@/store/transitionStore';
 
 const router = useRouter();
 const goBack = () => router.push('/main');
 
+const getBook = (id: number) => books.find(b => b.id === id)!;
+
 let observer: IntersectionObserver;
 
 onMounted(() => {
+  setTimeout(() => {
+    transitionState.endAnimation();
+  }, 500);
+
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {

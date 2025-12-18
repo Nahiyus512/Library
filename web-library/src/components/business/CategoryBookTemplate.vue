@@ -53,14 +53,12 @@
 
     <!-- HISTORY VARIANT: Time Layers -->
     <div v-else-if="variant === 'history'" class="shell-history">
-      <div class="history-layer layer-1"></div>
-      <div class="history-layer layer-2"></div>
-      <div class="cover-history-container">
-        <component :is="coverComponent" mode="card" />
-      </div>
-      <div class="history-label">
-        <span class="history-year">历史</span>
-        <span class="history-text">{{ title }}</span>
+      <div class="history-visual-wrapper">
+        <div class="history-layer layer-1"></div>
+        <div class="history-layer layer-2"></div>
+        <div class="cover-history-container">
+          <component :is="coverComponent" mode="card" />
+        </div>
       </div>
     </div>
 
@@ -81,9 +79,17 @@
       <div class="cover-scifi-container">
         <component :is="coverComponent" mode="card" />
         <div class="scan-line"></div>
+        <div class="corner-bracket tl"></div>
+        <div class="corner-bracket tr"></div>
+        <div class="corner-bracket bl"></div>
+        <div class="corner-bracket br"></div>
       </div>
-      <div class="scifi-info">
-        <div class="scifi-glitch" :data-text="title">{{ title }}</div>
+      <div class="scifi-info-panel">
+        <div class="scifi-id">ID: {{ Math.floor(Math.random() * 9000) + 1000 }}</div>
+        <div class="scifi-title-box">
+          <div class="scifi-glitch-title" :data-text="title">{{ title }}</div>
+        </div>
+        <div class="scifi-author">AUTHOR: {{ author }}</div>
       </div>
     </div>
 
@@ -99,6 +105,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { transitionState } from '@/store/transitionStore';
 
 const props = defineProps<{
   coverComponent: any;
@@ -117,7 +124,15 @@ const wrapperStyle = computed(() => ({
 
 const handleClick = () => {
   if (props.routePath) {
-    router.push(props.routePath);
+    transitionState.startAnimation(props.themeColor, props.title, '#fff');
+    setTimeout(() => {
+      if (props.routePath) {
+        router.push(props.routePath);
+        setTimeout(() => {
+          transitionState.endAnimation();
+        }, 500);
+      }
+    }, 350);
   }
 };
 </script>
@@ -218,7 +233,7 @@ const handleClick = () => {
   position: absolute;
   width: 80%;
   padding-bottom: 80%;
-  background: #fff;
+  background: var(--theme-color);
   border-radius: 50%;
   filter: blur(40px);
   opacity: 0.15;
@@ -240,14 +255,12 @@ const handleClick = () => {
   aspect-ratio: 1 / 1;
 }
 .cover-float-container.has-border {
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  outline: 1px solid rgba(255, 255, 255, 0.1);
-  outline-offset: 4px;
+  border: 2px solid var(--theme-color);
+  box-shadow: 0 0 15px var(--theme-color);
 }
 .shell-philosophy:hover .cover-float-container {
   transform: translateY(-10px) scale(1.02);
-  border-color: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 20px rgba(255,255,255,0.2);
+  box-shadow: 0 0 30px var(--theme-color);
 }
 .philosophy-info {
   margin-top: 20px;
@@ -259,13 +272,14 @@ const handleClick = () => {
 }
 .shell-philosophy:hover .philosophy-info {
   opacity: 1;
+  color: var(--theme-color);
 }
 
 /* --- KNOWLEDGE --- */
 .shell-knowledge {
   width: 100%;
   padding: 15px;
-  border: 1px solid rgba(255,255,255,0.3);
+  border: 1px solid var(--theme-color);
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(5px);
   position: relative;
@@ -273,8 +287,8 @@ const handleClick = () => {
 .knowledge-grid-bg {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background-image: linear-gradient(#fff 1px, transparent 1px),
-    linear-gradient(90deg, #fff 1px, transparent 1px);
+  background-image: linear-gradient(var(--theme-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--theme-color) 1px, transparent 1px);
   background-size: 15px 15px;
   background-position: -1px -1px;
   opacity: 0.1;
@@ -282,7 +296,7 @@ const handleClick = () => {
 }
 .knowledge-markers .marker {
   position: absolute;
-  color: #fff;
+  color: var(--theme-color);
   font-weight: bold;
   font-size: 12px;
 }
@@ -293,20 +307,20 @@ const handleClick = () => {
 .cover-tech-container {
   position: relative;
   z-index: 1;
-  border: 1px solid rgba(255,255,255,0.5);
+  border: 1px solid var(--theme-color);
   transition: all 0.3s;
   width: 100%;
   aspect-ratio: 1 / 1;
 }
 .shell-knowledge:hover .cover-tech-container {
-  box-shadow: 6px 6px 0 rgba(255,255,255,0.2);
+  box-shadow: 6px 6px 0 var(--theme-color);
   transform: translate(-3px, -3px);
 }
 .knowledge-data {
   margin-top: 10px;
   font-family: 'Courier New', monospace;
   font-size: 0.8rem;
-  color: #fff;
+  color: var(--theme-color);
   z-index: 1;
   position: relative;
 }
@@ -315,47 +329,64 @@ const handleClick = () => {
 .shell-history {
   width: 100%;
   position: relative;
-  /* Removed bottom padding to increase visual size */
   padding: 10px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
+
+.history-visual-wrapper {
+  position: relative;
+  width: 180%;
+  aspect-ratio: 1 / 1;
+  margin-left: -40%;
+  margin-bottom: 20px;
+}
+
 .history-layer {
   position: absolute;
-  width: 95%;
+  width: 100%;
   height: 100%;
   background: #fff;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--theme-color);
   transition: transform 0.4s ease;
 }
 .layer-1 { top: 6px; left: 6px; z-index: 0; background: #f4f4f4; }
 .layer-2 { top: 12px; left: 12px; z-index: -1; background: #eaeaea; }
-.shell-history:hover .layer-1 { transform: translate(6px, 6px) rotate(2deg); }
-.shell-history:hover .layer-2 { transform: translate(12px, 12px) rotate(4deg); }
+
+.shell-history:hover .layer-1 { transform: translate(10px, 10px) rotate(3deg); }
+.shell-history:hover .layer-2 { transform: translate(20px, 20px) rotate(6deg); }
 
 .cover-history-container {
   position: relative;
   z-index: 1;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
   width: 100%;
-  aspect-ratio: 1 / 1;
-  /* Ensure image fits */
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 1px solid var(--theme-color);
+  background: #fff;
+  transition: transform 0.4s ease;
 }
+
+.shell-history:hover .cover-history-container {
+  transform: rotate(-3deg);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
 .history-label {
-  margin-top: 15px;
-  border-left: 3px solid #fff;
+  margin-top: 10px;
+  border-left: 3px solid var(--theme-color);
   padding-left: 10px;
+  width: 100%;
+  align-self: flex-start;
 }
-.history-year {
-  display: block;
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.7);
-  letter-spacing: 2px;
-}
+
 .history-text {
   font-weight: bold;
-  color: #fff;
+  color: var(--theme-color);
   font-size: 1rem;
 }
 
@@ -368,7 +399,7 @@ const handleClick = () => {
   position: absolute;
   width: 120%;
   height: 90%;
-  background: #fff;
+  background: var(--theme-color);
   bottom: -20px;
   left: -10%;
   border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
@@ -389,9 +420,11 @@ const handleClick = () => {
   transition: transform 0.3s;
   width: 100%;
   aspect-ratio: 1 / 1;
+  border: 2px solid var(--theme-color);
 }
 .shell-life:hover .cover-life-container {
   transform: translateY(-8px) rotate(-1deg);
+  box-shadow: 0 15px 30px var(--theme-color);
 }
 .life-tag {
   position: absolute;
@@ -405,84 +438,187 @@ const handleClick = () => {
   font-weight: 600;
   font-size: 0.9rem;
   color: var(--theme-color);
+  border: 1px solid var(--theme-color);
 }
 
 /* --- SCIFI --- */
 .shell-scifi {
   width: 100%;
   perspective: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 .cover-scifi-container {
   position: relative;
-  border: 1px solid #fff;
-  box-shadow: 0 0 10px rgba(255,255,255,0.3);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 15px rgba(0, 240, 255, 0.1);
   overflow: hidden;
-  transition: transform 0.3s;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   width: 100%;
   aspect-ratio: 1 / 1;
+  background: rgba(5, 5, 16, 0.6);
 }
+
 .shell-scifi:hover .cover-scifi-container {
-  transform: rotateY(10deg) rotateX(5deg);
-  box-shadow: 0 0 20px rgba(255,255,255,0.5);
+  transform: translateY(-10px) scale(1.02);
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.4);
+  border-color: rgba(0, 240, 255, 0.8);
 }
+
 .scan-line {
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 4px;
-  background: rgba(255,255,255,0.8);
-  box-shadow: 0 0 10px #fff;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: #00F0FF;
+  box-shadow: 0 0 10px #00F0FF;
   animation: scan 3s linear infinite;
-  opacity: 0.5;
+  opacity: 0.8;
   pointer-events: none;
+  z-index: 10;
 }
+
+.corner-bracket {
+  position: absolute;
+  width: 10px; height: 10px;
+  border-color: #00F0FF;
+  border-style: solid;
+  transition: all 0.3s ease;
+  z-index: 5;
+}
+.tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
+.bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
+.br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+.shell-scifi:hover .corner-bracket {
+  width: 20px; height: 20px;
+  box-shadow: 0 0 5px #00F0FF;
+}
+
 @keyframes scan {
   0% { top: -10%; opacity: 0; }
   10% { opacity: 1; }
   90% { opacity: 1; }
   100% { top: 110%; opacity: 0; }
 }
-.scifi-info {
-  margin-top: 15px;
-  text-align: right;
-}
-.scifi-glitch {
-  font-family: 'Courier New', monospace;
-  color: #fff;
-  font-weight: bold;
+
+.scifi-info-panel {
+  background: rgba(0, 20, 40, 0.6);
+  border: 1px solid rgba(0, 240, 255, 0.2);
+  padding: 10px;
   position: relative;
-  font-size: 1rem;
-}
-.scifi-glitch::before, .scifi-glitch::after {
-  content: attr(data-text);
-  position: absolute;
-  top: 0; left: 0; width: 100%;
-  background: #fdfdfd;
-}
-.shell-scifi:hover .scifi-glitch::before {
-  left: 2px;
-  text-shadow: -1px 0 red;
-  animation: glitch-anim-1 2s infinite linear alternate-reverse;
-}
-.shell-scifi:hover .scifi-glitch::after {
-  left: -2px;
-  text-shadow: -1px 0 blue;
-  animation: glitch-anim-2 3s infinite linear alternate-reverse;
+  overflow: hidden;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  transition: all 0.3s;
 }
 
-@keyframes glitch-anim-1 {
-  0% { clip-path: inset(20% 0 80% 0); }
-  20% { clip-path: inset(60% 0 10% 0); }
-  40% { clip-path: inset(40% 0 50% 0); }
-  60% { clip-path: inset(80% 0 5% 0); }
-  80% { clip-path: inset(10% 0 70% 0); }
-  100% { clip-path: inset(30% 0 20% 0); }
+.scifi-info-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 4px; height: 100%;
+  background: #00F0FF;
+  opacity: 0.5;
+  transition: all 0.3s;
 }
-@keyframes glitch-anim-2 {
-  0% { clip-path: inset(10% 0 60% 0); }
-  20% { clip-path: inset(30% 0 20% 0); }
-  40% { clip-path: inset(70% 0 10% 0); }
-  60% { clip-path: inset(20% 0 50% 0); }
-  80% { clip-path: inset(50% 0 30% 0); }
-  100% { clip-path: inset(5% 0 80% 0); }
+
+.shell-scifi:hover .scifi-info-panel {
+  background: rgba(0, 40, 80, 0.8);
+  border-color: rgba(0, 240, 255, 0.5);
+}
+.shell-scifi:hover .scifi-info-panel::before {
+  opacity: 1;
+  box-shadow: 0 0 8px #00F0FF;
+}
+
+.scifi-id {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: #00F0FF;
+  opacity: 0.7;
+  letter-spacing: 2px;
+  margin-bottom: 5px;
+}
+
+.scifi-title-box {
+  margin-bottom: 5px;
+  border-bottom: 1px dashed rgba(0, 240, 255, 0.3);
+  padding-bottom: 5px;
+}
+
+.scifi-glitch-title {
+  font-family: 'DotGothic16', sans-serif; /* Use pixel font */
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  position: relative;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.scifi-glitch-title::before {
+  content: attr(data-text);
+  position: absolute;
+  left: -2px;
+  text-shadow: 1px 0 #ff00c1;
+  top: 0;
+  color: white;
+  background: rgba(0, 20, 40, 0.6);
+  overflow: hidden;
+  clip: rect(0, 900px, 0, 0); 
+  animation: noise-anim-2 3s infinite linear alternate-reverse;
+}
+
+.scifi-glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  left: 2px;
+  text-shadow: -1px 0 #00fff9;
+  top: 0;
+  color: white;
+  background: rgba(0, 20, 40, 0.6);
+  overflow: hidden;
+  clip: rect(0, 900px, 0, 0); 
+  animation: noise-anim 2s infinite linear alternate-reverse;
+}
+
+@keyframes noise-anim {
+  0% { clip: rect(2px, 9999px, 1px, 0); }
+  5% { clip: rect(15px, 9999px, 20px, 0); }
+  10% { clip: rect(5px, 9999px, 45px, 0); }
+  15% { clip: rect(35px, 9999px, 10px, 0); }
+  20% { clip: rect(55px, 9999px, 60px, 0); }
+  25% { clip: rect(5px, 9999px, 40px, 0); }
+  30% { clip: rect(25px, 9999px, 10px, 0); }
+  35% { clip: rect(10px, 9999px, 80px, 0); }
+  40% { clip: rect(45px, 9999px, 50px, 0); }
+  45% { clip: rect(5px, 9999px, 30px, 0); }
+  50% { clip: rect(65px, 9999px, 20px, 0); }
+  55% { clip: rect(10px, 9999px, 5px, 0); }
+  60% { clip: rect(35px, 9999px, 55px, 0); }
+  65% { clip: rect(55px, 9999px, 25px, 0); }
+  70% { clip: rect(5px, 9999px, 35px, 0); }
+  75% { clip: rect(20px, 9999px, 10px, 0); }
+  80% { clip: rect(50px, 9999px, 45px, 0); }
+  85% { clip: rect(10px, 9999px, 55px, 0); }
+  90% { clip: rect(35px, 9999px, 20px, 0); }
+  95% { clip: rect(5px, 9999px, 75px, 0); }
+  100% { clip: rect(15px, 9999px, 40px, 0); }
+}
+
+@keyframes noise-anim-2 {
+  0% { clip: rect(15px, 9999px, 40px, 0); }
+  20% { clip: rect(5px, 9999px, 75px, 0); }
+  40% { clip: rect(35px, 9999px, 20px, 0); }
+  60% { clip: rect(10px, 9999px, 55px, 0); }
+  80% { clip: rect(50px, 9999px, 45px, 0); }
+  100% { clip: rect(2px, 9999px, 1px, 0); }
+}
+
+.scifi-author {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #aaa;
+  text-transform: uppercase;
 }
 
 </style>
