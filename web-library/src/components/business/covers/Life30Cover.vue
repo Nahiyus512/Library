@@ -162,8 +162,8 @@ const handleMouseLeave = () => {
 
 .state-collapsed .version-text {
   font-size: 1.5rem;
-  font-weight: 300;
-  color: #112050ff;
+  font-weight: 500;
+  color: rgb(162, 169, 194);
   letter-spacing: 2px;
   transition: all 0.3s ease;
 }
@@ -191,8 +191,8 @@ const handleMouseLeave = () => {
 
 .state-expanded .version-text {
   font-size: 4rem; /* Increased significantly */
-  font-weight: 300;
-  color: #0f1058ff;
+  font-weight: 500;
+  color: rgb(145, 146, 177);
   letter-spacing: 4px;
   transition: all 0.3s ease;
 }

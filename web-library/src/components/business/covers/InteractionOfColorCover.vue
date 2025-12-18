@@ -7,7 +7,7 @@
       <div class="square inner" :style="innerStyle"></div>
     </div>
     
-    <div class="title-layer" :style="titleStyle">
+    <div class="title-layer" :class="mode === 'hero' ? 'state-expanded' : 'state-collapsed'" :style="titleStyle">
       <div class="cn-title">色彩互动学</div>
       <div class="en-title">INTERACTION OF COLOR</div>
     </div>
@@ -138,7 +138,7 @@ onUnmounted(() => {
 
 /* 状态：未展开 */
 .state-collapsed .cn-title {
-  font-size: 5rem;
+  font-size: 2.0rem;
   font-weight: 900;
   margin: 0;
   letter-spacing: 5px;
@@ -147,7 +147,7 @@ onUnmounted(() => {
 }
 
 .state-collapsed .en-title {
-  font-size: 0.6rem;
+  font-size: 1.2rem;
   letter-spacing: 4px;
   opacity: 0.8;
   font-weight: bold;
@@ -156,7 +156,7 @@ onUnmounted(() => {
 
 /* 状态：已展开 */
 .state-expanded .cn-title {
-  font-size: 5.5rem;
+  font-size: 4.0rem;
   font-weight: 900;
   margin: 0;
   letter-spacing: 2px;
@@ -165,7 +165,7 @@ onUnmounted(() => {
 }
 
 .state-expanded .en-title {
-  font-size: 0.6rem;
+  font-size: 1.6rem;
   letter-spacing: 4px;
   opacity: 0.8;
   font-weight: bold;

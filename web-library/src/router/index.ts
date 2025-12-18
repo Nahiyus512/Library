@@ -72,31 +72,37 @@ const router = createRouter({
                 },
                 {
                     path: "/category/经典",
+                    alias: "/category/%E7%BB%8F%E5%85%B8",
                     name: "category-classic",
                     component: ClassicCategory
                 },
                 {
                     path: "/category/哲学",
+                    alias: "/category/%E5%93%B2%E5%AD%A6",
                     name: "category-philosophy",
                     component: PhilosophyCategory
                 },
                 {
                     path: "/category/知识",
+                    alias: "/category/%E7%9F%A5%E8%AF%86",
                     name: "category-knowledge",
                     component: KnowledgeCategory
                 },
                 {
                     path: "/category/历史",
+                    alias: "/category/%E5%8E%86%E5%8F%B2",
                     name: "category-history",
                     component: HistoryCategory
                 },
                 {
                     path: "/category/生活",
+                    alias: "/category/%E7%94%9F%E6%B4%BB",
                     name: "category-life",
                     component: LifeCategory
                 },
                 {
                     path: "/category/科幻",
+                    alias: "/category/%E7%A7%91%E5%B9%BB",
                     name: "category-scifi",
                     component: SciFiCategory
                 },
