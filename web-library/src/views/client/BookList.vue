@@ -43,62 +43,65 @@
       class="book-dialog"
       :show-close="false"
     >
-      <div class="dialog-content">
-        <div class="dialog-cover">
-          <img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" alt="cover">
-        </div>
-        
-        <div class="dialog-details">
-          <h2 class="detail-title">{{ bookData.bookName }}</h2>
-          
-          <div class="detail-meta">
-            <div class="meta-item">
-              <span class="label">出版社</span>
-              <span class="value">{{ bookData.bookPublic }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">分类</span>
-              <span class="value">{{ bookData.bookClassify }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">库存</span>
-              <span class="value">{{ bookData.bookNum }}</span>
-            </div>
+      <div class="dialog-content-wrapper">
+        <div class="dialog-top-section">
+          <div class="dialog-cover">
+            <img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" alt="cover">
           </div>
-
-          <div class="rating-action-row">
-            <div class="rating-group">
-              <span class="section-label">您的评分</span>
-              <div class="stars" @click="rate($event)">
-                <input
-                  v-for="n in 5"
-                  :key="n"
-                  type="radio"
-                  :id="'star' + n"
-                  :value="n"
-                  hidden
-                />
-                <label
-                  v-for="n in 5"
-                  :key="n"
-                  :for="'star' + n"
-                  :class="{ filled: n <= ratingData.rating }"
-                >
-                  ★
-                </label>
+          
+          <div class="dialog-details">
+            <h2 class="detail-title">{{ bookData.bookName }}</h2>
+            
+            <div class="detail-meta">
+              <div class="meta-item">
+                <span class="label">出版社</span>
+                <span class="value">{{ bookData.bookPublic }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">分类</span>
+                <span class="value">{{ bookData.bookClassify }}</span>
+              </div>
+              <div class="meta-item">
+                <span class="label">库存</span>
+                <span class="value">{{ bookData.bookNum }}</span>
               </div>
             </div>
 
-            <div class="action-right">
-              <button class="action-btn primary small-btn" @click="addToBookshelf" v-if="likeLevel !== 2">
-                加入书架
-              </button>
-              <button class="action-btn primary small-btn" disabled v-else>
-                已加入
-              </button>
+            <div class="rating-action-row">
+              <div class="rating-group">
+                <span class="section-label">您的评分</span>
+                <div class="stars" @click="rate($event)">
+                  <input
+                    v-for="n in 5"
+                    :key="n"
+                    type="radio"
+                    :id="'star' + n"
+                    :value="n"
+                    hidden
+                  />
+                  <label
+                    v-for="n in 5"
+                    :key="n"
+                    :for="'star' + n"
+                    :class="{ filled: n <= ratingData.rating }"
+                  >
+                    ★
+                  </label>
+                </div>
+              </div>
+
+              <div class="action-right">
+                <button class="action-btn primary small-btn" @click="addToBookshelf" v-if="likeLevel !== 2">
+                  加入书架
+                </button>
+                <button class="action-btn primary small-btn" disabled v-else>
+                  已加入
+                </button>
+              </div>
             </div>
           </div>
         </div>
+        <BookComments :bookId="bookData.bookId" v-if="centerDialogVisible" />
       </div>
     </el-dialog>
   </div>
@@ -110,6 +113,7 @@ import { ElMessage } from "element-plus";
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies'
 import { useRoute } from 'vue-router'
+import BookComments from '@/components/business/BookComments.vue'
 
 const cookie = useCookies()
 const route = useRoute()
@@ -412,7 +416,13 @@ const inputScore = async () => {
 }
 
 /* Dialog Styles */
-.dialog-content {
+.dialog-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dialog-top-section {
   display: flex;
   gap: 30px;
 }

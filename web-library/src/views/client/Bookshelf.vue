@@ -56,45 +56,48 @@
       class="book-dialog"
       :show-close="false"
     >
-      <div class="dialog-content">
-        <div class="dialog-cover">
-          <img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" alt="cover">
-        </div>
-        
-        <div class="dialog-details">
-          <h2 class="detail-title">{{ bookData.bookName }}</h2>
-          
-          <div class="detail-meta">
-            <div class="meta-item">
-              <span class="label">作者</span>
-              <span class="value">{{ bookData.bookAuthor }}</span>
-            </div>
+      <div class="dialog-content-wrapper">
+        <div class="dialog-top-section">
+          <div class="dialog-cover">
+            <img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" alt="cover">
           </div>
+          
+          <div class="dialog-details">
+            <h2 class="detail-title">{{ bookData.bookName }}</h2>
+            
+            <div class="detail-meta">
+              <div class="meta-item">
+                <span class="label">作者</span>
+                <span class="value">{{ bookData.bookAuthor }}</span>
+              </div>
+            </div>
 
-          <div class="rating-action-row">
-            <div class="rating-group">
-              <span class="section-label">您的评分</span>
-              <div class="stars" @click="rate($event)">
-                <input
-                  v-for="n in 5"
-                  :key="n"
-                  type="radio"
-                  :id="'star' + n"
-                  :value="n"
-                  hidden
-                />
-                <label
-                  v-for="n in 5"
-                  :key="n"
-                  :for="'star' + n"
-                  :class="{ filled: n <= ratingData.rating }"
-                >
-                  ★
-                </label>
+            <div class="rating-action-row">
+              <div class="rating-group">
+                <span class="section-label">您的评分</span>
+                <div class="stars" @click="rate($event)">
+                  <input
+                    v-for="n in 5"
+                    :key="n"
+                    type="radio"
+                    :id="'star' + n"
+                    :value="n"
+                    hidden
+                  />
+                  <label
+                    v-for="n in 5"
+                    :key="n"
+                    :for="'star' + n"
+                    :class="{ filled: n <= ratingData.rating }"
+                  >
+                    ★
+                  </label>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        <BookComments :bookId="bookData.bookId" v-if="centerDialogVisible" />
       </div>
     </el-dialog>
   </div>
@@ -106,6 +109,7 @@ import myAxios from "@/api/index"
 import { useCookies } from '@vueuse/integrations/useCookies'
 import { ElMessage } from "element-plus"
 import BookShelfItem from '@/components/business/BookShelfItem.vue'
+import BookComments from '@/components/business/BookComments.vue'
 
 const cookie = useCookies()
 const allBooks = ref<any[]>([])
@@ -467,7 +471,13 @@ const inputScore = async () => {
 }
 
 /* Dialog Styles */
-.dialog-content {
+.dialog-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dialog-top-section {
   display: flex;
   gap: 30px;
 }

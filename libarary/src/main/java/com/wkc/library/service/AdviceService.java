@@ -14,5 +14,7 @@ public interface AdviceService extends IService<Advice> {
 
     List<Advice> getUserAdvice(String userName);
 
-    Integer inputSuggest(String info, String userName);
+    List<Advice> getBookAdvice(String bookId);
+
+    Integer inputSuggest(Advice advice);
 }

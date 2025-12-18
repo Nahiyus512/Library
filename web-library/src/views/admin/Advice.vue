@@ -6,33 +6,61 @@
         <span class="page-subtitle">查看并回复用户的建议与反馈</span>
       </div>
       <div class="header-right">
-        <el-button color="#000" @click="getAdvice">
+        <el-button color="#000" @click="refreshData">
           <el-icon class="el-icon--left"><Refresh /></el-icon>刷新列表
         </el-button>
       </div>
     </div>
 
     <div class="content-container">
-      <el-table :data="adviceData" style="width: 100%; flex: 1;" height="100%" stripe border>
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="userName" label="用户" width="120" />
-        <el-table-column prop="info" label="建议内容" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="infoTime" label="建议时间" width="180" align="center" />
-        <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
-          <template #default="scope">
-            <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
-            <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
-        <el-table-column fixed="right" label="操作" width="100" align="center">
-          <template #default="scope">
-            <el-button color="#000" link @click="refMsg(scope.row)">
-              <el-icon><EditPen /></el-icon> 回复
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange" class="custom-tabs">
+        <el-tab-pane label="留言建议" name="suggestion">
+          <el-table :data="suggestionData" style="width: 100%;" height="100%" stripe border>
+            <el-table-column prop="id" label="ID" width="80" align="center" />
+            <el-table-column prop="userName" label="用户" width="120" />
+            <el-table-column prop="info" label="建议内容" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="infoTime" label="建议时间" width="180" align="center" />
+            <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
+              <template #default="scope">
+                <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
+                <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
+            <el-table-column fixed="right" label="操作" width="100" align="center">
+              <template #default="scope">
+                <el-button color="#000" link @click="refMsg(scope.row)">
+                  <el-icon><EditPen /></el-icon> 回复
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+        
+        <el-tab-pane label="图书评论" name="review">
+          <el-table :data="reviewData" style="width: 100%;" height="100%" stripe border>
+            <el-table-column prop="id" label="ID" width="80" align="center" />
+            <el-table-column prop="userName" label="用户" width="120" />
+            <el-table-column prop="bookName" label="图书名称" width="150" show-overflow-tooltip />
+            <el-table-column prop="info" label="评论内容" min-width="200" show-overflow-tooltip />
+            <el-table-column prop="infoTime" label="评论时间" width="180" align="center" />
+            <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
+              <template #default="scope">
+                <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
+                <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
+            <el-table-column fixed="right" label="操作" width="100" align="center">
+              <template #default="scope">
+                <el-button color="#000" link @click="refMsg(scope.row)">
+                  <el-icon><EditPen /></el-icon> 回复
+                </el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </el-tab-pane>
+      </el-tabs>
     </div>
 
     <el-dialog 
@@ -75,8 +103,10 @@ import myAxios from "@/api/index";
 import { ElMessage } from "element-plus";
 import { Refresh, EditPen } from '@element-plus/icons-vue';
 
-const adviceData = ref([])
+const suggestionData = ref([])
+const reviewData = ref([])
 const dialogReply = ref(false)
+const activeTab = ref('suggestion')
 
 const rowData = reactive({
   id: '',
@@ -88,8 +118,17 @@ const rowData = reactive({
 })
 
 onMounted(() => {
-  getAdvice()
+  refreshData()
 })
+
+const handleTabChange = (tabName: string) => {
+  // Logic if needed when switching tabs
+}
+
+const refreshData = () => {
+  getSuggestions()
+  getReviews()
+}
 
 const refMsg = (row: any) => {
   dialogReply.value = true
@@ -100,13 +139,23 @@ const refMsg = (row: any) => {
   rowData.reply = row.reply || '' // Default to empty string if null
 }
 
-async function getAdvice() {
+async function getSuggestions() {
   try {
     let res = await myAxios.get('http://localhost:8080/advice/getAll')
-    adviceData.value = res.data.data
+    suggestionData.value = res.data.data
   } catch (e) {
     console.log(e)
-    ElMessage.error('获取数据失败')
+    ElMessage.error('获取建议数据失败')
+  }
+}
+
+async function getReviews() {
+  try {
+    let res = await myAxios.get('http://localhost:8080/advice/getAllBookReviews')
+    reviewData.value = res.data.data
+  } catch (e) {
+    console.log(e)
+    ElMessage.error('获取评论数据失败')
   }
 }
 
@@ -122,7 +171,7 @@ async function clickOk() {
       reply: rowData.reply,
     })
     if (res.data.code === 200) {
-      await getAdvice();
+      refreshData()
       dialogReply.value = false
       ElMessage.success('回复成功')
     } else {
@@ -181,6 +230,22 @@ async function clickOk() {
   flex-direction: column;
 }
 
+.custom-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:deep(.el-tabs__content) {
+  flex: 1;
+  overflow: hidden;
+  padding-top: 10px;
+}
+
+:deep(.el-tab-pane) {
+  height: 100%;
+}
+
 .user-suggestion {
   margin-bottom: 20px;
 }
@@ -197,5 +262,11 @@ async function clickOk() {
   border-radius: 4px;
   color: #303133;
   line-height: 1.5;
+}
+
+.admin-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

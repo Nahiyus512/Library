@@ -68,6 +68,18 @@ public class BookLikeController {
         return R.success(result);
     }
 
+    @GetMapping("/getAll")
+    public R<List<BookLike>> getAllLikes() {
+        List<BookLike> list = bookLikeService.list();
+        return R.success(list);
+    }
+
+    @DeleteMapping("/delete")
+    public R<String> deleteLike(@RequestParam Integer id) {
+        boolean b = bookLikeService.removeById(id);
+        return b ? R.success("删除成功") : R.error("删除失败");
+    }
+
     @GetMapping("/status")
     public R<Integer> getLikeStatus(@RequestParam String userName, @RequestParam Integer bookId) {
         LambdaQueryWrapper<BookLike> wrapper = new LambdaQueryWrapper<>();

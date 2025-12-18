@@ -23,9 +23,9 @@
         <span>分类管理</span>
       </el-menu-item>
       
-      <el-menu-item index="/bookBorrowInfo">
-        <el-icon><Tickets /></el-icon>
-        <span>借阅管理</span>
+      <el-menu-item index="/bookLikeInfo">
+        <el-icon><Star /></el-icon>
+        <span>书架管理</span>
       </el-menu-item>
       
       <el-menu-item index="/advice">
@@ -51,6 +51,7 @@ import {
   Tickets,
   ChatDotRound,
   Setting,
+  Star,
 } from '@element-plus/icons-vue'
 
 const route = useRoute();

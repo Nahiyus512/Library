@@ -1,6 +1,7 @@
 package com.wkc.library.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
@@ -22,4 +23,8 @@ public class Advice {
     private String userName;
     private String infoTime;
     private String replyTime;
+    private String bookId;
+
+    @TableField(exist = false)
+    private String bookName;
 }
