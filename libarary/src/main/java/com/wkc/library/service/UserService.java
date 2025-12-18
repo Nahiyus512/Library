@@ -14,4 +14,6 @@ public interface UserService extends IService<User> {
 
     //通过用户id修改用户信息
     Boolean updateUserById(User user);
+
+    User getUserByUserName(String username);
 }

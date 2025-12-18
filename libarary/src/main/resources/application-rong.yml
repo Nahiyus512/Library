@@ -1,9 +1,13 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/tushu?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    url: jdbc:mysql://47.120.62.231:3206/tushu?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&useSSL=false
     username: root
     password: root
+
+  data:
+    mongodb:
+      uri: mongodb://47.120.62.231:27017/chat_memory_db
 
   redis:
     host: localhost
@@ -23,3 +27,24 @@ mybatis-plus:
     db-config:
       logic-delete-value: 1
       logic-not-delete-value: 0
+
+# langchain4j 配置
+langchain4j:
+  open-ai:
+    chat-model:
+      base-url: https://api.deepseek.com
+      api-key: sk-6f0ef31bb8214332a134225a4da906cd
+      model-name: deepseek-chat
+      log-requests: true
+      log-responses: true
+  community:
+    dashscope:
+      chat-model:
+        api-key: sk-0534514323fb4b49821526e41b84ef48
+        model-name: qwen-max
+      embedding-model:
+        api-key: sk-0534514323fb4b49821526e41b84ef48
+        model-name: text-embedding-v3
+      streaming-chat-model:
+        api-key: sk-0534514323fb4b49821526e41b84ef48
+        model-name: qwen-plus

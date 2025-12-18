@@ -14,6 +14,7 @@ import com.wkc.library.service.UserService;
 import com.wkc.library.util.JwtUtil;
 import com.wkc.library.util.RedisUtil;
 import com.wkc.library.util.UUIDUtil;
+import com.wkc.library.util.UserContext;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +50,8 @@ public class UserController {
     public R<Map<String,String>> login(@RequestBody Map map){
        Map<String,String> resultMap = new HashMap<>();
        String username = map.get("username").toString();
+       UserContext.setUsername(username);
+       log.info("UserContext.username:{}",UserContext.getUsername());
        String password = map.get("password").toString();
        String captcha = map.get("captcha").toString();
        String uuid = map.get("uuid").toString();

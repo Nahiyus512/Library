@@ -1,28 +1,3 @@
-spring:
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/tushu?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=UTF-8&useSSL=false
-    username: rootd
-    password: 123456
-
-  redis:
-    host: localhost
-    port: 6379
-    password:
-    jedis:
-      pool:
-        max-active: 8
-        max-wait: -1
-        min-idle: 0
-        max-idle: 500
-    lettuce:
-      shutdown-timeout: 0
-
-mybatis-plus:
-  global-config:
-    db-config:
-      logic-delete-value: 1
-      logic-not-delete-value: 0
 
 # langchain4j 配置
 langchain4j:
@@ -44,3 +19,20 @@ langchain4j:
       streaming-chat-model:
         api-key: sk-0534514323fb4b49821526e41b84ef48
         model-name: qwen-plus
+
+# MongoDB 配置
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/chat_memory_db
+
+
+# MyBatis-Plus SQL 日志
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# 日志级别
+logging:
+  level:
+    root: info

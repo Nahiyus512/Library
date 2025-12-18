@@ -23,4 +23,6 @@ public interface BookService extends IService<Book> {
     //根据书本名模糊查询书本
     List<Book> searchBookByLike(String name);
 
+    List<Book> searchBookByCategoryName(String categoryName);
+
 }
