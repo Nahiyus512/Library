@@ -1,37 +1,54 @@
 //创建一个路由器，并且暴露出去
 import {createRouter,createWebHistory} from "vue-router";
 
-import Login from "../components/Login.vue"
-import Home from "../components/Home.vue"
-import MainPage from "../components/MainPage.vue"
-import UserIndex from "../components/UserIndex.vue"
-import Book from "../components/Book.vue"
-import BookRecommend from "../components/BookRecommend.vue"
-import Suggest from "../components/Suggest.vue"
-import User from "../components/User.vue"
-import Admin from "../views/Admin.vue"
-import BookInfo from "../views/BookInfo.vue"
-import UserInfo from "../views/UserInfo.vue"
-import SystemInfo from "../views/SystemInfo.vue"
-import BookBorrowInfo from "../views/BookBorrowInfo.vue"
-import Advice from "../views/Advice.vue"
-import BookClass from "../views/BookClass.vue";
-import CategoryPlaceholder from "../views/CategoryPlaceholder.vue";
-import ArtPlaceholder from "../views/ArtPlaceholder.vue";
-import AmusingOurselvesToDeath from "../views/book/AmusingOurselvesToDeath.vue";
-import BraveNewWorld from "../views/book/BraveNewWorld.vue";
-import Dune from "../views/book/Dune.vue";
-import GridSystems from "../views/book/GridSystems.vue";
-import HitchhikersGuide from "../views/book/HitchhikersGuide.vue";
-import InteractionOfColor from "../views/book/InteractionOfColor.vue";
-import Life30 from "../views/book/Life30.vue";
-import NineteenEightyFour from "../views/book/NineteenEightyFour.vue";
-import NonDesignersDesignBook from "../views/book/NonDesignersDesignBook.vue";
-import Sapiens from "../views/book/Sapiens.vue";
-import ThreeBody from "../views/book/ThreeBody.vue";
-import Zen from "../views/book/Zen.vue";
-import JourneyToTheWest from "../views/book/JourneyToTheWest.vue";
-import ThreeKingdoms from "../views/book/ThreeKingdoms.vue";
+// Layouts
+import ClientLayout from "@/layouts/ClientLayout.vue"
+import AdminLayout from "@/layouts/AdminLayout.vue"
+
+// Auth
+import Login from "@/views/auth/Login.vue"
+
+// Client Views
+import MainPage from "@/views/client/MainPage.vue"
+import UserIndex from "@/views/client/UserIndex.vue"
+import BookList from "@/views/client/BookList.vue"
+import BookRecommend from "@/views/client/BookRecommend.vue"
+import Suggest from "@/views/client/Suggest.vue"
+import UserCenter from "@/views/client/UserCenter.vue"
+import CategoryPlaceholder from "@/views/client/CategoryPlaceholder.vue"
+import ArtPlaceholder from "@/views/client/ArtPlaceholder.vue"
+
+// Category Views
+import ClassicCategory from "@/views/categories/ClassicCategory.vue";
+import PhilosophyCategory from "@/views/categories/PhilosophyCategory.vue";
+import KnowledgeCategory from "@/views/categories/KnowledgeCategory.vue";
+import HistoryCategory from "@/views/categories/HistoryCategory.vue";
+import LifeCategory from "@/views/categories/LifeCategory.vue";
+import SciFiCategory from "@/views/categories/SciFiCategory.vue";
+
+// Admin Views
+import BookInfo from "@/views/admin/BookInfo.vue"
+import UserInfo from "@/views/admin/UserInfo.vue"
+import SystemInfo from "@/views/admin/SystemInfo.vue"
+import BookBorrowInfo from "@/views/admin/BookBorrowInfo.vue"
+import Advice from "@/views/admin/Advice.vue"
+import BookClass from "@/views/admin/BookClass.vue";
+
+// Book Content Views
+import AmusingOurselvesToDeath from "@/views/books/AmusingOurselvesToDeath.vue";
+import BraveNewWorld from "@/views/books/BraveNewWorld.vue";
+import Dune from "@/views/books/Dune.vue";
+import GridSystems from "@/views/books/GridSystems.vue";
+import HitchhikersGuide from "@/views/books/HitchhikersGuide.vue";
+import InteractionOfColor from "@/views/books/InteractionOfColor.vue";
+import Life30 from "@/views/books/Life30.vue";
+import NineteenEightyFour from "@/views/books/NineteenEightyFour.vue";
+import NonDesignersDesignBook from "@/views/books/NonDesignersDesignBook.vue";
+import Sapiens from "@/views/books/Sapiens.vue";
+import ThreeBody from "@/views/books/ThreeBody.vue";
+import Zen from "@/views/books/Zen.vue";
+import JourneyToTheWest from "@/views/books/JourneyToTheWest.vue";
+import ThreeKingdoms from "@/views/books/ThreeKingdoms.vue";
 
 
 const router = createRouter({
@@ -45,13 +62,43 @@ const router = createRouter({
         {
             path:"/home",
             name:"home",
-            component:Home,
+            component:ClientLayout,
             redirect:"/main",
             children:[
                 {
                     path: "/main",
                     name: "main",
                     component: MainPage
+                },
+                {
+                    path: "/category/经典",
+                    name: "category-classic",
+                    component: ClassicCategory
+                },
+                {
+                    path: "/category/哲学",
+                    name: "category-philosophy",
+                    component: PhilosophyCategory
+                },
+                {
+                    path: "/category/知识",
+                    name: "category-knowledge",
+                    component: KnowledgeCategory
+                },
+                {
+                    path: "/category/历史",
+                    name: "category-history",
+                    component: HistoryCategory
+                },
+                {
+                    path: "/category/生活",
+                    name: "category-life",
+                    component: LifeCategory
+                },
+                {
+                    path: "/category/科幻",
+                    name: "category-scifi",
+                    component: SciFiCategory
                 },
                 {
                     path: "/category/:id",
@@ -71,7 +118,7 @@ const router = createRouter({
                 {
                     path: "/book",
                     name: "book",
-                    component: Book
+                    component: BookList
                 },
 
                 {
@@ -82,7 +129,7 @@ const router = createRouter({
                 {
                     path: "/user",
                     name: "user",
-                    component: User
+                    component: UserCenter
                 },
                 {
                     path: "/suggest",
@@ -94,7 +141,7 @@ const router = createRouter({
         {
             path:"/admin",
             name:"admin",
-            component:Admin,
+            component:AdminLayout,
             redirect:"/userInfo",
             children:[
                 {
