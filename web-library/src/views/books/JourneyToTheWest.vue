@@ -129,7 +129,16 @@
         <div class="final-text">
           <h1>斗战胜佛</h1>
           <p>本来无一物，何处惹尘埃。</p>
-          <button class="restart-btn" @click="restart">重入红尘</button>
+          
+          <div v-if="!hasRated" class="rating-journey">
+            <button v-if="!showRatingOptions" class="restart-btn" @click="showRatingOptions = true">评价修行</button>
+            <div v-else class="journey-options">
+                <button class="journey-opt" @click="rateBook(0)">凡人 (0)</button>
+                <button class="journey-opt" @click="rateBook(1)">行者 (1)</button>
+                <button class="journey-opt" @click="rateBook(2)">斗战胜佛 (2)</button>
+            </div>
+          </div>
+          <button v-else class="restart-btn" @click="restart">重入红尘</button>
         </div>
       </div>
 
@@ -140,9 +149,45 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
 const currentScene = ref(0);
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 6, // Journey to the West ID
+      bookName: "西游记",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('功德圆满');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '六根未净');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('取经失败');
+  }
+};
 const karma = ref(0); // Progress/Karma meter
 const showTransition = ref(false);
 const transitionTitle = ref('');
@@ -604,10 +649,53 @@ const sceneClass = computed(() => {
 .final-text h1 { font-family: 'Ma Shan Zheng'; font-size: 5rem; margin-bottom: 20px; color: #d4af37; }
 .final-text p { font-size: 1.5rem; color: #666; margin-bottom: 40px; }
 .restart-btn {
-  padding: 15px 40px; border: 2px solid #d4af37; background: transparent;
-  color: #d4af37; font-size: 1.2rem; cursor: pointer; transition: all 0.3s;
+  background: transparent;
+  border: 2px solid #ffd700;
+  color: #ffd700;
+  padding: 15px 40px;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.5s;
+  margin-top: 2rem;
+  position: relative;
+  overflow: hidden;
 }
-.restart-btn:hover { background: #d4af37; color: #fff; }
+
+.restart-btn:hover {
+  background: #ffd700;
+  color: #333;
+  box-shadow: 0 0 30px #ffd700;
+}
+
+/* Rating System */
+.rating-journey {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.journey-options {
+  display: flex;
+  gap: 20px;
+}
+
+.journey-opt {
+  background: transparent;
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  padding: 10px 20px;
+  font-family: 'Ma Shan Zheng', cursive;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.journey-opt:hover {
+  background: #ffd700;
+  color: #333;
+  box-shadow: 0 0 15px #ffd700;
+}
 
 @keyframes rain {
   to { transform: translateY(150vh); }

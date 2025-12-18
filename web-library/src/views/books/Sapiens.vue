@@ -234,7 +234,15 @@
       </div>
       
       <div class="footer-action">
-        <button class="footer-home-btn" @click="goBackHome">
+        <div v-if="!hasRated" class="rating-sapiens">
+           <button v-if="!showRatingOptions" class="history-btn" @click="showRatingOptions = true">评价历史</button>
+           <div v-else class="history-options">
+               <button class="history-opt" @click="rateBook(0)">认知失调 (0)</button>
+               <button class="history-opt" @click="rateBook(1)">农业陷阱 (1)</button>
+               <button class="history-opt" @click="rateBook(2)">科学革命 (2)</button>
+           </div>
+        </div>
+        <button v-else class="footer-home-btn" @click="goBackHome">
           <span>回到当下</span>
         </button>
       </div>
@@ -245,9 +253,46 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
 const containerRef = ref<HTMLElement | null>(null);
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  console.log('rateBook called', level);
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 12, // Sapiens ID
+      bookName: "人类简史",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('历史已记录');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '认知崩塌');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('进化失败');
+  }
+};
 
 // --- Navigation & Timeline ---
 const showNav = ref(false);
@@ -1379,5 +1424,49 @@ h1, h2, h3, h4 {
   .solar-system {
     transform: scale(0.6);
   }
+}
+/* Rating Styles */
+.rating-sapiens {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    pointer-events: auto;
+    z-index: 100;
+    position: relative;
+}
+.history-btn {
+    background: #f0f0e6;
+    color: #5d4037;
+    border: 2px solid #5d4037;
+    padding: 12px 30px;
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.1rem;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s;
+}
+.history-btn:hover {
+    background: #5d4037;
+    color: #f0f0e6;
+}
+.history-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.history-opt {
+    background: rgba(255,255,255,0.8);
+    border: 1px solid #5d4037;
+    color: #5d4037;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Noto Serif SC', serif;
+}
+.history-opt:hover {
+    background: #5d4037;
+    color: #fff;
 }
 </style>

@@ -207,19 +207,65 @@
       </div>
     </section>
 
-    <!-- Section 4: Footer -->
+    <!-- Footer Rating -->
     <footer class="dune-footer">
-       <p class="final-words">"Fear is the mind-killer."</p>
-       <button class="footer-btn" @click="goBackHome">DEPART PLANET</button>
+      <div v-if="!hasRated" class="rating-dune">
+         <button v-if="!showRatingOptions" class="water-life-btn" @click="showRatingOptions = true">饮用生命之水</button>
+         <div v-else class="dune-options">
+             <button class="dune-opt" @click="rateBook(0)">毒药 (0)</button>
+             <button class="dune-opt" @click="rateBook(1)">水 (1)</button>
+             <button class="dune-opt" @click="rateBook(2)">香料 (2)</button>
+         </div>
+      </div>
+      <button v-else class="nav-return-btn footer-exit" @click="goBackHome">
+        <span>LEAVE ARRAKIS</span>
+      </button>
     </footer>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 7, // Dune ID
+      bookName: "沙丘",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('Prophecy Fulfilled');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || 'Abomination');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('Spice Agony');
+  }
+};
 const goBackHome = () => {
   router.back();
 };
@@ -858,5 +904,70 @@ onUnmounted(() => {
   .hero-subtitle { margin-top: 40px; }
   .houses-grid, .two-col { grid-template-columns: 1fr; flex-direction: column; gap: 30px; }
   .section-header { font-size: 3rem; }
+}
+/* Rating Styles */
+.rating-dune {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.water-life-btn {
+    background: transparent;
+    color: #38bdf8;
+    border: 1px solid #38bdf8;
+    padding: 15px 40px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+    transition: all 0.3s;
+}
+.water-life-btn:hover {
+    background: rgba(56, 189, 248, 0.1);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.6);
+}
+.dune-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.dune-opt {
+    background: #150802;
+    border: 1px solid #FFD700;
+    color: #FFD700;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    transition: all 0.3s;
+}
+.dune-opt:hover {
+    background: #FFD700;
+    color: #150802;
+}
+.dune-footer {
+    padding: 60px 20px;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+.footer-exit {
+    padding: 15px 40px;
+    font-size: 1rem;
+    background: transparent;
+    color: #FDF5E6;
+    border: 1px solid rgba(253, 245, 230, 0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+}
+.footer-exit:hover {
+    border-color: #FFD700;
+    color: #FFD700;
+    background: rgba(255, 215, 0, 0.05);
 }
 </style>

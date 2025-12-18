@@ -179,7 +179,16 @@
         <div class="footer-content">
           <h3>Zen and the Art of Motorcycle Maintenance</h3>
           <p>Robert M. Pirsig</p>
-          <button class="back-home-btn" @click="goBack">回到现实</button>
+          
+          <div v-if="!hasRated" class="rating-zen">
+             <button v-if="!showRatingOptions" class="quality-btn" @click="showRatingOptions = true">检查质量</button>
+             <div v-else class="quality-options">
+                 <button class="quality-opt" @click="rateBook(0)">劣质 (0)</button>
+                 <button class="quality-opt" @click="rateBook(1)">维修 (1)</button>
+                 <button class="quality-opt" @click="rateBook(2)">禅 (2)</button>
+             </div>
+          </div>
+          <button v-else class="back-home-btn" @click="goBack">回到现实</button>
         </div>
       </footer>
     </div>
@@ -1022,4 +1031,47 @@ onUnmounted(() => {
 }
 
 @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+/* Rating Styles */
+.rating-zen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+.quality-btn {
+    background: transparent;
+    color: #047857;
+    border: 2px solid #047857;
+    padding: 10px 30px;
+    font-family: 'Noto Serif SC', serif;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    border-radius: 30px;
+    transition: all 0.3s;
+}
+.quality-btn:hover {
+    background: #047857;
+    color: #fff;
+}
+.quality-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.quality-opt {
+    background: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-family: 'Noto Serif SC', serif;
+    border-radius: 20px;
+}
+.quality-opt:hover {
+    border-color: #047857;
+    color: #047857;
+}
 </style>

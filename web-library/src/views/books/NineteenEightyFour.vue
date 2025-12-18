@@ -122,7 +122,15 @@
 
     <!-- Footer -->
     <footer class="page-footer">
-      <button class="return-home" @click="goBackHome">返回首页</button>
+      <div v-if="!hasRated" class="rating-1984">
+         <button v-if="!showRatingOptions" class="return-home" @click="showRatingOptions = true">评价忠诚</button>
+         <div v-else class="party-options">
+             <button class="party-opt" @click="rateBook(0)">思想罪 (0)</button>
+             <button class="party-opt" @click="rateBook(1)">无产者 (1)</button>
+             <button class="party-opt" @click="rateBook(2)">双重思想 (2)</button>
+         </div>
+      </div>
+      <button v-else class="return-home" @click="goBackHome">返回首页</button>
     </footer>
 
     <!-- Global CRT Overlay -->
@@ -133,14 +141,50 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
 
 const goBackHome = () => {
   router.back();
 };
 
 const pageContainer = ref<HTMLElement | null>(null);
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 10, // 1984 ID
+      bookName: "Nineteen Eighty-Four",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('思想已矫正');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '异端');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('电幕故障');
+  }
+};
 const showNav = ref(false);
 const activeSection = ref('');
 const truthAccepted = ref(false);
@@ -401,6 +445,35 @@ onUnmounted(() => {
   background: #cc0000;
   color: #000;
   box-shadow: 0 0 20px #cc0000;
+}
+
+/* Rating System */
+.rating-1984 {
+  display: flex;
+  justify-content: center;
+}
+
+.party-options {
+  display: flex;
+  gap: 20px;
+}
+
+.party-opt {
+  background: #000;
+  border: 2px solid #cc0000;
+  color: #cc0000;
+  padding: 10px 20px;
+  font-family: var(--font-text);
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.party-opt:hover {
+  background: #cc0000;
+  color: #000;
+  box-shadow: 0 0 15px #cc0000;
 }
 
 /* Navigation */
@@ -801,5 +874,43 @@ onUnmounted(() => {
   .nav-links { font-size: 0.8rem; gap: 10px; }
   .math-problem { font-size: 3rem; flex-direction: column; }
   .final-statement { font-size: 3rem; }
+}
+/* Rating Styles */
+.rating-1984 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.thought-police-btn {
+  background: #333;
+  color: #cc0000;
+  border: 2px solid #cc0000;
+  padding: 10px 20px;
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+.thought-police-btn:hover {
+  background: #cc0000;
+  color: #fff;
+}
+.thought-options {
+  display: flex;
+  gap: 10px;
+}
+.thought-opt {
+  background: #000;
+  color: #fff;
+  border: 1px solid #666;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+}
+.thought-opt:hover {
+  background: #fff;
+  color: #000;
 }
 </style>

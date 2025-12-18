@@ -160,7 +160,15 @@
         </div>
         
         <div class="footer-action">
-          <button class="footer-btn" @click="goBackHome">DESIGN COMPLETE</button>
+          <div v-if="!hasRated" class="rating-design">
+            <button v-if="!showRatingOptions" class="footer-btn" @click="showRatingOptions = true">评价设计</button>
+            <div v-else class="design-options">
+                <button class="design-opt" @click="rateBook(0)">混乱 (0)</button>
+                <button class="design-opt" @click="rateBook(1)">普通 (1)</button>
+                <button class="design-opt" @click="rateBook(2)">专业 (2)</button>
+            </div>
+          </div>
+          <button v-else class="footer-btn" @click="goBackHome">设计完成</button>
         </div>
       </section>
 
@@ -171,14 +179,50 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
 const pageRef = ref<HTMLElement | null>(null);
 const scrollY = ref(0);
 const proximityEnabled = ref(false);
 
 const goBackHome = () => {
   router.back();
+};
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 8, // Non-Designer's Design Book ID
+      bookName: "The Non-Designer's Design Book",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('设计已优化');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '排版混乱');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('渲染失败');
+  }
 };
 
 const isNavStuck = ref(false);
@@ -351,6 +395,35 @@ onMounted(() => {
 .footer-btn:hover {
   background: #fff;
   color: #000;
+}
+
+/* Rating System */
+.rating-design {
+  display: flex;
+  justify-content: center;
+}
+
+.design-options {
+  display: flex;
+  gap: 20px;
+}
+
+.design-opt {
+  background: transparent;
+  border: 2px solid #000;
+  color: #000;
+  padding: 10px 20px;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.design-opt:hover {
+  background: #000;
+  color: #fff;
+  transform: scale(1.05);
 }
 
 /* Hero Wrapper */
@@ -921,5 +994,34 @@ onMounted(() => {
 
 .return-home-btn:hover {
   transform: scale(1.1);
+}
+
+/* Rating Styles */
+.rating-design {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.design-options {
+    display: flex;
+    gap: 20px;
+}
+
+.design-opt {
+    background: #000;
+    color: #fff;
+    border: 2px solid #000;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.design-opt:hover {
+    background: #fff;
+    color: #000;
 }
 </style>

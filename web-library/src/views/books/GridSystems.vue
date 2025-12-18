@@ -182,7 +182,22 @@
         <div class="footer-grid-bg"></div>
         <div class="footer-content">
           <p class="swiss-quote">"Design is the method of putting form and content together."</p>
-          <button class="footer-btn" @click="goBackHome">RESTORE CHAOS</button>
+          
+          <div v-if="!hasRated" class="rating-grid">
+            <button v-if="!showRatingOptions" class="footer-btn" @click="showRatingOptions = true">评价设计</button>
+            <div v-else class="grid-options">
+                <button class="grid-opt" @click="rateBook(0)">
+                    <span class="grid-num">0</span> 混乱
+                </button>
+                <button class="grid-opt" @click="rateBook(1)">
+                    <span class="grid-num">1</span> 秩序
+                </button>
+                <button class="grid-opt" @click="rateBook(2)">
+                    <span class="grid-num">2</span> 瑞士风格
+                </button>
+            </div>
+          </div>
+          <button v-else class="footer-btn" @click="goBackHome">返回首页</button>
         </div>
       </footer>
     </main>
@@ -193,9 +208,45 @@
 import { ref, onMounted, onUnmounted, computed, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import GridSystemsCover from '@/components/business/covers/GridSystemsCover.vue';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const pageWrapper = ref<HTMLElement | null>(null);
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 4, // Grid Systems ID
+      bookName: "Grid Systems",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('秩序已建立');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '网格错位');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('系统错误');
+  }
+};
 
 // --- Navigation ---
 const sections = [
@@ -917,4 +968,42 @@ onUnmounted(() => {
   background: #ff3333;
 }
 
+/* Rating System */
+.rating-grid {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.grid-options {
+  display: flex;
+  gap: 20px;
+}
+
+.grid-opt {
+  background: transparent;
+  border: 1px solid #fff;
+  color: #fff;
+  padding: 15px 30px;
+  font-family: var(--font-swiss);
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.grid-num {
+  font-size: 24px;
+  display: block;
+}
+
+.grid-opt:hover {
+  background: #fff;
+  color: #000;
+  transform: translateY(-5px);
+}
 </style>

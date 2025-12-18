@@ -200,12 +200,22 @@
           </div>
         </div>
       </section>
-      
-      <footer class="page-footer">
-        <h3>迎接 AI 时代</h3>
-        <p>关于未来的讨论已经开始。用知识武装自己，加入这场对话。</p>
-        <button class="footer-btn" @click="goBack">HUMAN MODE</button>
+
+      <!-- Footer -->
+      <footer class="life30-footer">
+         <div v-if="!hasRated" class="rating-life30">
+            <button v-if="!showRatingOptions" class="alignment-btn" @click="showRatingOptions = true">对齐 AI 目标</button>
+            <div v-else class="alignment-options">
+                <button class="alignment-opt" @click="rateBook(0)">回形针 (0)</button>
+                <button class="alignment-opt" @click="rateBook(1)">有益 (1)</button>
+                <button class="alignment-opt" @click="rateBook(2)">超级智能 (2)</button>
+            </div>
+         </div>
+         <button v-else class="return-btn footer-exit" @click="goBack">
+            <span>DISCONNECT SIMULATION</span>
+         </button>
       </footer>
+
     </div>
   </div>
 </template>
@@ -1249,5 +1259,64 @@ onUnmounted(() => {
     text-align: center;
     width: 100%;
   }
+}
+/* Rating Styles */
+.life30-footer {
+    padding: 100px 0;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+.rating-life30 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.alignment-btn {
+    background: #6366f1;
+    color: #fff;
+    border: none;
+    padding: 15px 40px;
+    font-family: 'Inter', sans-serif;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+    transition: all 0.3s;
+}
+.alignment-btn:hover {
+    background: #fff;
+    color: #6366f1;
+}
+.alignment-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.alignment-opt {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid #6366f1;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+}
+.alignment-opt:hover {
+    background: #6366f1;
+    color: #fff;
+}
+.footer-exit {
+    padding: 15px 40px;
+    font-size: 1rem;
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+.footer-exit:hover {
+    border-color: #6366f1;
+    color: #6366f1;
 }
 </style>

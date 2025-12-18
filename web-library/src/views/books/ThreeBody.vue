@@ -103,7 +103,15 @@
       
       <!-- Footer Return -->
       <div class="footer-return-container">
-        <button class="footer-return-btn" @click="goBackHome">
+        <div v-if="!hasRated" class="rating-threebody">
+            <button v-if="!showRatingOptions" class="trisolaris-btn" @click="showRatingOptions = true">发送广播</button>
+            <div v-else class="trisolaris-options">
+                <button class="trisolaris-opt" @click="rateBook(0)">不要回答 (0)</button>
+                <button class="trisolaris-opt" @click="rateBook(1)">中立 (1)</button>
+                <button class="trisolaris-opt" @click="rateBook(2)">入侵 (2)</button>
+            </div>
+        </div>
+        <button v-else class="footer-return-btn" @click="goBackHome">
           &lt;&lt; 返回地球 &gt;&gt;
         </button>
       </div>
@@ -114,8 +122,44 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 1, // Three Body ID
+      bookName: "三体",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('广播已发送');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '信号被干扰');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('智子屏蔽');
+  }
+};
 
 const sections = [
   { name: '首页' },
@@ -763,5 +807,51 @@ onUnmounted(() => {
   }
   .main-title { font-size: 6rem; }
   .death-countdown { font-size: 20vw; }
+}
+/* Rating Styles */
+.rating-threebody {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.trisolaris-btn {
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    padding: 10px 30px;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.trisolaris-btn:hover {
+    background: #ef4444;
+    color: #000;
+    box-shadow: 0 0 15px #ef4444;
+}
+
+.trisolaris-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.trisolaris-opt {
+    background: rgba(0,0,0,0.8);
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 8px 20px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+}
+
+.trisolaris-opt:hover {
+    background: #fff;
+    color: #000;
 }
 </style>

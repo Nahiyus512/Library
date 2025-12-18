@@ -2,7 +2,7 @@
   <div class="amusing-page" ref="pageContainer" @scroll="handleScroll">
     <!-- Top Left Return Button -->
     <button class="return-btn fixed-top-left" @click="turnOffTv">
-      <span>← TURN OFF TV</span>
+      <span>← 关闭电视</span>
     </button>
 
     <!-- CRT Overlay -->
@@ -134,10 +134,36 @@
       <section id="shallows" class="section shallows-section">
         <div class="static-storm" :style="{ opacity: staticOpacity }"></div>
         <div class="power-container" v-if="!isPoweredOff">
-          <button class="power-btn" @click="turnOffTv">
-            <div class="power-symbol">⏻</div>
-          </button>
-          <p>好... 现在</p>
+          
+          <!-- Rating Interface -->
+          <div v-if="!hasRated" class="rating-interface-crt">
+            <div v-if="!showRatingOptions" class="rating-start">
+               <button class="crt-text-btn blink-text" @click="showRatingOptions = true">
+                 &gt; 评价广播_
+               </button>
+            </div>
+            <div v-else class="rating-options-crt">
+              <div class="crt-scanline-overlay"></div>
+              <button class="crt-opt-btn" @click="rateBook(0)">
+                <span class="channel-num">频道 0</span> <span class="opt-text">无信号</span>
+              </button>
+              <button class="crt-opt-btn" @click="rateBook(1)">
+                <span class="channel-num">频道 1</span> <span class="opt-text">干扰</span>
+              </button>
+              <button class="crt-opt-btn highlight" @click="rateBook(2)">
+                <span class="channel-num">频道 2</span> <span class="opt-text">清晰</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Original Exit -->
+          <div v-else class="exit-control">
+            <button class="power-btn" @click="turnOffTv">
+              <div class="power-symbol">⏻</div>
+            </button>
+            <p>好... 现在</p>
+          </div>
+
         </div>
         <div class="tv-off-animation" v-else>
           <div class="collapse-line"></div>
@@ -191,8 +217,44 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, reactive, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 11, // Amusing Ourselves to Death ID
+      bookName: "娱乐至死",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('信号已接收');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '信号干扰');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('传输失败');
+  }
+};
 
 const goBackHome = () => {
   router.back();
@@ -858,4 +920,68 @@ const tickerSpeed = ref(20);
 .amusing-page::-webkit-scrollbar { display: none; }
 .amusing-page { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Rating Interface Styles */
+.rating-interface-crt {
+    z-index: 10;
+    position: relative;
+    text-align: center;
+}
+
+.crt-text-btn {
+    background: transparent;
+    border: none;
+    color: #0f0;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 2rem;
+    cursor: pointer;
+    text-shadow: 0 0 5px #0f0;
+    letter-spacing: 2px;
+}
+
+.crt-text-btn:hover {
+    color: #fff;
+    text-shadow: 0 0 10px #fff;
+}
+
+.rating-options-crt {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: rgba(0, 20, 0, 0.9);
+    padding: 20px;
+    border: 2px solid #0f0;
+    box-shadow: 0 0 15px #0f0, inset 0 0 10px #0f0;
+    position: relative;
+}
+
+.crt-opt-btn {
+    background: transparent;
+    border: 1px solid #0f0;
+    color: #0f0;
+    padding: 10px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    width: 300px;
+    transition: all 0.2s;
+}
+
+.crt-opt-btn:hover {
+    background: #0f0;
+    color: #000;
+    box-shadow: 0 0 10px #0f0;
+}
+
+.channel-num {
+    font-weight: bold;
+}
+
+.exit-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 </style>

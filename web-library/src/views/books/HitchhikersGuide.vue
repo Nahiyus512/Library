@@ -200,22 +200,65 @@
       </section>
 
       <!-- Footer -->
-      <footer class="guide-footer">
-        <button class="return-normality-btn" @click="goBackHome">
-          RETURN TO NORMALITY
-        </button>
-        <div class="footer-msg">SHARE AND ENJOY</div>
+      <footer class="hitchhiker-footer">
+         <div v-if="!hasRated" class="rating-hitchhiker">
+            <button v-if="!showRatingOptions" class="galaxy-btn" @click="showRatingOptions = true">评价银河</button>
+            <div v-else class="galaxy-options">
+                <button class="galaxy-opt" @click="rateBook(0)">恐慌 (0)</button>
+                <button class="galaxy-opt" @click="rateBook(1)">基本无害 (1)</button>
+                <button class="galaxy-opt" @click="rateBook(2)">42 (2)</button>
+            </div>
+         </div>
+         <button v-else class="abort-btn footer-exit" @click="goBackHome">
+            <span>[EXIT UNIVERSE]</span>
+         </button>
       </footer>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed, reactive } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 import HitchhikersGuideCover from '@/components/business/covers/HitchhikersGuideCover.vue';
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 3, // Hitchhiker's Guide ID
+      bookName: "银河系漫游指南",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('指南已更新');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '检测到沃贡诗歌');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('计算机拒绝回答');
+  }
+};
 
 // Fixed Star Field to prevent re-rendering glitches
 const stars = ref(Array.from({ length: 50 }, () => ({
@@ -1175,5 +1218,65 @@ onUnmounted(() => {
   .nav-brand { display: none; }
   .nav-links { gap: 15px; }
   .nav-num { display: none; }
+}
+/* Rating Styles */
+.hitchhiker-footer {
+    padding: 60px 20px;
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-top: 2px solid #0f0;
+}
+.rating-hitchhiker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+.galaxy-btn {
+    background: #0f0;
+    color: #000;
+    border: none;
+    padding: 15px 40px;
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px #0f0;
+}
+.galaxy-btn:hover {
+    background: #fff;
+    box-shadow: 0 0 20px #fff;
+}
+.galaxy-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.galaxy-opt {
+    background: #000;
+    border: 1px solid #0f0;
+    color: #0f0;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Courier New', monospace;
+}
+.galaxy-opt:hover {
+    background: #0f0;
+    color: #000;
+}
+.footer-exit {
+    padding: 15px 40px;
+    background: transparent;
+    border: 1px solid #ff0000;
+    color: #ff0000;
+    font-family: 'Courier New', monospace;
+    cursor: pointer;
+}
+.footer-exit:hover {
+    background: #ff0000;
+    color: #fff;
 }
 </style>

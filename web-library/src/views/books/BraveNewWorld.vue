@@ -375,7 +375,16 @@
             <p>你在灯塔中孤独地守望，但你的灵魂属于你自己。</p>
           </div>
         </div>
-        <button class="interaction-btn restart-btn" @click="goBackHome">结束旅程</button>
+        
+        <div v-if="!hasRated" class="rating-soma-container">
+            <button v-if="!showRatingOptions" class="interaction-btn soma-rate-btn" @click="showRatingOptions = true">评价体验</button>
+            <div v-else class="soma-rating-options">
+                <button class="interaction-btn soma-opt" @click="rateBook(0)">0g - 野蛮</button>
+                <button class="interaction-btn soma-opt" @click="rateBook(1)">1g - 稳定</button>
+                <button class="interaction-btn soma-opt" @click="rateBook(2)">2g - 假日</button>
+            </div>
+        </div>
+        <button v-else class="interaction-btn restart-btn" @click="goBackHome">结束旅程</button>
       </div>
 
     </transition>
@@ -399,10 +408,46 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
 const currentScene = ref(0);
 const stability = ref(100);
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userName: username,
+      bookId: 9, // Brave New World ID
+      bookName: "美丽新世界",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('Soma Administered');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || 'Stability Threatened');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('System Failure');
+  }
+};
 
 // Transition System
 const showTransition = ref(false);

@@ -170,7 +170,16 @@
         <h2 class="section-title">九九归一</h2>
         <p class="poem-line">古今多少事</p>
         <p class="poem-line">都付笑谈中</p>
-        <button class="final-return-btn" @click="goBack">鸣金收兵</button>
+        
+        <div v-if="!hasRated" class="rating-kingdoms">
+            <button v-if="!showRatingOptions" class="final-return-btn" @click="showRatingOptions = true">记录历史</button>
+            <div v-else class="kingdom-options">
+                <button class="kingdom-opt" @click="rateBook(0)">乱世 (0)</button>
+                <button class="kingdom-opt" @click="rateBook(1)">分久必合 (1)</button>
+                <button class="kingdom-opt" @click="rateBook(2)">天下归一 (2)</button>
+            </div>
+        </div>
+        <button v-else class="final-return-btn" @click="goBack">鸣金收兵</button>
       </div>
     </section>
 

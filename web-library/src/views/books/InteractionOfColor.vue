@@ -224,7 +224,16 @@
             <p class="book-author">{{ book.author }}</p>
           </div>
         </div>
-        <button class="footer-btn" @click="goBackHome">FINISH STUDY</button>
+        
+        <div v-if="!hasRated" class="rating-color">
+            <button v-if="!showRatingOptions" class="footer-btn" @click="showRatingOptions = true">评价色彩</button>
+            <div v-else class="color-options">
+                <button class="color-opt opt-0" @click="rateBook(0)">单色 (0)</button>
+                <button class="color-opt opt-1" @click="rateBook(1)">近似色 (1)</button>
+                <button class="color-opt opt-2" @click="rateBook(2)">互补色 (2)</button>
+            </div>
+        </div>
+        <button v-else class="footer-btn" @click="goBackHome">FINISH STUDY</button>
       </div>
     </section>
 
@@ -595,6 +604,42 @@ onUnmounted(() => {
   font-family: var(--font-modern);
   font-weight: bold;
 }
+
+/* Rating Styles */
+.rating-color {
+  display: flex;
+  justify-content: center;
+  pointer-events: auto; /* Ensure clickable */
+  z-index: 100;
+  position: relative;
+}
+
+.color-options {
+  display: flex;
+  gap: 20px;
+}
+
+.color-opt {
+  background: transparent;
+  border: 2px solid #fff;
+  color: #fff;
+  padding: 10px 20px;
+  font-family: var(--font-ui);
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.color-opt:hover {
+  background: #fff;
+  color: #000;
+  transform: scale(1.1);
+}
+
+.opt-0:hover { color: #ef4444; }
+.opt-1:hover { color: #3b82f6; }
+.opt-2:hover { color: #84cc16; }
 
 /* Return Buttons */
 .return-btn.fixed-top-left {
