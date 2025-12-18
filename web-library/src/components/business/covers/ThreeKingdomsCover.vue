@@ -62,7 +62,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   mode?: 'card' | 'hero'
 }>(), {
   mode: 'card'
@@ -94,7 +94,7 @@ const parallaxStyle = (factor: number) => {
   };
 };
 
-const getPetalStyle = (n: number) => {
+const getPetalStyle = (_: number) => {
   const delay = Math.random() * 5;
   const duration = 5 + Math.random() * 5;
   return {
@@ -163,7 +163,7 @@ const getPetalStyle = (n: number) => {
   color: #1a1a1a;
   line-height: 1;
   letter-spacing: 0.05em;
-  text-shadow: 2px 2px 0px rgba(255, 255, 255, 0.4);
+  text-shadow: 2px 2px 0 rgba(255, 255, 255, 0.4);
 }
 
 .seal-container {
@@ -174,7 +174,7 @@ const getPetalStyle = (n: number) => {
 }
 
 .seal-box {
-  border: 1.2px solid #b22222;
+  border: 1px solid #b22222;
   color: #b22222;
   writing-mode: vertical-rl; /* 印章内文字竖排 */
   font-family: 'Noto Serif SC', serif;
@@ -182,7 +182,7 @@ const getPetalStyle = (n: number) => {
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.5);
   box-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-  padding: 4px 1px; /* 左右宽度缩小 */
+  padding: 4px 16px; /* 左右宽度缩小 */
 }
 
 /* --- 右侧：旗帜部分 --- */
@@ -248,7 +248,7 @@ const getPetalStyle = (n: number) => {
 
 /* 魏：左后方，高冷 */
 .flag-wei {
-  left: 0%;
+  left: 0;
   margin-top: -40px;
   z-index: 1;
   transform: rotate(-10deg) scale(0.9);
@@ -294,10 +294,10 @@ const getPetalStyle = (n: number) => {
 }
 .mode-card .seal-box {
   font-size: 0.6rem;
-  padding: 2px 10px;
+  padding: 2px 1px;
 }
 .mode-card .flag-wrapper {
-  transform: scale(0.6) rotate(var(--r, 0deg)); /* 整体缩小 */
+  transform: scale(0.6); /* 整体缩小 */
 }
 /* 卡片模式下重置一下旗帜位置，使其更紧凑 */
 .mode-card .flag-wei { left: -10px; margin-top: -20px; transform: rotate(-10deg) scale(0.7); }
@@ -311,7 +311,7 @@ const getPetalStyle = (n: number) => {
 }
 .mode-hero .seal-box {
   font-size: 1.2rem;
-  padding: 6px 8px;
+  padding: 6px 2px;
   background: #b22222; /* 实心红 */
   color: #fff;
   border: none;
