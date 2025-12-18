@@ -99,6 +99,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { transitionState } from '@/store/transitionStore';
 
 const props = defineProps<{
   coverComponent: any;
@@ -117,7 +118,22 @@ const wrapperStyle = computed(() => ({
 
 const handleClick = () => {
   if (props.routePath) {
-    router.push(props.routePath);
+    // Trigger transition animation
+    transitionState.startAnimation(
+      props.themeColor, 
+      props.title,
+      '#ffffff' // Default text color, adjust if needed
+    );
+
+    // Wait for animation to cover screen before navigating
+    setTimeout(() => {
+      router.push(props.routePath!);
+      
+      // End animation after a delay (handled by next page or timeout)
+      setTimeout(() => {
+        transitionState.endAnimation();
+      }, 500);
+    }, 350);
   }
 };
 </script>
