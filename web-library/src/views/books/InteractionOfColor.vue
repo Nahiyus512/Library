@@ -243,8 +243,46 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  const userId = cookies.get('userId');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userId: userId,
+      userName: username,
+      bookId: 5, // Interaction of Color ID (Assumed)
+      bookName: "Interaction of Color",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('色彩和谐');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '色彩冲突');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('视觉误差');
+  }
+};
 
 const goBackHome = () => {
   router.back();

@@ -234,6 +234,7 @@ const showRatingOptions = ref(false);
 
 const rateBook = async (level: number) => {
   const username = cookies.get('username');
+  const userId = cookies.get('userId');
   if (!username) {
     ElMessage.warning('请先登录');
     router.push('/login');
@@ -242,6 +243,7 @@ const rateBook = async (level: number) => {
 
   try {
     const res = await myAxios.put('/bookLike/like', {
+      userId: userId,
       userName: username,
       bookId: 3, // Hitchhiker's Guide ID
       bookName: "银河系漫游指南",

@@ -189,8 +189,47 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  const userId = cookies.get('userId');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userId: userId,
+      userName: username,
+      bookId: 13, // Three Kingdoms ID (Assumed)
+      bookName: "三国演义",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('青梅煮酒');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '败走华容道');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('天机不可泄露');
+  }
+};
+
 const scrollY = ref(0);
 const activeSection = ref('opening');
 const showNav = ref(false);

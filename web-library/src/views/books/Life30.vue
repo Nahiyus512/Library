@@ -223,8 +223,47 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  const userId = cookies.get('userId');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userId: userId,
+      userName: username,
+      bookId: 14, // Life 3.0 ID (Assumed)
+      bookName: "Life 3.0",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('已连接');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '连接断开');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('系统崩溃');
+  }
+};
+
 const containerRef = ref<HTMLElement | null>(null);
 const scrollProgress = ref(0);
 const isSticky = ref(false);

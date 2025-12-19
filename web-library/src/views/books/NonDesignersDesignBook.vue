@@ -199,6 +199,7 @@ const showRatingOptions = ref(false);
 
 const rateBook = async (level: number) => {
   const username = cookies.get('username');
+  const userId = cookies.get('userId');
   if (!username) {
     ElMessage.warning('请先登录');
     router.push('/login');
@@ -207,6 +208,7 @@ const rateBook = async (level: number) => {
 
   try {
     const res = await myAxios.put('/bookLike/like', {
+      userId: userId,
       userName: username,
       bookId: 8, // Non-Designer's Design Book ID
       bookName: "The Non-Designer's Design Book",

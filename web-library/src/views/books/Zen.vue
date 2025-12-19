@@ -198,8 +198,47 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import myAxios from "@/api/index";
+import { useCookies } from '@vueuse/integrations/useCookies';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
+const cookies = useCookies();
+
+// Rating Logic
+const hasRated = ref(false);
+const showRatingOptions = ref(false);
+
+const rateBook = async (level: number) => {
+  const username = cookies.get('username');
+  const userId = cookies.get('userId');
+  if (!username) {
+    ElMessage.warning('请先登录');
+    router.push('/login');
+    return;
+  }
+
+  try {
+    const res = await myAxios.put('/bookLike/like', {
+      userId: userId,
+      userName: username,
+      bookId: 2, // Zen ID
+      bookName: "Zen and the Art of Motorcycle Maintenance",
+      likeLevel: level
+    });
+
+    if (res.data.code === 200) {
+      ElMessage.success('良质已发现');
+      hasRated.value = true;
+    } else {
+      ElMessage.error(res.data.msg || '卡滞');
+    }
+  } catch (e) {
+    console.error(e);
+    ElMessage.error('无法维修');
+  }
+};
+
 const pageContainer = ref<HTMLElement | null>(null);
 const roadCanvas = ref<HTMLCanvasElement | null>(null);
 const mouseX = ref(0);
