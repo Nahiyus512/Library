@@ -165,18 +165,23 @@ const initializeShelves = () => {
 };
 
 onMounted(() => {
-  fetchBookshelf()
-  const username = cookie.get('username')
-  if (username) getUserByName(username)
+  const userId = cookie.get('userId')
+  if (userId) {
+    ratingData.userId = userId
+    fetchBookshelf()
+  } else {
+    // Fallback if userId not in cookie (e.g. old session)
+    const username = cookie.get('username')
+    if (username) getUserByName(username)
+  }
 })
 
 const fetchBookshelf = async () => {
-  const username = cookie.get('username')
-  if (!username) return
+  if (!ratingData.userId) return
   
   try {
     const res = await myAxios.get('http://localhost:8080/bookLike/list', {
-      params: { userName: username }
+      params: { userId: ratingData.userId }
     })
     if (res.data.code === 200) {
       allBooks.value = res.data.data
@@ -194,6 +199,7 @@ const getUserByName = async (username: string) => {
       params: { name: username }
     })
     ratingData.userId = res.data.data.id
+    fetchBookshelf()
   } catch (e) {
     console.log(e)
   }
@@ -265,6 +271,7 @@ const dropOnShelf = async (event: DragEvent, targetSection: 'liked' | 'soso', ta
       const targetLikeLevel = targetSection === 'liked' ? 2 : 1;
       
       await myAxios.put('http://localhost:8080/bookLike/like', {
+        userId: ratingData.userId,
         userName: username,
         bookId: sourceBook.bookId,
         bookName: sourceBook.bookName,
@@ -297,6 +304,7 @@ const dropToTrash = async (event: DragEvent) => {
   try {
     const username = cookie.get('username')
     const res = await myAxios.put('http://localhost:8080/bookLike/like', {
+      userId: ratingData.userId,
       userName: username,
       bookId: book.bookId,
       bookName: book.bookName,

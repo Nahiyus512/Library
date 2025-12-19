@@ -159,14 +159,20 @@ const borrowData = reactive({
 
 const tableData = ref([])
 
-onMounted(() => {
+onMounted(async () => {
   if (route.query.q) {
     pageInfo.bookName = route.query.q as string
   }
   getBook()
   let username = cookie.get('username')
   borrowData.userName = username
-  getUserByName(username)
+  
+  const userId = cookie.get('userId')
+  if (userId) {
+    ratingData.userId = userId
+  } else if (username) {
+    await getUserByName(username)
+  }
 })
 
 const getTime = new Date().getTime();
@@ -204,7 +210,7 @@ const getLikeStatus = async () => {
   try {
     let res = await myAxios.get('http://localhost:8080/bookLike/status', {
       params: {
-        userName: borrowData.userName,
+        userId: ratingData.userId,
         bookId: bookData.bookId
       }
     })
@@ -217,6 +223,7 @@ const getLikeStatus = async () => {
 const addToBookshelf = async () => {
   try {
     let res = await myAxios.put('http://localhost:8080/bookLike/like', {
+      userId: ratingData.userId,
       userName: borrowData.userName,
       bookId: bookData.bookId,
       bookName: bookData.bookName,

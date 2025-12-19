@@ -47,8 +47,8 @@ public class UserController {
 
 
    @PostMapping("/login")
-    public R<Map<String,String>> login(@RequestBody Map map){
-       Map<String,String> resultMap = new HashMap<>();
+    public R<Map<String,Object>> login(@RequestBody Map map){
+       Map<String,Object> resultMap = new HashMap<>();
        String username = map.get("username").toString();
        UserContext.setUsername(username);
        log.info("UserContext.username:{}",UserContext.getUsername());
@@ -68,6 +68,7 @@ public class UserController {
             String token = jwtUtil.createToken(user.getName());
             redisUtil.set(Constant.getTokenKey(user.getName()),token,3600);
             resultMap.put("token",token);
+            resultMap.put("id", user.getId());
             return R.success(resultMap);
         }else {
             return R.error("账号或密码错误，登录失败");

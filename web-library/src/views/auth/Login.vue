@@ -271,6 +271,7 @@ async function loginClick() {
     if(res.data.code === 200) {
       setToken(res.data.data.token)
       cookie.set('username',info.username)
+      cookie.set('userId', res.data.data.id)
       if(info.username === 'admin') {
         ElMessage.success("欢迎，管理员")
         setTimeout(()=>{
