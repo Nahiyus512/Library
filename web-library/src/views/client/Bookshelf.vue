@@ -8,7 +8,7 @@
     <div class="shelves-layout">
       <!-- Left Side: Liked Books (2 rows) -->
       <div class="shelf-column left-column">
-        <h2 class="column-title">想看</h2>
+        <h2 class="column-title">喜欢</h2>
         <div class="shelf-row" v-for="(books, rowIndex) in shelfState.liked" :key="'liked-'+rowIndex">
           <BookShelfItem 
             :books="books"
@@ -36,7 +36,7 @@
 
       <!-- Right Side: So-so Books (2 rows) -->
       <div class="shelf-column right-column">
-        <h2 class="column-title">待看</h2>
+        <h2 class="column-title">还行</h2>
         <div class="shelf-row" v-for="(books, rowIndex) in shelfState.soso" :key="'soso-'+rowIndex">
           <BookShelfItem 
             :books="books"

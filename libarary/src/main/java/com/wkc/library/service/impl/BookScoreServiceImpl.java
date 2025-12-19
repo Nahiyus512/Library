@@ -52,6 +52,9 @@ public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore
     @Autowired
     private com.wkc.library.common.AssociationRuleRecommend associationRuleRecommend;
 
+    @Autowired
+    private com.wkc.library.common.LFMRecommend lfmRecommend;
+
     @Override
     public List<Book> recommend(Integer userId) {
         return recommend(userId, "user_cf");
@@ -76,6 +79,10 @@ public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore
         } else if ("association_rule".equals(strategy)) {
             // 关联规则推荐
             List<Integer> bookIds = associationRuleRecommend.recommend(userId, 5);
+            return getBooksByIds(bookIds);
+        } else if ("lfm".equals(strategy)) {
+            // 隐语义模型
+            List<Integer> bookIds = lfmRecommend.recommend(userId, 5);
             return getBooksByIds(bookIds);
         } else {
             // 默认为基于用户的协同过滤 (user_cf)

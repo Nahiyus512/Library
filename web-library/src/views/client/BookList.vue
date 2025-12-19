@@ -1,5 +1,23 @@
 <template>
   <div class="page-container">
+    <div class="top-bar">
+      <div class="search-wrapper">
+        <el-input
+          v-model="pageInfo.bookName"
+          placeholder="搜索书名..."
+          class="search-input"
+          @keyup.enter="handleSearch"
+          clearable
+          @clear="handleSearch"
+        >
+          <template #prefix>
+            <el-icon><Search /></el-icon>
+          </template>
+        </el-input>
+        <button class="action-btn primary search-btn" @click="handleSearch">搜索</button>
+      </div>
+    </div>
+
     <div class="scroll-container">
       <div class="books-grid">
         <div 
@@ -7,6 +25,8 @@
           v-for="book in tableData" 
           :key="book.bookId" 
           @click="clickBook(book)"
+          @mousemove="handleMouseMove"
+          @mouseleave="handleMouseLeave"
         >
           <div class="book-cover-wrapper">
             <img 
@@ -110,6 +130,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from "vue";
 import { ElMessage } from "element-plus";
+import { Search } from '@element-plus/icons-vue'
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies'
 import { useRoute } from 'vue-router'
@@ -131,11 +152,51 @@ const ratingData = reactive({
 const centerDialogVisible = ref(false)
 
 const pageInfo = reactive({
-  pageSize: 12,
+  pageSize: 24,
   pageNum: 1,
   allNum: 20,
   bookName: ''
 })
+
+const handleSearch = () => {
+  pageInfo.pageNum = 1
+  getBook()
+}
+
+const handleMouseMove = (e: MouseEvent) => {
+  const card = e.currentTarget as HTMLElement
+  const wrapper = card.querySelector('.book-cover-wrapper') as HTMLElement
+  
+  if (!wrapper) return
+
+  const rect = card.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  
+  // Calculate percentage from center (-1 to 1)
+  const xPct = (x / rect.width - 0.5) * 2
+  const yPct = (y / rect.height - 0.5) * 2
+  
+  // Max rotation angles
+  const maxRotateX = 15
+  const maxRotateY = 15
+  
+  const rotateX = -yPct * maxRotateX
+  const rotateY = xPct * maxRotateY
+  
+  wrapper.style.transition = 'transform 0.1s ease-out'
+  wrapper.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.08, 1.08, 1.08)`
+}
+
+const handleMouseLeave = (e: MouseEvent) => {
+  const card = e.currentTarget as HTMLElement
+  const wrapper = card.querySelector('.book-cover-wrapper') as HTMLElement
+  
+  if (wrapper) {
+    wrapper.style.transition = 'transform 0.5s ease'
+    wrapper.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)'
+  }
+}
 
 const bookData = reactive({
   bookId: '',
@@ -340,6 +401,23 @@ const inputScore = async () => {
   overflow: hidden;
 }
 
+.top-bar {
+  padding: 20px 20px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.search-wrapper {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.search-input {
+  flex: 1;
+}
+
 .scroll-container {
   flex: 1;
   overflow: hidden;
@@ -351,9 +429,9 @@ const inputScore = async () => {
 .books-grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 20px;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 15px;
   overflow: hidden;
 }
 
@@ -382,6 +460,8 @@ const inputScore = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .book-card:hover .book-cover-wrapper {
@@ -395,10 +475,6 @@ const inputScore = async () => {
   height: auto;
   object-fit: contain;
   transition: transform 0.5s ease;
-}
-
-.book-card:hover .book-cover {
-  transform: scale(1.05);
 }
 
 .book-title {

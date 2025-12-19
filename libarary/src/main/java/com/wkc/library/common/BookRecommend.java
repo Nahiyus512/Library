@@ -1,7 +1,7 @@
 package com.wkc.library.common;
 
-import com.wkc.library.entity.BookLike;
-import com.wkc.library.mapper.BookLikeMapper;
+import com.wkc.library.entity.BookScore;
+import com.wkc.library.mapper.BookScoreMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -11,15 +11,15 @@ import java.util.*;
 public class BookRecommend {
 
     @Autowired
-    private BookLikeMapper bookLikeMapper;
+    private BookScoreMapper bookScoreMapper;
 
     // 加载用户评分数据的方法
     public Map<Integer, Map<Integer, Double>> loadRatings() {
         Map<Integer, Map<Integer, Double>> userRatings = new HashMap<>();
-        List<BookLike> bookLikes = bookLikeMapper.selectList(null);
-        for (BookLike like : bookLikes) {
-            userRatings.computeIfAbsent(like.getUserId(), k -> new HashMap<>())
-                       .put(like.getBookId(), like.getLikeLevel() != null ? like.getLikeLevel().doubleValue() : 0.0);
+        List<BookScore> bookScores = bookScoreMapper.selectList(null);
+        for (BookScore score : bookScores) {
+            userRatings.computeIfAbsent(score.getUserId(), k -> new HashMap<>())
+                       .put(score.getBookId(), score.getScore() != null ? score.getScore().doubleValue() : 0.0);
         }
         return userRatings;
     }

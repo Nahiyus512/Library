@@ -14,6 +14,7 @@
               <el-option label="基于物品协同过滤" value="item_cf" />
               <el-option label="基于内容推荐" value="content_based" />
               <el-option label="关联规则推荐" value="association_rule" />
+              <el-option label="隐语义模型" value="lfm" />
             </el-select>
           </div>
         </div>
