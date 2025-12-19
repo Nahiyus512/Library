@@ -14,6 +14,11 @@ import UserIndex from "@/views/client/UserIndex.vue"
 import BookList from "@/views/client/BookList.vue"
 import Bookshelf from "@/views/client/Bookshelf.vue"
 import BookRecommend from "@/views/client/BookRecommend.vue"
+import UserCF from "@/views/recommend/UserCF.vue"
+import ItemCF from "@/views/recommend/ItemCF.vue"
+import ContentBased from "@/views/recommend/ContentBased.vue"
+import AssociationRule from "@/views/recommend/AssociationRule.vue"
+import LFM from "@/views/recommend/LFM.vue"
 import Suggest from "@/views/client/Suggest.vue"
 import UserCenter from "@/views/client/UserCenter.vue"
 import CategoryPlaceholder from "@/views/client/CategoryPlaceholder.vue"
@@ -130,7 +135,34 @@ const router = createRouter({
                 {
                     path: "/bookRecommend",
                     name: "bookRecommend",
-                    component: BookRecommend
+                    component: BookRecommend,
+                    children: [
+                        {
+                            path: "user_cf",
+                            name: "user_cf",
+                            component: UserCF
+                        },
+                        {
+                            path: "item_cf",
+                            name: "item_cf",
+                            component: ItemCF
+                        },
+                        {
+                            path: "content_based",
+                            name: "content_based",
+                            component: ContentBased
+                        },
+                        {
+                            path: "association_rule",
+                            name: "association_rule",
+                            component: AssociationRule
+                        },
+                        {
+                            path: "lfm",
+                            name: "lfm",
+                            component: LFM
+                        }
+                    ]
                 },
                 {
                     path: "/user",

@@ -1,544 +1,256 @@
 <template>
-  <div class="page-container">
-    <div class="scroll-container">
-      <div class="header-section">
-        <div class="header-content">
-          <div>
-            <h2 class="page-title">为您推荐</h2>
-            <p class="page-subtitle">根据您的阅读历史和偏好精心挑选。</p>
-          </div>
-          <div class="filter-group">
-            <span class="filter-label">推荐算法：</span>
-            <el-select v-model="currentStrategy" @change="handleStrategyChange" placeholder="选择推荐算法" style="width: 180px">
-              <el-option label="基于用户协同过滤" value="user_cf" />
-              <el-option label="基于物品协同过滤" value="item_cf" />
-              <el-option label="基于内容推荐" value="content_based" />
-              <el-option label="关联规则推荐" value="association_rule" />
-              <el-option label="隐语义模型" value="lfm" />
-            </el-select>
-          </div>
-        </div>
-      </div>
-
-      <div class="books-grid" v-if="recommendBook.length > 0">
-        <div 
-          class="book-card" 
-          v-for="book in recommendBook" 
-          :key="book.bookId" 
-          @click="clickBook(book)"
-        >
-          <div class="book-cover-wrapper">
-            <img 
-              :src="'http://localhost:8080/common/download?name=' + book.bookImge" 
-              alt="cover" 
-              class="book-cover"
-              loading="lazy"
-            />
-          </div>
-          <div class="book-info-preview">
-            <h3 class="book-title">{{ book.bookName }}</h3>
-          </div>
-        </div>
-      </div>
-
-      <div v-else class="empty-state">
-        <el-empty description="暂无推荐书籍">
-          <template #description>
-             <p class="empty-text">暂时没有为您找到推荐书籍。</p>
-             <p class="empty-subtext">可能是因为您还没有标记感兴趣的书籍，快去首页挑选吧！</p>
-          </template>
-          <el-button type="primary" @click="router.push('/')">去首页看看</el-button>
-        </el-empty>
-      </div>
-      
-      <div class="info-section">
-        <p class="info-text">
-          我们的智能推荐系统会分析您的阅读模式，发现更多好书。
-          通过连接相似的用户兴趣和书籍特征，为您打开通往新知识的大门。
-        </p>
-      </div>
+  <div class="split-layout">
+    <!-- Left Panel: Algorithm Navigation -->
+    <div 
+      class="panel left-panel" 
+      :class="{ 'expanded': activeSide === 'left', 'shrunk': activeSide === 'right' }"
+    >
+      <AlgorithmNav 
+        :is-expanded="activeSide === 'left'"
+        @toggle-expand="expandLeftPanel"
+        @collapse="collapseLeftPanel"
+        @select="navigateToAlgorithm"
+      />
     </div>
 
-    <!-- Book Details Dialog -->
-    <el-dialog
-      v-model="centerDialogVisible"
-      width="600px"
-      align-center
-      class="book-dialog"
-      :show-close="false"
+    <!-- Right Panel: Recommendation Content -->
+    <div 
+      class="panel right-panel" 
+      :class="{ 'expanded': activeSide === 'right', 'shrunk': activeSide === 'left' }"
     >
-      <div class="dialog-content">
-        <div class="dialog-cover">
-          <img :src="'http://localhost:8080/common/download?name=' + bookData.bookImage" alt="cover">
-        </div>
+      <div class="layout-container is-expanded-mode">
         
-        <div class="dialog-details">
-          <h2 class="detail-title">{{ bookData.bookName }}</h2>
+        <!-- Left Sidebar (Always present) -->
+        <div class="sidebar left-sidebar">
+          <div class="watermark-vertical">LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY</div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="content-area beige-grid">
+          <!-- Return Button for Right Panel -->
+          <button class="return-btn" @click="expandLeftPanel">⇐</button>
+
+          <div class="bg-watermark">RECOMMEND</div>
           
-          <div class="detail-meta">
-            <div class="meta-item">
-              <span class="label">出版社</span>
-              <span class="value">{{ bookData.bookPublic }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">分类</span>
-              <span class="value">{{ bookData.bookClassify }}</span>
-            </div>
-            <div class="meta-item">
-              <span class="label">库存</span>
-              <span class="value">{{ bookData.bookNum }}</span>
-            </div>
-          </div>
-
-          <div class="rating-section">
-            <span class="section-label">您的评分</span>
-            <div class="stars" @click="rate($event)">
-              <input
-                v-for="n in 5"
-                :key="n"
-                type="radio"
-                :id="'star' + n"
-                :value="n"
-                hidden
-              />
-              <label
-                v-for="n in 5"
-                :key="n"
-                :for="'star' + n"
-                :class="{ filled: n <= ratingData.rating }"
-              >
-                ★
-              </label>
-            </div>
-          </div>
-
-          <div class="action-buttons">
-            <button class="action-btn outline" @click="inputScore">
-              评分
-            </button>
-            <button class="action-btn primary" @click="borrow" :disabled="bookData.bookNum <= 0">
-              {{ bookData.bookNum > 0 ? '借阅' : '暂无库存' }}
-            </button>
+          <div class="scroll-container expanded-padding">
+            <router-view v-slot="{ Component }">
+              <transition name="fade" mode="out-in">
+                <component :is="Component" />
+              </transition>
+            </router-view>
           </div>
         </div>
+
+        <!-- Right Sidebar (Always present) -->
+        <div class="sidebar right-sidebar">
+          <div class="watermark-vertical">LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY // LIBRARY</div>
+        </div>
+
       </div>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import myAxios from "@/api/index"
-import { ref, reactive, onMounted } from "vue";
-import { useCookies } from '@vueuse/integrations/useCookies'
-import { ElMessage } from "element-plus";
-import { useRouter } from 'vue-router'
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import AlgorithmNav from '@/components/business/AlgorithmNav.vue';
+import { transitionState } from '@/store/transitionStore';
 
-const router = useRouter()
-const cookie = useCookies()
+const router = useRouter();
+const route = useRoute();
+const activeSide = ref<string | null>('left'); // Default to left panel expanded
 
-const recommendBook = ref([]);
-const currentStrategy = ref('user_cf');
-const centerDialogVisible = ref(false)
-const userName = reactive({
-  userId: '',
-  username: '',
-})
-
-const ratingData = reactive({
-  rating: 0,
-  userId: 0,
-  bookId: 0,
-  bookName: '',
-  ratingTime: ''
-})
-
-const bookData = reactive({
-  bookId: '',
-  bookName: '',
-  bookPrice: '',
-  bookPublic: '',
-  bookClassify: '',
-  bookImage: '',
-  bookDesc: '',
-  bookNum: 0
-})
-
-onMounted(() => {
-  userName.username = cookie.get('username')
-  getUserByName()
-})
-
-const clickBook = (book: any) => {
-  bookData.bookId = book.bookId
-  bookData.bookImage = book.bookImge
-  bookData.bookName = book.bookName
-  bookData.bookPublic = book.bookPublic
-  bookData.bookClassify = book.bookClassify
-  bookData.bookNum = book.bookNum
-  centerDialogVisible.value = true
-  ratingData.bookId = book.bookId
-  ratingData.bookName = book.bookName
-  findRating()
-}
-
-const getUserByName = async () => {
-  try {
-    let res = await myAxios.get('http://localhost:8080/user/getUserByName', {
-      params: {
-        name: userName.username
-      }
-    })
-    userName.userId = res.data.data.id
-    ratingData.userId = res.data.data.id
-    await getRecommendBook(userName.userId)
-  } catch (e) {
-    console.log(e)
-  }
-}
-
-const handleStrategyChange = async () => {
-  if (userName.userId) {
-    await getRecommendBook(userName.userId);
-  }
-}
-
-const getRecommendBook = async (userId: any) => {
-  try {
-    let res = await myAxios.get('http://localhost:8080/bookScore/recommend', {
-      params: {
-        userId: userId,
-        strategy: currentStrategy.value
-      }
-    })
-    recommendBook.value = res.data.data
-  } catch (e) {
-    console.log(e)
-  }
-}
-
-const inputScore = async () => {
-  try {
-    let rs = await myAxios.put('http://localhost:8080/bookScore/updateScore', {
-      userId: ratingData.userId,
-      bookId: ratingData.bookId,
-      score: ratingData.rating
-    })
-    ElMessage.success(rs.data.data)
-  } catch (e) {
-    console.log(e)
-  }
-}
-
-const rate = (event: MouseEvent) => {
-  const target = event.target as HTMLElement;
-  if (target.tagName === 'LABEL') {
-    const starIndex = parseInt(target.getAttribute('for')!.slice(-1), 10);
-    ratingData.rating = starIndex;
-  }
+const expandLeftPanel = () => {
+  activeSide.value = 'left';
 };
 
-const borrow = async () => {
-  if (bookData.bookNum > 0) {
-    try {
-      let res = await myAxios.put('http://localhost:8080/bookBorrow/borrow', {
-        userName: userName.username,
-        bookId: bookData.bookId,
-        bookName: bookData.bookName,
-        borrowTime: '5',
-      })
-      ElMessage.success(res.data.data)
-      centerDialogVisible.value = false
+const collapseLeftPanel = () => {
+  activeSide.value = null; // Or handle as needed, but for this view we likely want left or right
+};
 
-    } catch (e) {
-      console.log(e)
-    }
+const navigateToAlgorithm = (payload: { name: string, color: string, path: string }) => {
+  activeSide.value = 'left'; // Keep left active during transition animation
+  
+  // Trigger transition animation (similar to CategoryNav)
+  transitionState.startAnimation(payload.color, payload.name, '#fff');
+
+  setTimeout(() => {
+    // Switch to right panel expanded view
+    activeSide.value = 'right';
+    // The router push is handled inside AlgorithmNav or here if needed, 
+    // but AlgorithmNav emits select, so we can handle logic here if we want to sync
+    // AlgorithmNav already did router.push, but let's ensure we are in sync
+    
+    setTimeout(() => {
+        transitionState.endAnimation();
+    }, 100);
+  }, 800);
+};
+
+// Check current route on mount to decide initial state
+onMounted(() => {
+  // If we are on a specific algorithm sub-route, maybe show right panel?
+  // But user request says "Default direct display is expanded state" -> implying left panel expanded for selection?
+  // "default direct display is expanded state" usually refers to the nav being full screen.
+  // Let's stick to activeSide = 'left' initially so user sees the full screen nav.
+  if (route.path === '/bookRecommend' || route.path === '/bookRecommend/') {
+      activeSide.value = 'left';
   } else {
-    ElMessage.error("借书失败")
+      // If direct link to a sub-route, show content
+      activeSide.value = 'right';
   }
-}
-
-const findRating = async () => {
-  try {
-    let res = await myAxios.get('http://localhost:8080/bookScore/findScore', {
-      params: {
-        userId: ratingData.userId,
-        bookId: ratingData.bookId
-      }
-    });
-    ratingData.rating = res.data.data
-  } catch (e) {
-    console.log(e)
-  }
-}
+});
 </script>
 
 <style scoped>
-.page-container {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.split-layout {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background: #fff;
+}
+
+.panel {
+  height: 100%;
+  transition: all 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Ensure padding is zero or controlled */
+.panel * {
+  box-sizing: border-box;
+}
+
+.left-panel {
+  width: 50%;
+  background-color: #fff;
+  border-right: 1px solid rgba(0,0,0,0.05);
+  z-index: 2;
+}
+
+.right-panel {
+  width: 50%;
+  background-color: #fcfcfc;
+  z-index: 1;
+  transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.panel.expanded { width: 100% !important; }
+.panel.shrunk { width: 0% !important; opacity: 0; pointer-events: none; }
+
+.layout-container {
+  width: 100%;
   height: 100%;
   display: flex;
+}
+
+.sidebar {
+  width: 60px;
+  background: #fff;
+  position: relative;
+  display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-top: 20px;
+  z-index: 10;
+  border-left: 1px solid #000;
+  border-right: 1px solid #000;
   overflow: hidden;
+}
+
+.left-sidebar { border-left: none; }
+.right-sidebar { border-right: none; }
+
+.content-area {
+  flex: 1;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  background-color: #faf8f5;
+  background-image: 
+    linear-gradient(#e5e5e5 1px, transparent 1px),
+    linear-gradient(90deg, #e5e5e5 1px, transparent 1px);
+  background-size: 125px 125px;
 }
 
 .scroll-container {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 0;
-}
-
-.scroll-container::-webkit-scrollbar {
-  width: 6px;
-}
-.scroll-container::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
-  border-radius: 3px;
-}
-.scroll-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.header-section {
-  margin-bottom: 40px;
-  text-align: left;
-  padding: 0 20px;
-}
-
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.filter-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.filter-label {
-  font-size: 14px;
-  color: #606266;
-}
-
-.page-title {
-  font-size: 24px;
-  font-weight: 300;
-  margin: 0 0 10px 0;
-  letter-spacing: -0.5px;
-}
-
-.page-subtitle {
-  color: #888;
-  font-size: 14px;
-  margin: 0;
-}
-
-.books-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 40px;
-  margin-bottom: 80px;
-  padding: 0 20px;
-}
-
-.empty-state {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 60px 0;
-}
-
-.empty-text {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.empty-subtext {
-  font-size: 14px;
-  color: #999;
-}
-
-.book-card {
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.book-card:hover {
-  transform: translateY(-8px);
-}
-
-.book-cover-wrapper {
-  width: 100%;
-  aspect-ratio: 2/3;
-  background: #f0f0f0;
-  overflow: hidden;
-  margin-bottom: 15px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-  transition: box-shadow 0.3s ease;
-}
-
-.book-card:hover .book-cover-wrapper {
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-}
-
-.book-cover {
-  width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
+  width: 100%;
+  overflow-y: auto;
+  box-sizing: border-box;
+  scrollbar-width: none;
+  position: relative;
+  z-index: 5;
 }
-
-.book-card:hover .book-cover {
-  transform: scale(1.05);
+.scroll-container.expanded-padding {
+  padding: 0; 
 }
+.scroll-container::-webkit-scrollbar { display: none; }
 
-.book-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
-  margin: 0;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.bg-watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
+  font-size: 120px;
+  color: rgba(0,0,0,0.03);
+  pointer-events: none;
+  z-index: 0;
+  letter-spacing: 20px;
   white-space: nowrap;
 }
 
-.info-section {
-  max-width: 600px;
-  margin: 0 auto;
-  text-align: center;
-  color: #999;
-  font-size: 13px;
-  line-height: 1.6;
-}
-
-/* Dialog Styles */
-.dialog-content {
-  display: flex;
-  gap: 30px;
-}
-
-.dialog-cover {
-  width: 180px;
-  flex-shrink: 0;
-}
-
-.dialog-cover img {
-  width: 100%;
-  border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-}
-
-.dialog-details {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-title {
+.watermark-vertical {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: 'Inter', sans-serif;
+  font-weight: 900;
   font-size: 24px;
-  font-weight: 600;
-  margin: 0 0 20px 0;
+  color: rgba(0,0,0,0.1);
+  letter-spacing: 4px;
+  white-space: nowrap;
+  padding: 20px 0;
+  margin: 0;
 }
 
-.detail-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-
-.meta-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 8px;
-}
-
-.meta-item .label {
-  color: #999;
-}
-
-.meta-item .value {
-  font-weight: 500;
-}
-
-.rating-section {
-  margin-bottom: 30px;
-}
-
-.section-label {
-  display: block;
-  font-size: 12px;
-  color: #999;
-  margin-bottom: 5px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.stars {
-  display: flex;
-  gap: 5px;
-  cursor: pointer;
-}
-
-.stars label {
-  font-size: 24px;
-  color: #eee;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.stars label:hover,
-.stars label:hover ~ label {
-  color: #ddd;
-}
-
-.stars label.filled {
-  color: #000;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 15px;
-  margin-top: auto;
-}
-
-.action-btn {
-  flex: 1;
-  padding: 12px;
-  border: none;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.action-btn.outline {
-  background: transparent;
-  border: 1px solid #ddd;
-  color: #333;
-}
-
-.action-btn.outline:hover {
-  border-color: #000;
-}
-
-.action-btn.primary {
+/* Return Button in Right Panel Content */
+.return-btn {
+  width: 32px; height: 32px;
   background: #000;
   color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 20;
+}
+.return-btn:active {
+  transform: scale(0.95);
 }
 
-.action-btn.primary:hover {
-  background: #333;
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
 }
 
-.action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
