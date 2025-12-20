@@ -128,7 +128,7 @@ const initData = async () => {
   bookData.bookAuthor = props.book.bookAuthor || props.book.author || 'Unknown';
   bookData.bookPublic = props.book.bookPublic || 'Unknown';
   bookData.bookClassify = props.book.bookClassify || props.book.category || 'General';
-  bookData.bookImage = props.book.bookImge || props.book.cover || '';
+  bookData.bookImage = props.book.cover || props.book.bookImge || '';
   bookData.bookNum = props.book.bookNum !== undefined ? props.book.bookNum : 999;
 
   ratingData.bookId = Number(bookData.bookId);

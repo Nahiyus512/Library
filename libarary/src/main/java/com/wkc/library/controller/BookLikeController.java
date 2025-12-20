@@ -61,6 +61,9 @@ public class BookLikeController {
                 map.put("bookName", book.getBookName());
                 map.put("bookImge", book.getBookImge());
                 map.put("bookAuthor", book.getBookAuthor());
+                map.put("bookPublic", book.getBookPublic());
+                map.put("bookClassify", book.getBookClassify());
+                map.put("bookNum", book.getBookNum());
                 map.put("likeLevel", like.getLikeLevel());
                 result.add(map);
             }
