@@ -2,7 +2,7 @@
   <div class="swiss-login-container">
     <div class="swiss-grid-bg"></div>
     <canvas id="particle-canvas" class="particle-bg"></canvas>
-    
+
     <div class="main-card">
       <!-- Left Panel: Brand / Typography -->
       <div class="brand-panel">
@@ -12,7 +12,7 @@
             <span class="highlight">Library</span>
           </h1>
           <p class="brand-desc">万卷云霞静候君，此间灯火照书深</p>
-          
+
           <div class="brand-footer">
             <span>2025</span>
             <div class="line"></div>
@@ -130,10 +130,10 @@ onMounted(()=>{
 const initParticles = () => {
   const canvas = document.getElementById('particle-canvas');
   const ctx = canvas.getContext('2d');
-  
+
   let width, height;
   let particles = [];
-  
+
   // Configuration
   const particleCount = 60;
   const connectionDistance = 150;
@@ -143,7 +143,7 @@ const initParticles = () => {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
   };
-  
+
   window.addEventListener('resize', resize);
   resize();
 
@@ -178,7 +178,7 @@ const initParticles = () => {
 
   const animate = () => {
     ctx.clearRect(0, 0, width, height);
-    
+
     particles.forEach((p, index) => {
       p.update();
       p.draw();
@@ -272,6 +272,7 @@ async function loginClick() {
       setToken(res.data.data.token)
       cookie.set('username',info.username)
       cookie.set('userId', res.data.data.id)
+      console.log(res)
       if(info.username === 'admin') {
         ElMessage.success("欢迎，管理员")
         setTimeout(()=>{
@@ -350,7 +351,7 @@ async function logonClick() {
 .swiss-grid-bg {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
-  background-image: 
+  background-image:
     linear-gradient(#e0e0e0 1px, transparent 1px),
     linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
   background-size: 40px 40px;
@@ -401,13 +402,13 @@ async function logonClick() {
   letter-spacing: -2px;
   display: flex;
   flex-direction: column;
-  
+
   span {
     display: block;
     opacity: 0;
     transform: translateY(20px);
     animation: textSlideUp 0.6s ease forwards;
-    
+
     &:nth-child(1) { animation-delay: 0.4s; }
     &:nth-child(2) { animation-delay: 0.6s; }
   }
@@ -432,7 +433,7 @@ async function logonClick() {
   display: flex;
   align-items: center;
   gap: 10px;
-  
+
   .line {
     height: 1px;
     background: #fff;
@@ -457,7 +458,7 @@ async function logonClick() {
 .tabs {
   display: flex;
   gap: 30px;
-  
+
   .tab {
     font-size: 14px;
     font-weight: 600;
@@ -470,7 +471,7 @@ async function logonClick() {
 
     &.active {
       opacity: 1;
-      
+
       &::after {
         content: '';
         position: absolute;
@@ -496,7 +497,7 @@ async function logonClick() {
 .input-group {
   position: relative;
   margin-bottom: 35px;
-  
+
   input {
     width: 100%;
     border: none;
@@ -512,7 +513,7 @@ async function logonClick() {
     &:focus {
       outline: none;
     }
-    
+
     &:focus ~ label,
     &:not(:placeholder-shown) ~ label {
       top: -20px;
@@ -563,18 +564,18 @@ async function logonClick() {
   display: flex;
   align-items: flex-end;
   gap: 20px;
-  
+
   .captcha-wrapper {
     flex: 1;
     position: relative;
   }
-  
+
   .captcha-img {
     height: 40px;
     cursor: pointer;
     border: 1px solid #ddd;
     transition: filter 0.3s;
-    
+
     &:hover {
       filter: contrast(1.2);
     }
@@ -603,12 +604,12 @@ async function logonClick() {
   &:hover {
     background: #fff;
     color: #000;
-    
+
     .btn-icon {
       transform: translateX(5px);
     }
   }
-  
+
   .btn-icon {
     font-size: 18px;
     transition: transform 0.3s ease;

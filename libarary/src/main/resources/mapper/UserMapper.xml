@@ -5,23 +5,23 @@
 <mapper namespace="com.wkc.library.mapper.UserMapper">
 
     <select id="login" resultType="com.wkc.library.entity.User">
-        select name,password from user where name = #{username} and password = #{password}
+        select id,name,password from user where name = #{username} and password = #{password}
     </select>
-    
+
     <insert id="logon" parameterType="com.wkc.library.entity.User">
         insert into user(name,password,age,address) values(#{user.name},#{user.password},#{user.age},#{user.address})
     </insert>
-    
+
     <select id="selectByName" resultType="com.wkc.library.entity.User">
         select * from user where name = #{user.name}
     </select>
-    
+
     <update id="updateInfo" parameterType="com.wkc.library.entity.User">
         update user set name = #{user.name},password = #{user.password},age = #{user.age},address = #{user.address} where id = #{user.id}
     </update>
-    
-    
-    
+
+
+
     <delete id="deleteByName" parameterType="String">
         delete from user where name = #{username}
     </delete>
