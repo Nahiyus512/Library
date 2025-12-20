@@ -14,25 +14,38 @@
 
     <div class="content-container">
       <el-table :data="tableData" style="width: 100%; flex: 1;" height="100%" stripe border>
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="userName" label="用户名" width="150" />
-        <el-table-column prop="bookName" label="图书名称" min-width="200" />
-        <el-table-column prop="likeLevel" label="状态" width="120" align="center">
-          <template #default="scope">
-            <el-tag v-if="scope.row.likeLevel === 2" type="success">想看</el-tag>
-            <el-tag v-else-if="scope.row.likeLevel === 1" type="warning">待看</el-tag>
-            <el-tag v-else type="info">移除</el-tag>
+        <el-table-column type="expand">
+          <template #default="props">
+            <div style="padding: 10px 20px;">
+              <el-table :data="props.row.books" border>
+                <el-table-column prop="id" label="ID" width="80" align="center" />
+                <el-table-column prop="bookName" label="图书名称" min-width="200" />
+                <el-table-column prop="likeLevel" label="状态" width="120" align="center">
+                  <template #default="scope">
+                    <el-tag v-if="scope.row.likeLevel === 2" type="success">喜欢💗</el-tag>
+                    <el-tag v-else-if="scope.row.likeLevel === 1" type="warning">还行👌</el-tag>
+                    <el-tag v-else type="info">不行🙅‍♀️</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="操作" width="120" align="center">
+                  <template #default="scope">
+                    <el-popconfirm title="确定要删除这条记录吗？" @confirm="handleDelete(scope.row)">
+                      <template #reference>
+                        <el-button type="danger" link>
+                          <el-icon><Delete /></el-icon> 删除
+                        </el-button>
+                      </template>
+                    </el-popconfirm>
+                  </template>
+                </el-table-column>
+              </el-table>
+            </div>
           </template>
         </el-table-column>
-        <el-table-column fixed="right" label="操作" width="120" align="center">
+        <el-table-column prop="userName" label="用户名" />
+        <el-table-column label="收藏数量" width="120" align="center">
           <template #default="scope">
-            <el-popconfirm title="确定要删除这条记录吗？" @confirm="handleDelete(scope.row)">
-              <template #reference>
-                <el-button type="danger" link>
-                  <el-icon><Delete /></el-icon> 删除
-                </el-button>
-              </template>
-            </el-popconfirm>
+            <el-tag effect="plain" round>{{ scope.row.books.length }} 本</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -56,7 +69,21 @@ const fetchData = async () => {
   try {
     const res = await myAxios.get('http://localhost:8080/bookLike/getAll')
     if (res.data.code === 200) {
-      tableData.value = res.data.data
+      // Group by userName
+      const rawData = res.data.data
+      const groupedMap = new Map()
+      
+      rawData.forEach((item: any) => {
+        if (!groupedMap.has(item.userName)) {
+          groupedMap.set(item.userName, {
+            userName: item.userName,
+            books: []
+          })
+        }
+        groupedMap.get(item.userName).books.push(item)
+      })
+      
+      tableData.value = Array.from(groupedMap.values())
     } else {
       ElMessage.error(res.data.msg || '获取数据失败')
     }

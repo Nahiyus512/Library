@@ -16,22 +16,35 @@
       <el-tabs v-model="activeTab" @tab-change="handleTabChange" class="custom-tabs">
         <el-tab-pane label="留言建议" name="suggestion">
           <el-table :data="suggestionData" style="width: 100%;" height="100%" stripe border>
-            <el-table-column prop="id" label="ID" width="80" align="center" />
-            <el-table-column prop="userName" label="用户" width="120" />
-            <el-table-column prop="info" label="建议内容" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="infoTime" label="建议时间" width="180" align="center" />
-            <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
-              <template #default="scope">
-                <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
-                <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
+            <el-table-column type="expand">
+              <template #default="props">
+                <div style="padding: 10px 20px;">
+                  <el-table :data="props.row.items" border>
+                    <el-table-column prop="id" label="ID" width="80" align="center" />
+                    <el-table-column prop="info" label="建议内容" min-width="200" show-overflow-tooltip />
+                    <el-table-column prop="infoTime" label="建议时间" width="180" align="center" />
+                    <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
+                      <template #default="scope">
+                        <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
+                        <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
+                    <el-table-column label="操作" width="100" align="center">
+                      <template #default="scope">
+                        <el-button color="#000" link @click="refMsg(scope.row)">
+                          <el-icon><EditPen /></el-icon> 回复
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
               </template>
             </el-table-column>
-            <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
-            <el-table-column fixed="right" label="操作" width="100" align="center">
+            <el-table-column prop="userName" label="用户" />
+            <el-table-column label="留言数量" width="120" align="center">
               <template #default="scope">
-                <el-button color="#000" link @click="refMsg(scope.row)">
-                  <el-icon><EditPen /></el-icon> 回复
-                </el-button>
+                <el-tag effect="plain" round>{{ scope.row.items.length }} 条</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -39,23 +52,36 @@
         
         <el-tab-pane label="图书评论" name="review">
           <el-table :data="reviewData" style="width: 100%;" height="100%" stripe border>
-            <el-table-column prop="id" label="ID" width="80" align="center" />
-            <el-table-column prop="userName" label="用户" width="120" />
-            <el-table-column prop="bookName" label="图书名称" width="150" show-overflow-tooltip />
-            <el-table-column prop="info" label="评论内容" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="infoTime" label="评论时间" width="180" align="center" />
-            <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
-              <template #default="scope">
-                <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
-                <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
+            <el-table-column type="expand">
+              <template #default="props">
+                <div style="padding: 10px 20px;">
+                  <el-table :data="props.row.items" border>
+                    <el-table-column prop="id" label="ID" width="80" align="center" />
+                    <el-table-column prop="bookName" label="图书名称" width="150" show-overflow-tooltip />
+                    <el-table-column prop="info" label="评论内容" min-width="200" show-overflow-tooltip />
+                    <el-table-column prop="infoTime" label="评论时间" width="180" align="center" />
+                    <el-table-column prop="reply" label="回复内容" min-width="200" show-overflow-tooltip>
+                      <template #default="scope">
+                        <span v-if="scope.row.reply">{{ scope.row.reply }}</span>
+                        <el-tag v-else type="info" effect="plain" style="color: #000; border-color: #000;" size="small">暂无回复</el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
+                    <el-table-column label="操作" width="100" align="center">
+                      <template #default="scope">
+                        <el-button color="#000" link @click="refMsg(scope.row)">
+                          <el-icon><EditPen /></el-icon> 回复
+                        </el-button>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
               </template>
             </el-table-column>
-            <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
-            <el-table-column fixed="right" label="操作" width="100" align="center">
+            <el-table-column prop="userName" label="用户" />
+            <el-table-column label="评论数量" width="120" align="center">
               <template #default="scope">
-                <el-button color="#000" link @click="refMsg(scope.row)">
-                  <el-icon><EditPen /></el-icon> 回复
-                </el-button>
+                <el-tag effect="plain" round>{{ scope.row.items.length }} 条</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -142,7 +168,19 @@ const refMsg = (row: any) => {
 async function getSuggestions() {
   try {
     let res = await myAxios.get('http://localhost:8080/advice/getAll')
-    suggestionData.value = res.data.data
+    if (res.data.data) {
+      const map = new Map()
+      res.data.data.forEach((item: any) => {
+        if (!map.has(item.userName)) {
+          map.set(item.userName, {
+            userName: item.userName,
+            items: []
+          })
+        }
+        map.get(item.userName).items.push(item)
+      })
+      suggestionData.value = Array.from(map.values())
+    }
   } catch (e) {
     console.log(e)
     ElMessage.error('获取建议数据失败')
@@ -152,7 +190,19 @@ async function getSuggestions() {
 async function getReviews() {
   try {
     let res = await myAxios.get('http://localhost:8080/advice/getAllBookReviews')
-    reviewData.value = res.data.data
+    if (res.data.data) {
+      const map = new Map()
+      res.data.data.forEach((item: any) => {
+        if (!map.has(item.userName)) {
+          map.set(item.userName, {
+            userName: item.userName,
+            items: []
+          })
+        }
+        map.get(item.userName).items.push(item)
+      })
+      reviewData.value = Array.from(map.values())
+    }
   } catch (e) {
     console.log(e)
     ElMessage.error('获取评论数据失败')

@@ -13,7 +13,7 @@
     </delete>
     
     <update id="updateByBookId" parameterType="com.wkc.library.entity.Book">
-        update book set book_name = #{book.bookName},book_price = #{book.bookPrice},book_public = #{book.bookPublic},book_classify = #{book.bookClassify},book_imge = #{book.bookImge},book_description = #{book.bookDescription},book_num = #{book.bookNum} where book_id = #{book.bookId}
+        update book set book_name = #{book.bookName},book_author = #{book.bookAuthor},book_price = #{book.bookPrice},book_public = #{book.bookPublic},book_classify = #{book.bookClassify},book_imge = #{book.bookImge},book_description = #{book.bookDescription},book_num = #{book.bookNum} where book_id = #{book.bookId}
     </update>
 
 </mapper>
