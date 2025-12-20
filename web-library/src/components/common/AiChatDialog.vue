@@ -3,40 +3,60 @@
     <div class="book-card-wrapper chat-window">
       <div class="book-shadow"></div>
       <div class="book-body unified-card">
-        <!-- Header -->
-        <div class="chat-header">
-          <div class="header-left">
-            <span class="icon">🤖</span>
-            <span class="title">图书小智</span>
+        <!-- Sidebar -->
+        <div class="chat-sidebar">
+          <div class="new-chat-btn" @click="startNewChat">
+            <span>+ 新对话</span>
           </div>
-          <button class="close-btn" @click="close">×</button>
-        </div>
-        
-        <!-- Content -->
-        <div class="chat-content" ref="chatContentRef">
-          <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.role]">
-            <div class="avatar">{{ msg.role === 'system' ? '🤖' : '👤' }}</div>
-            <div class="bubble" v-html="renderMarkdown(msg.content)"></div>
-          </div>
-          <div v-if="isLoading" class="message system">
-             <div class="avatar">🤖</div>
-             <div class="bubble">正在思考...</div>
+          <div class="history-list">
+             <div 
+               v-for="item in historyList" 
+               :key="item.memoryId"
+               :class="['history-item', { active: item.memoryId === memoryId }]"
+               @click="loadSession(item)"
+             >
+               <span class="history-title">{{ getHistoryTitle(item) }}</span>
+             </div>
           </div>
         </div>
 
-        <!-- Input Area -->
-        <div class="chat-input-area">
-          <input 
-            type="text" 
-            v-model="inputMessage" 
-            @keyup.enter="sendMessage"
-            placeholder="输入你的问题..." 
-            class="chat-input" 
-            :disabled="isLoading"
-          />
-          <button class="send-btn" @click="sendMessage" :disabled="isLoading">
-            {{ isLoading ? '发送中' : '发送' }}
-          </button>
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+          <!-- Header -->
+          <div class="chat-header">
+            <div class="header-left">
+              <span class="icon">🤖</span>
+              <span class="title">图书小智</span>
+            </div>
+            <button class="close-btn" @click="close">×</button>
+          </div>
+          
+          <!-- Content -->
+          <div class="chat-content" ref="chatContentRef">
+            <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.role]">
+              <div class="avatar">{{ msg.role === 'system' ? '🤖' : '👤' }}</div>
+              <div class="bubble" v-html="renderMarkdown(msg.content)"></div>
+            </div>
+            <div v-if="isLoading" class="message system">
+               <div class="avatar">🤖</div>
+               <div class="bubble">正在思考...</div>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="chat-input-area">
+            <input 
+              type="text" 
+              v-model="inputMessage" 
+              @keyup.enter="sendMessage"
+              placeholder="输入你的问题..." 
+              class="chat-input" 
+              :disabled="isLoading"
+            />
+            <button class="send-btn" @click="sendMessage" :disabled="isLoading">
+              {{ isLoading ? '发送中' : '发送' }}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -44,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, nextTick, watch } from 'vue';
+import { ref, nextTick, watch, onMounted } from 'vue';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { marked } from 'marked';
 import { useCookies } from '@vueuse/integrations/useCookies';
@@ -62,6 +82,12 @@ interface Message {
   content: string;
 }
 
+interface ChatSession {
+  memoryId: number;
+  userId: string;
+  content: string; // JSON string
+}
+
 const messages = ref<Message[]>([
   {
     role: 'system',
@@ -69,14 +95,17 @@ const messages = ref<Message[]>([
   }
 ]);
 
+const historyList = ref<ChatSession[]>([]);
 const inputMessage = ref('');
 const isLoading = ref(false);
 const chatContentRef = ref<HTMLElement | null>(null);
 const cookie = useCookies();
+const userId = ref<string>('');
+const memoryId = ref<number>(new Date().getTime());
 
 // 简单的 Markdown 渲染
 const renderMarkdown = (text: string) => {
-  return marked(text);
+  return marked(text || '');
 };
 
 const scrollToBottom = async () => {
@@ -88,6 +117,119 @@ const scrollToBottom = async () => {
 
 const close = () => {
   emit('close');
+};
+
+const getHistoryTitle = (session: ChatSession) => {
+  try {
+    if (!session.content) return `对话 ${new Date(session.memoryId).toLocaleDateString()}`;
+    let msgs;
+    if (typeof session.content === 'string') {
+        msgs = JSON.parse(session.content);
+    } else {
+        msgs = session.content;
+    }
+    
+    if (!Array.isArray(msgs)) return `对话 ${new Date(session.memoryId).toLocaleDateString()}`;
+
+    // 找到第一条用户消息作为标题
+    const firstUserMsg = msgs.find((m: any) => {
+      const type = m.type ? m.type.toUpperCase() : '';
+      return type === 'USER';
+    });
+    
+    if (firstUserMsg) {
+       let text = '';
+       if (firstUserMsg.contents && Array.isArray(firstUserMsg.contents)) {
+          const textContent = firstUserMsg.contents.find((c: any) => c.type === 'TEXT');
+          if (textContent) text = textContent.text;
+       } else {
+          text = firstUserMsg.text || firstUserMsg.content || '';
+       }
+       return text.length > 10 ? text.substring(0, 10) + '...' : text;
+    }
+    return `对话 ${new Date(session.memoryId).toLocaleDateString()}`;
+  } catch (e) {
+    console.warn("Parse session content failed", e);
+    return `对话 ${session.memoryId}`;
+  }
+};
+
+const loadSession = (session: ChatSession) => {
+  if (isLoading.value) return;
+  memoryId.value = session.memoryId;
+  try {
+    if (!session.content) {
+       messages.value = [];
+       return;
+    }
+    let history;
+    if (typeof session.content === 'string') {
+        history = JSON.parse(session.content);
+    } else {
+        history = session.content;
+    }
+    console.log("Loading history:", history);
+    
+    if (!Array.isArray(history)) {
+       messages.value = [];
+       return;
+    }
+
+    messages.value = history.map((m: any) => {
+      const type = m.type ? m.type.toUpperCase() : '';
+      const role = (type === 'AI' || type === 'SYSTEM') ? 'system' : 'user';
+      
+      let content = '';
+      if (m.contents && Array.isArray(m.contents)) {
+          const textContent = m.contents.find((c: any) => c.type === 'TEXT');
+          if (textContent) content = textContent.text;
+      } else {
+          content = m.text || m.content || '';
+      }
+      return { role, content };
+    });
+    scrollToBottom();
+  } catch (e) {
+    console.error("Parse session failed", e);
+  }
+};
+
+const startNewChat = () => {
+  if (isLoading.value) return;
+  memoryId.value = new Date().getTime();
+  messages.value = [
+    {
+      role: 'system',
+      content: '你好！我是图书小智，你的智能图书助理。<br>我可以帮你找书、推荐书，或者聊聊你感兴趣的话题。'
+    }
+  ];
+};
+
+const fetchHistory = async () => {
+  userId.value = cookie.get('userId') || '10001';
+  try {
+    const res = await fetch(`http://localhost:8080/xiaozhi/history?userId=${userId.value}`);
+    const data = await res.json();
+    if (data.code === 200 && data.data) {
+       // Ensure data.data is an array
+       if (Array.isArray(data.data)) {
+         historyList.value = data.data.sort((a: ChatSession, b: ChatSession) => b.memoryId - a.memoryId);
+         
+         // 如果有历史记录且当前是初始状态，加载最近一次对话
+         if (historyList.value.length > 0 && messages.value.length === 1) {
+            // loadSession(historyList.value[0]);
+         }
+       } else {
+         console.warn("Expected history data to be an array, but got:", data.data);
+         // If it's a single object (legacy support or bug), wrap it
+         if (typeof data.data === 'object') {
+            historyList.value = [data.data];
+         }
+       }
+    }
+  } catch (e) {
+    console.error("Fetch history failed", e);
+  }
 };
 
 const sendMessage = async () => {
@@ -105,16 +247,16 @@ const sendMessage = async () => {
   let currentResponse = '';
 
   try {
-    const memoryId = cookie.get('userId') || '10001'; // 默认 fallback
-    
-    await fetchEventSource('http://localhost:8088/xiaozhi/chat', {
+    await fetchEventSource('http://localhost:8080/xiaozhi/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'text/event-stream',
       },
       body: JSON.stringify({
-        memoryId: memoryId,
-        message: content
+        memoryId: memoryId.value,
+        message: content,
+        userId: userId.value
       }),
       onmessage(msg) {
         if (msg.data) {
@@ -125,6 +267,8 @@ const sendMessage = async () => {
       },
       onclose() {
         isLoading.value = false;
+        // 刷新历史列表以显示新对话
+        fetchHistory();
       },
       onerror(err) {
         console.error('Chat error:', err);
@@ -138,10 +282,17 @@ const sendMessage = async () => {
   }
 };
 
-// 监听可见性变化，自动滚动到底部
+// 监听可见性变化，自动滚动到底部并获取历史
 watch(() => props.visible, (newVal) => {
   if (newVal) {
+    fetchHistory();
     scrollToBottom();
+  }
+});
+
+onMounted(() => {
+  if (props.visible) {
+    fetchHistory();
   }
 });
 </script>
@@ -150,10 +301,10 @@ watch(() => props.visible, (newVal) => {
 /* 复用 InteractiveWidget.vue 的风格 */
 .book-card-wrapper {
   position: relative;
-  width: 450px;
-  height: 600px;
-  max-width: 90vw;
-  max-height: 80vh;
+  width: 900px;
+  height: 800px;
+  max-width: 95vw;
+  max-height: 90vh;
   cursor: default;
   /* 初始动画 */
   animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -180,9 +331,66 @@ watch(() => props.visible, (newVal) => {
   background-color: #FAF8F5; /* 更新背景色 */
   border: 2px solid #000;
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* 改为横向布局 */
   transform: translate(-4px, -4px);
   border-radius: 2px;
+}
+
+/* Sidebar Styles */
+.chat-sidebar {
+  width: 200px;
+  border-right: 2px solid #000;
+  display: flex;
+  flex-direction: column;
+  background: #f0f0f0;
+}
+
+.new-chat-btn {
+  padding: 17.5px;
+  text-align: center;
+  border-bottom: 2px solid #000;
+  cursor: pointer;
+  background: #fff;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.new-chat-btn:hover {
+  background: #e0e0e0;
+}
+
+.history-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.history-item {
+  padding: 12px 15px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background 0.2s;
+}
+
+.history-item:hover {
+  background: #e8e8e8;
+}
+
+.history-item.active {
+  background: #fff;
+  font-weight: bold;
+  border-left: 4px solid #000;
+}
+
+/* Main Chat Area Styles */
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* 防止子元素溢出 */
 }
 
 /* 覆盖层样式 */

@@ -16,7 +16,7 @@ import java.util.List;
  */
 @Configuration
 public class MyWebMvcConfig implements WebMvcConfigurer {
-    private static List<String> excludePathList = Arrays.asList("/user/login","/user/logon","/code/captcha","/common/download");
+    private static List<String> excludePathList = Arrays.asList("/user/login","/user/logon","/code/captcha","/common/download","/xiaozhi/**");
 
     @Autowired
     private LoginInterceptor loginInterceptor;

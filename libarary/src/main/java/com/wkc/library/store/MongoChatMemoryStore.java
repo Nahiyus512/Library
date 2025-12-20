@@ -34,6 +34,7 @@ public class MongoChatMemoryStore implements ChatMemoryStore {
         Criteria criteria = Criteria.where("memoryId").is(memoryId);
         Query query = new Query(criteria);
         Update update = new Update();
+        update.set("memoryId", memoryId);
         update.set("content", ChatMessageSerializer.messagesToJson(messages));
 //根据query条件能查询出文档，则修改文档；否则新增文档
         mongoTemplate.upsert(query, update, ChatMessages.class);
@@ -45,5 +46,21 @@ public class MongoChatMemoryStore implements ChatMemoryStore {
         Query query = new Query(criteria);
         mongoTemplate.remove(query, ChatMessages.class);
     }
+
+    public List<ChatMessages> getChatMessagesByUserId(String userId) {
+        Criteria criteria = Criteria.where("userId").is(userId);
+        Query query = new Query(criteria);
+        return mongoTemplate.find(query, ChatMessages.class);
+    }
+
+    public void bindUser(Long memoryId, String userId) {
+        Criteria criteria = Criteria.where("memoryId").is(memoryId);
+        Query query = new Query(criteria);
+        Update update = new Update();
+        update.set("memoryId", memoryId);
+        update.set("userId", userId);
+        mongoTemplate.upsert(query, update, ChatMessages.class);
+    }
+
 
 }
