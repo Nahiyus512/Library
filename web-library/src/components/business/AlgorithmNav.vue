@@ -181,6 +181,7 @@ const getTextColor = (algo: any, index: number) => {
   opacity: 0;
 }
 
+/* Return Button styles preserved but unused for now */
 .return-btn {
   width: 32px;
   height: 32px;
@@ -198,6 +199,7 @@ const getTextColor = (algo: any, index: number) => {
   top: 20px;
   right: 20px;
   z-index: 5;
+  display: none; /* Explicitly hide just in case */
 }
 
 .return-btn:active {

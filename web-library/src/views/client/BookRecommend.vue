@@ -35,7 +35,9 @@
           <div class="scroll-container expanded-padding">
             <router-view v-slot="{ Component }">
               <transition name="fade" mode="out-in">
-                <component :is="Component" />
+                <keep-alive>
+                  <component :is="Component" :key="route.path" />
+                </keep-alive>
               </transition>
             </router-view>
           </div>
