@@ -154,7 +154,7 @@ const getRandomColor = (seed: number) => {
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   height: 420px;
-  width: 22%;
+  width: 18%;
   min-width: 260px;
   flex-shrink: 0;
   border: 2px solid #fff;

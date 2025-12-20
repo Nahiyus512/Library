@@ -18,16 +18,16 @@
           
           <div class="detail-meta">
             <div class="meta-item">
-              <span class="label">出版社</span>
-              <span class="value">{{ bookData.bookPublic }}</span>
-            </div>
-            <div class="meta-item">
               <span class="label">分类</span>
               <span class="value">{{ bookData.bookClassify }}</span>
             </div>
             <div class="meta-item">
-              <span class="label">库存</span>
-              <span class="value">{{ bookData.bookNum }}</span>
+              <span class="label">作者</span>
+              <span class="value">{{ bookData.bookAuthor }}</span>
+            </div>
+            <div class="meta-item">
+              <span class="label">出版社</span>
+              <span class="value">{{ bookData.bookPublic }}</span>
             </div>
           </div>
 
@@ -102,6 +102,7 @@ const bookData = reactive({
   bookClassify: '',
   bookImage: '',
   bookNum: 0,
+  bookAuthor: '',
 });
 
 watch(() => props.modelValue, (val) => {
@@ -124,6 +125,7 @@ const initData = async () => {
   
   bookData.bookId = props.book.bookId || props.book.id;
   bookData.bookName = props.book.bookName || props.book.title;
+  bookData.bookAuthor = props.book.bookAuthor || props.book.author || 'Unknown';
   bookData.bookPublic = props.book.bookPublic || 'Unknown';
   bookData.bookClassify = props.book.bookClassify || props.book.category || 'General';
   bookData.bookImage = props.book.bookImge || props.book.cover || '';
