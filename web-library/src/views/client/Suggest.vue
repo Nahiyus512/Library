@@ -85,7 +85,8 @@ const inputBtn = async () => {
 
 async function getUserAdvises() {
   try {
-    let res = await myAxios.get('http://localhost:8080/advice/get?userName=' + userName.value)
+    // type=0 for system suggestions (no bookId)
+    let res = await myAxios.get('http://localhost:8080/advice/get?userName=' + userName.value + '&type=0')
     suggestions.value = res.data.data
     scrollToBottom()
   } catch (error) {

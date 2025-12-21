@@ -57,6 +57,7 @@ public class BookLikeController {
             Book book = bookMap.get(like.getBookId());
             if (book != null) {
                 Map<String, Object> map = new HashMap<>();
+                map.put("id", like.getId());
                 map.put("bookId", book.getBookId());
                 map.put("bookName", book.getBookName());
                 map.put("bookImge", book.getBookImge());
@@ -93,5 +94,38 @@ public class BookLikeController {
             return R.success(one.getLikeLevel());
         }
         return R.success(-1); // -1 表示未操作过
+    }
+
+    @GetMapping("/top")
+    public R<List<Map<String, Object>>> getTopLikes() {
+        List<BookLike> allLikes = bookLikeService.list();
+        Map<Integer, Long> likeCounts = allLikes.stream()
+            .collect(Collectors.groupingBy(BookLike::getBookId, Collectors.counting()));
+        
+        List<Map.Entry<Integer, Long>> topEntries = likeCounts.entrySet().stream()
+            .sorted(Map.Entry.<Integer, Long>comparingByValue().reversed())
+            .limit(10)
+            .collect(Collectors.toList());
+            
+        if (topEntries.isEmpty()) {
+            return R.success(Collections.emptyList());
+        }
+        
+        List<Integer> bookIds = topEntries.stream().map(Map.Entry::getKey).collect(Collectors.toList());
+        List<Book> books = bookService.listByIds(bookIds);
+        Map<Integer, Book> bookMap = books.stream().collect(Collectors.toMap(Book::getBookId, b -> b));
+        
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<Integer, Long> entry : topEntries) {
+            Book book = bookMap.get(entry.getKey());
+            if (book != null) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("bookId", book.getBookId());
+                map.put("bookName", book.getBookName());
+                map.put("count", entry.getValue());
+                result.add(map);
+            }
+        }
+        return R.success(result);
     }
 }

@@ -37,33 +37,60 @@
         </div>
       </div>
 
-      <!-- Borrowed Books Section -->
-      <div class="borrow-section">
-        <div class="section-header">
-          <h3 class="section-title">借阅记录</h3>
-          <span class="section-subtitle">管理您的借阅书籍和归还时间</span>
-        </div>
+      <!-- Content Section (Likes & Comments) -->
+      <div class="content-section">
+        <el-row :gutter="24">
+          <!-- Left: Liked Books -->
+          <el-col :span="12">
+            <div class="panel">
+              <div class="panel-header">
+                <h3 class="panel-title">我的收藏</h3>
+                <span class="panel-subtitle">共 {{ likeData.length }} 本</span>
+              </div>
+              <div class="table-container">
+                <el-table ref="tableRef" :data="likeData" row-key="id" style="width: 100%" height="calc(100vh - 250px)"
+                  :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }">
+                  <el-table-column prop="bookName" label="书名" min-width="120" show-overflow-tooltip />
+                  <el-table-column prop="bookAuthor" label="作者" width="100" show-overflow-tooltip />
+                  <el-table-column prop="likeLevel" label="喜爱" width="80" align="center">
+                    <template #default="scope">
+                      <el-tag :type="scope.row.likeLevel === 2 ? 'danger' : 'warning'" effect="light" round size="small">
+                        {{ scope.row.likeLevel === 2 ? '想看' : '还行' }}
+                      </el-tag>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="操作" width="80" align="center">
+                    <template #default="scope">
+                      <el-popconfirm title="移除?" @confirm="unlikeBook(scope.row)">
+                        <template #reference>
+                          <el-button link type="danger" size="small">移除</el-button>
+                        </template>
+                      </el-popconfirm>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </div>
+          </el-col>
 
-        <div class="table-container">
-          <el-table ref="tableRef" :data="borrowData" row-key="id" style="width: 100%"
-            :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }">
-
-            <el-table-column prop="bookName" label="书名" min-width="150" />
-            <el-table-column prop="borrowTime" label="借阅天数" width="100" align="center" />
-            <el-table-column prop="beginTime" label="借阅时间" width="180" />
-            <el-table-column prop="endTime" label="应还时间" width="180" />
-            <el-table-column fixed="right" label="操作" width="150" align="center">
-              <template #default="scope">
-                <el-button link type="primary" @click="changeBorrow(scope.row)">
-                  续借
-                </el-button>
-                <el-button link type="danger" @click="changeBack(scope.row)">
-                  归还
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
+          <!-- Right: My Comments -->
+          <el-col :span="12">
+            <div class="panel">
+              <div class="panel-header">
+                <h3 class="panel-title">我的评论</h3>
+                <span class="panel-subtitle">共 {{ commentData.length }} 条</span>
+              </div>
+              <div class="table-container">
+                <el-table :data="commentData" style="width: 100%" height="calc(100vh - 250px)"
+                  :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }">
+                  <el-table-column prop="bookName" label="评论书籍" width="120" show-overflow-tooltip />
+                  <el-table-column prop="info" label="评论内容" min-width="150" show-overflow-tooltip />
+                  <el-table-column prop="infoTime" label="时间" width="100" show-overflow-tooltip />
+                </el-table>
+              </div>
+            </div>
+          </el-col>
+        </el-row>
       </div>
     </div>
 
@@ -94,36 +121,11 @@
         </div>
       </template>
     </el-dialog>
-
-    <!-- Renew Dialog -->
-    <el-dialog v-model="borrowDialogVisible" title="续借书籍" width="400px" align-center class="custom-dialog">
-      <p class="dialog-desc">请输入您想要续借的天数。</p>
-      <div class="form-group">
-        <el-input v-model.number="borrowDay" placeholder="请输入天数" type="number" />
-      </div>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="borrowDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="borrow">确认续借</el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- Return Dialog -->
-    <el-dialog v-model="backDialogVisible" title="归还书籍" width="400px" align-center class="custom-dialog">
-      <p class="dialog-desc">确认归还书籍 <strong>{{ borrowSum.bookName }}</strong> 吗？</p>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="backDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="back">确认归还</el-button>
-        </div>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, watchEffect, nextTick } from 'vue'
+import { ref, reactive, onMounted, watchEffect, nextTick, computed } from 'vue'
 import { useRouter } from "vue-router";
 import { useCookies } from '@vueuse/integrations/useCookies'
 import myAxios from "@/api/index";
@@ -135,8 +137,6 @@ const router = useRouter();
 const cookie = useCookies()
 
 const editDialogVisible = ref(false)
-const borrowDialogVisible = ref(false)
-const backDialogVisible = ref(false)
 
 const inputValue = reactive({
   userName: '',
@@ -146,28 +146,19 @@ const inputValue = reactive({
 })
 
 const userInfo = reactive({
+  id: 0,
   userName: '',
   password: '',
   age: '',
   address: ''
 })
 
-const borrowData = ref([])
+const likeData = ref([])
+const commentData = ref<any[]>([])
 const tableRef = ref<any>(null)
 
-
 watchEffect(() => {
-  console.log("表格绑定 borrowData =", borrowData.value, Array.isArray(borrowData.value))
-})
-
-const borrowTime = ref<number>(0)
-const borrowDay = ref<number>(0)
-const borrowDays = ref(0);
-const borrowSum = reactive({
-  userName: '',
-  bookName: '',
-  beginTime: '',
-  endTime: '',
+  console.log("表格绑定 likeData =", likeData.value, Array.isArray(likeData.value))
 })
 
 onMounted(async () => {
@@ -176,7 +167,10 @@ onMounted(async () => {
   userInfo.userName = uname
 
   await getUserInfo()     // 这里会把 userInfo.userName 更新为后端的 name
-  await getBorrowInfo()   // 用更新后的 userInfo.userName 去查借阅
+  if (userInfo.id) {
+    await getLikeInfo()   // 用更新后的 userInfo.id 去查收藏
+  }
+  await getCommentInfo()
 })
 
 
@@ -188,22 +182,76 @@ const openEditDialog = () => {
   inputValue.address = userInfo.address
 }
 
-const changeBorrow = (row: any) => {
-  borrowDialogVisible.value = true
-  borrowSum.userName = row.userName
-  borrowSum.bookName = row.bookName
-  borrowTime.value = parseInt(row.borrowTime, 10)
-  borrowSum.beginTime = row.beginTime
-  borrowSum.endTime = row.endTime
-}
-
-const changeBack = (row: any) => {
-  backDialogVisible.value = true
-  borrowSum.userName = row.userName
-  borrowSum.bookName = row.bookName
-  borrowTime.value = parseInt(row.borrowTime, 10)
-  borrowSum.beginTime = row.beginTime
-  borrowSum.endTime = row.endTime
+const unlikeBook = async (row: any) => {
+  // Assuming row has 'id' which is the primary key of BookLike record
+  // Or we need to use delete endpoint with ID
+  // Based on SearchCodebase, delete is /bookLike/delete?id=...
+  // We need to know if row has 'id' (BookLike ID) or just bookId.
+  // The /bookLike/list returns map with 'bookId', 'bookName'... does it return BookLike ID?
+  // Let's re-check the Controller code in SearchCodebase.
+  // BookLikeController.getBookshelf returns map with book info + likeLevel. It does NOT seem to put 'id' (BookLike ID) in the map!
+  // It puts 'bookId'.
+  // But delete endpoint requires BookLike ID.
+  // OR we can use the 'like' endpoint with level 0? No, that updates level.
+  // If we can't get BookLike ID, we might need to modify backend or find another way.
+  // Wait, let's look at BookLikeController again.
+  
+  // "List<Map<String, Object>> result = new ArrayList<>(); for (BookLike like : likes) { ... map.put("bookId", book.getBookId()); ... }"
+  // It misses putting the BookLike ID!
+  
+  // Alternative: Call /bookLike/like with likeLevel = 0?
+  // Controller: "if(exist != null) { exist.setLikeLevel(bookLike.getLikeLevel()); return this.updateById(exist); }"
+  // So if we set level to 0, it updates it. Does it delete it?
+  // Requirement says "0-不想看".
+  // So maybe we just set it to 0. But then it might still show up if we filter >= 1.
+  // The /bookLike/list code: "likeWrapper.eq(BookLike::getUserId, userId);" - it gets ALL likes for user.
+  // BUT the controller code I saw earlier:
+  // "List<BookLike> likes = bookLikeService.list(likeWrapper);" - No filter on level?
+  // Wait, "likeWrapper.eq(BookLike::getUserId, userId);" - yes no level filter.
+  // So if I set it to 0, it will still appear in the list?
+  // Let's check getBookshelf again.
+  // It iterates and returns them.
+  // If I want to "remove" it, I should probably delete the record.
+  // But I don't have the ID.
+  
+  // Strategy: Update backend or use what I have.
+  // Since I can't easily change backend structure without seeing it all (I can, but...), 
+  // let's try to see if I can use another endpoint or if I missed something.
+  // Ah, I can use the `like` endpoint to set it to 0. 
+  // And then in the frontend, I filter out 0s? 
+  // Or maybe I should modify the backend to return the ID.
+  // The user prompt says "modify system dashboard... modify personal center". I can modify backend.
+  
+  // Let's modify BookLikeController.java to include 'id' (BookLike ID) in the map.
+  
+  try {
+    // We will use the BookLike ID if available. If not, we might need to fix backend.
+    // For now, let's assume we will fix the backend to return 'id'.
+    // If we use 'delete', we need the ID.
+    
+    // Let's try to use the delete endpoint if we have ID.
+    // If not, we try to set level to 0.
+    
+    // Actually, I'll update the backend controller first to ensure 'id' is returned.
+    
+    // But first, let's write the frontend code assuming 'id' will be there.
+    if (row.id) {
+         let res = await myAxios.delete(`http://localhost:8080/bookLike/delete?id=${row.id}`)
+         if (res.data.code == 200) {
+            ElMessage.success('已移除')
+            await getLikeInfo()
+         } else {
+            ElMessage.error(res.data.msg)
+         }
+    } else {
+        // Fallback: try to set level to 0 (if that's how we "remove" from view, but usually we want to delete)
+        // Or finding the ID by userId + bookId is hard without an endpoint.
+        // I will modify the backend to return 'id'.
+        ElMessage.error("无法获取记录ID")
+    }
+  } catch (e) {
+    console.log(e)
+  }
 }
 
 // Get User Info
@@ -211,6 +259,7 @@ const getUserInfo = async () => {
   try {
     let res = await myAxios.get('http://localhost:8080/user/getUserByName?name=' + userInfo.userName)
     if (res.data.code == 200) {
+      userInfo.id = res.data.data.id
       userInfo.userName = res.data.data.name
       userInfo.password = res.data.data.password
       userInfo.age = res.data.data.age
@@ -247,13 +296,17 @@ const updateUser = async () => {
   }
 }
 
-// Get Borrow Info
-const getBorrowInfo = async () => {
+// Get Like Info
+const getLikeInfo = async () => {
   try {
-    let res = await myAxios.get('http://localhost:8080/bookBorrow/getBorrowInfo?username=' + userInfo.userName)
-    console.log('借阅接口返回：', res.data)
+    let res = await myAxios.get('http://localhost:8080/bookLike/list?userId=' + userInfo.id)
+    console.log('收藏接口返回：', res.data)
     if (res.data.code == 200) {
-      borrowData.value = res.data.data
+      // Sort: 2 (Love) first, then 1 (Like)
+      let data = res.data.data || []
+      data.sort((a: any, b: any) => b.likeLevel - a.likeLevel)
+      likeData.value = data
+      
       await nextTick()
       tableRef.value?.doLayout?.()
     }
@@ -262,45 +315,28 @@ const getBorrowInfo = async () => {
   }
 }
 
-// Renew
-const borrow = async () => {
-  borrowDays.value = borrowDay.value + borrowTime.value
+const getCommentInfo = async () => {
   try {
-    let res = await myAxios.post('http://localhost:8080/bookBorrow/borrowTime', {
-      userName: borrowSum.userName,
-      bookName: borrowSum.bookName,
-      borrowTime: borrowDays.value,
-      beginTime: borrowSum.beginTime,
-    })
-    if (res.data.code == 200) {
-      ElMessage.success(res.data.msg)
-      await getBorrowInfo()
-      borrowDialogVisible.value = false
-    } else {
-      ElMessage.error(res.data.msg)
+    // type=1 for book reviews (has bookId)
+    const res = await myAxios.get(`/advice/get?userName=${userInfo.userName}&type=1`)
+    if (res.data.code === 200) {
+      const comments = res.data.data || [];
+      
+      if (comments.length > 0 && !comments[0].bookName && comments[0].bookId) {
+          const booksRes = await myAxios.get('/book/all');
+          if (booksRes.data.code === 200) {
+              const bookMap = new Map();
+              booksRes.data.data.forEach((b: any) => bookMap.set(String(b.bookId), b.bookName));
+              comments.forEach((c: any) => {
+                  if (c.bookId) c.bookName = bookMap.get(String(c.bookId)) || '未知书籍';
+              });
+          }
+      }
+      
+      commentData.value = comments;
     }
   } catch (e) {
-    console.log(e)
-  }
-}
-
-// Return
-const back = async () => {
-  try {
-    let res = await myAxios.post('http://localhost:8080/bookBorrow/back', {
-      userName: borrowSum.userName,
-      bookName: borrowSum.bookName,
-      beginTime: borrowSum.beginTime,
-    })
-    if (res.data.code == 200) {
-      ElMessage.success(res.data.msg)
-      await getBorrowInfo()
-      backDialogVisible.value = false
-    } else {
-      ElMessage.error(res.data.msg)
-    }
-  } catch (e) {
-    console.log(e)
+    console.error(e)
   }
 }
 
@@ -418,7 +454,46 @@ const logout = () => {
   background: #fff1f0;
 }
 
-/* Borrow Section */
+/* Content Section */
+.content-section {
+  width: 100%;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-header {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.panel-subtitle {
+  color: #999;
+  font-size: 14px;
+}
+
+/* Content Section */
+.content-section {
+  width: 100%;
+  height: calc(100vh - 120px);
+  padding-bottom: 20px;
+}
 .borrow-section {
   background: #fff;
   border-radius: 12px;

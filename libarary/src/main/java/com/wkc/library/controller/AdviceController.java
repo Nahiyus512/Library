@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -34,8 +33,19 @@ public class AdviceController {
     BookService bookService;
 
     @GetMapping("/get")
-    public R<List<Advice>> getAdvice(String userName) {
-        List<Advice> userAdvice = adviceService.getUserAdvice(userName);
+    public R<List<Advice>> getAdvice(String userName, Integer type) {
+        LambdaQueryWrapper<Advice> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Advice::getUserName, userName);
+        if (type != null) {
+            if (type == 0) {
+                // System suggestion: no bookId
+                wrapper.isNull(Advice::getBookId);
+            } else if (type == 1) {
+                // Book review: has bookId
+                wrapper.isNotNull(Advice::getBookId);
+            }
+        }
+        List<Advice> userAdvice = adviceService.list(wrapper);
         return R.success(userAdvice);
     }
 
@@ -115,5 +125,50 @@ public class AdviceController {
             return R.success("回复成功");
         }
         return R.error("回复失败");
+    }
+
+    @GetMapping("/topCommented")
+    public R<List<Map<String, Object>>> getTopCommented() {
+        LambdaQueryWrapper<Advice> wrapper = new LambdaQueryWrapper<>();
+        wrapper.isNotNull(Advice::getBookId);
+        List<Advice> allAdvice = adviceService.list(wrapper);
+        
+        Map<String, Long> commentCounts = allAdvice.stream()
+            .filter(a -> a.getBookId() != null && !a.getBookId().isEmpty())
+            .collect(Collectors.groupingBy(Advice::getBookId, Collectors.counting()));
+            
+        List<Map.Entry<String, Long>> topEntries = commentCounts.entrySet().stream()
+            .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+            .limit(10)
+            .collect(Collectors.toList());
+            
+        if (topEntries.isEmpty()) {
+            return R.success(Collections.emptyList());
+        }
+        
+        List<Integer> bookIds = topEntries.stream()
+            .map(e -> Integer.parseInt(e.getKey()))
+            .collect(Collectors.toList());
+            
+        List<Book> books = bookService.listByIds(bookIds);
+        Map<Integer, Book> bookMap = books.stream().collect(Collectors.toMap(Book::getBookId, b -> b));
+        
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : topEntries) {
+            try {
+                Integer bid = Integer.parseInt(entry.getKey());
+                Book book = bookMap.get(bid);
+                if (book != null) {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("bookId", book.getBookId());
+                    map.put("bookName", book.getBookName());
+                    map.put("count", entry.getValue());
+                    result.add(map);
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return R.success(result);
     }
 }
