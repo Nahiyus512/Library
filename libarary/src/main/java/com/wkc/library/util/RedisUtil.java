@@ -9,8 +9,8 @@ import org.springframework.util.CollectionUtils;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @author xiaoniao
- * @date 2024/5/30 20:50
+ * @author Nah
+ * @date 2025/12/30 20:50
  * @deprecated redis工具类
  */
 @Component

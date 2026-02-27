@@ -27,15 +27,19 @@
         <el-table-column type="index" label="序号" width="80" fixed align="center" />
         <el-table-column prop="bookName" label="书名" min-width="150" />
         <el-table-column prop="bookAuthor" label="作者" width="150" show-overflow-tooltip />
-        <!-- <el-table-column prop="bookPrice" label="价格" width="100" align="center">
-          <template #default="scope">
-            ¥{{ scope.row.bookPrice }}
-          </template>
-        </el-table-column> -->
         <el-table-column prop="bookPublic" label="出版社" width="150" show-overflow-tooltip />
-        <el-table-column prop="bookClassify" label="分类" width="120" align="center">
+        <el-table-column prop="bookClassify" label="分类" width="180" align="center">
           <template #default="scope">
-            <el-tag size="small" type="info" effect="plain" style="color: #000; border-color: #000;">{{ scope.row.bookClassify }}</el-tag>
+            <el-tag 
+              v-for="(tag, index) in (scope.row.bookClassify ? scope.row.bookClassify.split(',') : [])"
+              :key="index"
+              size="small" 
+              type="info" 
+              effect="plain" 
+              style="color: #000; border-color: #000; margin-right: 4px; margin-bottom: 4px;"
+            >
+              {{ tag }}
+            </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="封面" width="120" align="center">
@@ -55,8 +59,18 @@
             </el-image>
           </template>
         </el-table-column>
-        <el-table-column prop="bookDescription" label="描述" min-width="200" show-overflow-tooltip />
-        <!-- <el-table-column prop="bookNum" label="库存" width="100" align="center" /> -->
+        <el-table-column prop="bookDescription" label="描述" min-width="200">
+          <template #default="scope">
+            <el-tooltip
+              effect="dark"
+              :content="scope.row.bookDescription"
+              placement="top"
+              :popper-style="{ maxWidth: '300px', whiteSpace: 'normal', wordBreak: 'break-all' }"
+            >
+              <div class="description-cell">{{ scope.row.bookDescription }}</div>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" width="180" align="center">
           <template #default="scope">
             <el-button link style="color: #000" size="small" @click="changeBook(scope.row)">
@@ -98,11 +112,6 @@
             <el-input v-model="form.bookAuthor" autocomplete="off" />
           </el-form-item>
         </el-col>
-        <!-- <el-col :span="12">
-          <el-form-item label="价格">
-            <el-input v-model="form.bookPrice" autocomplete="off" />
-          </el-form-item>
-        </el-col> -->
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
@@ -112,7 +121,14 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="分类">
-            <el-select v-model="form.bookClassify" placeholder="选择分类" style="width: 100%">
+            <el-select 
+              v-model="form.bookClassify" 
+              placeholder="选择分类" 
+              style="width: 100%" 
+              multiple 
+              collapse-tags 
+              collapse-tags-tooltip
+            >
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
                 :disabled="item.disabled" />
             </el-select>
@@ -139,9 +155,6 @@
         <el-input v-model="form.bookDesc" type="textarea" :rows="3" autocomplete="off" />
       </el-form-item>
       
-      <!-- <el-form-item label="库存数量">
-        <el-input-number v-model="form.bookNum" :min="0" style="width: 100%" />
-      </el-form-item> -->
     </el-form>
     <template #footer>
       <div class="dialog-footer">
@@ -164,11 +177,6 @@
             <el-input v-model="addForm.bookAuthor" autocomplete="off" />
           </el-form-item>
         </el-col>
-        <!-- <el-col :span="12">
-          <el-form-item label="价格">
-            <el-input v-model="addForm.bookPrice" autocomplete="off" />
-          </el-form-item>
-        </el-col> -->
       </el-row>
       <el-row :gutter="20">
         <el-col :span="12">
@@ -178,7 +186,14 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="分类">
-            <el-select v-model="addForm.bookClassify" placeholder="选择分类" style="width: 100%">
+            <el-select 
+              v-model="addForm.bookClassify" 
+              placeholder="选择分类" 
+              style="width: 100%" 
+              multiple 
+              collapse-tags 
+              collapse-tags-tooltip
+            >
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"
                 :disabled="item.disabled" />
             </el-select>
@@ -259,7 +274,7 @@ const form = reactive({
   bookAuthor: '',
   bookPrice: '',
   bookPublic: '',
-  bookClassify: '',
+  bookClassify: [] as string[],
   bookImage: '',
   bookDesc: '',
   bookNum: '',
@@ -272,7 +287,7 @@ const addForm = reactive({
   bookAuthor: '',
   bookPrice: 0,
   bookPublic: '',
-  bookClassify: '',
+  bookClassify: [] as string[],
   bookImage: '',
   bookDesc: '',
   bookNum: 0
@@ -309,7 +324,7 @@ const clearData = () => {
   addForm.bookImage = ''
   addForm.bookPublic = ''
   addForm.bookPrice = 0
-  addForm.bookClassify = ''
+  addForm.bookClassify = []
   addForm.bookNum = 0
   imageUrl.value = ''
 }
@@ -340,7 +355,7 @@ const changeBook = (row) => {
   form.bookAuthor = row.bookAuthor
   form.bookPrice = row.bookPrice
   form.bookPublic = row.bookPublic
-  form.bookClassify = row.bookClassify
+  form.bookClassify = row.bookClassify ? row.bookClassify.split(',') : []
   form.bookImage = row.bookImge
   form.bookDesc = row.bookDescription
   form.bookNum = row.bookNum
@@ -365,7 +380,7 @@ async function clickUpdateOk(row) {
       bookAuthor: form.bookAuthor,
       bookPrice: form.bookPrice,
       bookPublic: form.bookPublic,
-      bookClassify: form.bookClassify,
+      bookClassify: Array.isArray(form.bookClassify) ? form.bookClassify.join(',') : form.bookClassify,
       bookImge: form.bookImage,
       bookDescription: form.bookDesc,
       bookNum: form.bookNum
@@ -394,7 +409,7 @@ async function clickAddOk() {
       bookAuthor: addForm.bookAuthor,
       bookPrice: addForm.bookPrice,
       bookPublic: addForm.bookPublic,
-      bookClassify: addForm.bookClassify,
+      bookClassify: Array.isArray(addForm.bookClassify) ? addForm.bookClassify.join(',') : addForm.bookClassify,
       bookImge: addForm.bookImage,
       bookDescription: addForm.bookDesc,
       bookNum: addForm.bookNum
@@ -478,6 +493,12 @@ const getBookClass = async () => {
 </script>
 
 <style lang="scss" scoped>
+.description-cell {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .book-info-container {
   padding: 24px;
   background-color: #f5f7fa;

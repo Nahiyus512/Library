@@ -9,8 +9,8 @@ import com.wkc.library.entity.User;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * @author xiaoniao
- * @date 2023/2/17 13:27
+ * @author Nah
+ * @date 2025/12/17 13:27
  */
 @Mapper
 public interface UserMapper extends BaseMapper<User> {

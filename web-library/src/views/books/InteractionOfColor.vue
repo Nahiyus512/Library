@@ -267,8 +267,7 @@ const rateBook = async (level: number) => {
     const res = await myAxios.put('/bookLike/like', {
       userId: userId,
       userName: username,
-      bookId: 5, // Interaction of Color ID (Assumed)
-      bookName: "Interaction of Color",
+      bookName: "色彩互动学",
       likeLevel: level
     });
 
@@ -575,10 +574,10 @@ const toggleAfterimage = () => {
 
 // --- Recommended Reading (User Request 5) ---
 const recommendedBooks = [
-  { title: '色彩互动学', author: '约瑟夫·阿尔伯斯' },
-  { title: '包豪斯', author: '玛格达莱娜·德罗斯特' },
-  { title: '色彩的艺术', author: '约翰内斯·伊顿' },
-  { title: '颜色论', author: '歌德' }
+  { title: '色彩互动学', author: 'Nah' },
+  { title: '包豪斯', author: 'Nah' },
+  { title: '色彩的艺术', author: 'Nah' },
+  { title: '颜色论', author: 'Nah' }
 ]; // Reduced to 4
 
 // Lifecycle

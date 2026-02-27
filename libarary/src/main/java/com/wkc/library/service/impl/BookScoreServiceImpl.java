@@ -24,8 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
- * @author xiaoniao
- * @date 2023/4/11 13:15
+ * @author Nah
+ * @date 2025/12/11 13:15
  */
 @Service
 public class BookScoreServiceImpl extends ServiceImpl<BookScoreMapper, BookScore> implements BookScoreService {

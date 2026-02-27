@@ -24,8 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author xiaoniao
- * @date 2023/2/17 13:28
+ * @author Nah
+ * @date 2025/12/17 13:28
  */
 @Slf4j
 @RestController
@@ -80,14 +80,10 @@ public class UserController {
     public R<String> logon(@RequestBody User user){
         String username = user.getName();
         String password = user.getPassword();
-        Integer age = user.getAge();
-        String address = user.getAddress();
         User newUser = new User();
         //newUser.setId(UUIDUtil.generateUUID());
         newUser.setName(username);
-        newUser.setAge(age);
         newUser.setPassword(password);
-        newUser.setAddress(address);
         if(userMapper.selectByName(user) == null){
             Integer result = userMapper.logon(newUser);
             if(result > 0){
@@ -159,7 +155,7 @@ public class UserController {
     public R<String> updateByName(@RequestBody User user) {
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(User::getName,user.getName());
-        wrapper.set(User::getPassword,user.getPassword()).set(User::getAge,user.getAge()).set(User::getAddress,user.getAddress());
+        wrapper.set(User::getPassword,user.getPassword());
         boolean update = userService.update(wrapper);
         if (update) {
             return R.success("修改信息成功");

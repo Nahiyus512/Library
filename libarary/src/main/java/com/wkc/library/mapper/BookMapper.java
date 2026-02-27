@@ -10,8 +10,8 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 /**
- * @author xiaoniao
- * @date 2023/2/28 13:43
+ * @author Nah
+ * @date 2025/12/28 13:43
  */
 @Mapper
 public interface BookMapper extends BaseMapper<Book> {

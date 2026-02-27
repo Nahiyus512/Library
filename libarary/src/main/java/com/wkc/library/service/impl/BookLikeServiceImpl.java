@@ -8,14 +8,30 @@ import com.wkc.library.service.BookLikeService;
 import org.springframework.stereotype.Service;
 
 /**
- * @author TraeAI
+ * @author Nah
  * @date 2025/12/18
  */
 @Service
 public class BookLikeServiceImpl extends ServiceImpl<BookLikeMapper, BookLike> implements BookLikeService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.wkc.library.service.BookService bookService;
+
     @Override
     public Boolean likeBook(BookLike bookLike) {
+        if (bookLike.getBookId() == null && bookLike.getBookName() != null) {
+            LambdaQueryWrapper<com.wkc.library.entity.Book> bookWrapper = new LambdaQueryWrapper<>();
+            bookWrapper.eq(com.wkc.library.entity.Book::getBookName, bookLike.getBookName().trim());
+            com.wkc.library.entity.Book book = bookService.getOne(bookWrapper);
+            if (book != null) {
+                bookLike.setBookId(book.getBookId());
+            }
+        }
+
+        if (bookLike.getBookId() == null) {
+            return false;
+        }
+
         LambdaQueryWrapper<BookLike> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BookLike::getUserId, bookLike.getUserId())
                .eq(BookLike::getBookId, bookLike.getBookId());

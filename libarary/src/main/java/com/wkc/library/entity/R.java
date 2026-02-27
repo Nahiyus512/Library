@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author xiaoniao
- * @date 2022/9/19 17:01
+ * @author Nah
+ * @date 2025/12/19 17:01
  */
 public class R<T> {
     private Integer code;//编码：1代表成功，0代表失败

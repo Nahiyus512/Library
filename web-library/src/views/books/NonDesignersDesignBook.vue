@@ -210,8 +210,7 @@ const rateBook = async (level: number) => {
     const res = await myAxios.put('/bookLike/like', {
       userId: userId,
       userName: username,
-      bookId: 8, // Non-Designer's Design Book ID
-      bookName: "The Non-Designer's Design Book",
+      bookName: "写给大家看的设计书",
       likeLevel: level
     });
 

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="user-layout">
       <!-- User Profile Card -->
@@ -16,14 +16,6 @@
           <div class="detail-item">
             <span class="label">账号</span>
             <span class="value">{{ userInfo.userName }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">年龄</span>
-            <span class="value">{{ userInfo.age }}</span>
-          </div>
-          <div class="detail-item">
-            <span class="label">地址</span>
-            <span class="value">{{ userInfo.address }}</span>
           </div>
         </div>
 
@@ -51,11 +43,12 @@
                 <el-table ref="tableRef" :data="likeData" row-key="id" style="width: 100%" height="calc(100vh - 250px)"
                   :header-cell-style="{ background: '#f9f9f9', color: '#666', fontWeight: '500' }">
                   <el-table-column prop="bookName" label="书名" min-width="120" show-overflow-tooltip />
-                  <el-table-column prop="bookAuthor" label="作者" width="100" show-overflow-tooltip />
-                  <el-table-column prop="likeLevel" label="喜爱" width="80" align="center">
+                  <el-table-column prop="bookClassify" label="类型" min-width="120" show-overflow-tooltip />
+                  <el-table-column prop="bookAuthor" label="作者" min-width="180" show-overflow-tooltip />
+                  <el-table-column prop="likeLevel" label="状态" width="80" align="center">
                     <template #default="scope">
-                      <el-tag :type="scope.row.likeLevel === 2 ? 'danger' : 'warning'" effect="light" round size="small">
-                        {{ scope.row.likeLevel === 2 ? '想看' : '还行' }}
+                      <el-tag :type="getLikeTagType(scope.row.likeLevel)" effect="light" round size="small">
+                        {{ getLikeLabel(scope.row.likeLevel) }}
                       </el-tag>
                     </template>
                   </el-table-column>
@@ -105,14 +98,6 @@
           <label>密码</label>
           <el-input v-model="inputValue.password" type="password" show-password />
         </div>
-        <div class="form-group">
-          <label>年龄</label>
-          <el-input v-model="inputValue.age" />
-        </div>
-        <div class="form-group">
-          <label>地址</label>
-          <el-input v-model="inputValue.address" />
-        </div>
       </div>
       <template #footer>
         <div class="dialog-footer">
@@ -140,17 +125,13 @@ const editDialogVisible = ref(false)
 
 const inputValue = reactive({
   userName: '',
-  password: '',
-  age: '',
-  address: ''
+  password: ''
 })
 
 const userInfo = reactive({
   id: 0,
   userName: '',
-  password: '',
-  age: '',
-  address: ''
+  password: ''
 })
 
 const likeData = ref([])
@@ -178,8 +159,6 @@ const openEditDialog = () => {
   editDialogVisible.value = true
   // Sync input values with current info
   inputValue.password = userInfo.password
-  inputValue.age = userInfo.age
-  inputValue.address = userInfo.address
 }
 
 const unlikeBook = async (row: any) => {
@@ -262,13 +241,9 @@ const getUserInfo = async () => {
       userInfo.id = res.data.data.id
       userInfo.userName = res.data.data.name
       userInfo.password = res.data.data.password
-      userInfo.age = res.data.data.age
-      userInfo.address = res.data.data.address
 
       inputValue.userName = res.data.data.name
       inputValue.password = res.data.data.password
-      inputValue.age = res.data.data.age
-      inputValue.address = res.data.data.address
     }
   } catch (e) {
     console.log(e)
@@ -280,9 +255,7 @@ const updateUser = async () => {
   try {
     let res = await myAxios.post('http://localhost:8080/user/updateByName', {
       name: inputValue.userName,
-      password: inputValue.password,
-      age: inputValue.age,
-      address: inputValue.address
+      password: inputValue.password
     })
     if (res.data.code == 200) {
       ElMessage.success(res.data.msg)
@@ -340,6 +313,18 @@ const getCommentInfo = async () => {
   }
 }
 
+const getLikeLabel = (level: number) => {
+  if (level === 2) return '喜欢'
+  if (level === 1) return '还行'
+  return '弃书'
+}
+
+const getLikeTagType = (level: number) => {
+  if (level === 2) return 'danger'
+  if (level === 1) return 'warning'
+  return 'info'
+}
+
 const logout = () => {
   cookie.remove('token')
   router.push('/login')
@@ -348,7 +333,8 @@ const logout = () => {
 
 <style scoped>
 .page-container {
-  padding-top: 20px;
+  padding: 20px 24px 24px;
+  box-sizing: border-box;
 }
 
 .user-layout {
@@ -537,6 +523,10 @@ const logout = () => {
 
 /* Responsive */
 @media (max-width: 900px) {
+  .page-container {
+    padding: 16px;
+  }
+
   .user-layout {
     grid-template-columns: 1fr;
   }

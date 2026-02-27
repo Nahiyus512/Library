@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="system-info-container">
     <div class="page-header">
       <div class="header-left">
         <h2 class="page-title">系统设置</h2>
@@ -7,7 +7,7 @@
       </div>
     </div>
 
-    <div class="content-container">
+    <div class="content-card">
       <el-row :gutter="20">
         <el-col :span="12" :xs="24">
           <div class="setting-card">
@@ -84,97 +84,107 @@ const exit = () => {
 }
 </script>
 
-<style scoped>
-.page-container {
-  padding: 20px;
+<style lang="scss" scoped>
+.system-info-container {
+  padding: 24px;
+  background-color: #f5f7fa;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
-}
+  overflow: hidden;
+  box-sizing: border-box;
 
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-}
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-shrink: 0;
 
-.page-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0;
+        margin-bottom: 8px;
+      }
 
-.page-subtitle {
-  display: block;
-  margin-top: 5px;
-  color: #909399;
-  font-size: 14px;
-}
+      .page-subtitle {
+        font-size: 14px;
+        color: #909399;
+      }
+    }
+  }
 
-.content-container {
-  flex: 1;
+  .content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 
 .setting-card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  background: #fff;
+  border-radius: 4px;
+  border: 1px solid #ebeef5;
   margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.card-header {
-  padding: 15px 20px;
-  border-bottom: 1px solid #EBEEF5;
-}
-
-.card-header h3 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.card-body {
-  padding: 20px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.info-item:last-child {
-  border-bottom: none;
-}
-
-.info-item .label {
-  color: #606266;
-}
-
-.info-item .value {
-  color: #303133;
-  font-weight: 500;
-}
-
-.description {
-  color: #606266;
-  margin-bottom: 20px;
-  line-height: 1.5;
-}
-
-.action-area {
-  display: flex;
-  justify-content: flex-end;
+  transition: all 0.3s;
+  
+  &:hover {
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
+  }
+  
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #ebeef5;
+    
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: #303133;
+    }
+  }
+  
+  .card-body {
+    padding: 20px;
+    
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+      
+      .label {
+        color: #606266;
+      }
+      
+      .value {
+        color: #303133;
+        font-weight: 500;
+      }
+    }
+    
+    .description {
+      color: #606266;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    
+    .action-area {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
 }
 </style>

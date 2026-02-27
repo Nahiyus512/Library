@@ -36,7 +36,6 @@ import SciFiCategory from "@/views/categories/SciFiCategory.vue";
 import BookInfo from "@/views/admin/BookInfo.vue"
 import UserInfo from "@/views/admin/UserInfo.vue"
 import SystemInfo from "@/views/admin/SystemInfo.vue"
-import BookBorrowInfo from "@/views/admin/BookBorrowInfo.vue"
 import BookLikeInfo from "@/views/admin/BookLikeInfo.vue"
 import Advice from "@/views/admin/Advice.vue"
 import BookClass from "@/views/admin/BookClass.vue";
@@ -206,11 +205,6 @@ const router = createRouter({
                     path:"/advice",
                     name:"advice",
                     component:Advice
-                },
-                {
-                    path:"/bookBorrowInfo",
-                    name:"bookBorrowInfo",
-                    component:BookBorrowInfo
                 },
                 {
                     path:"/bookLikeInfo",

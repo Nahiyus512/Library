@@ -6,8 +6,8 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * @author xiaoniao
- * @date 2024/5/27 20:24
+ * @author Nah
+ * @date 2025/12/27 20:24
  */
 @Data
 public class BookPageInfo {

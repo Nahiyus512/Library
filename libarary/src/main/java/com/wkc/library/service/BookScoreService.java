@@ -7,8 +7,8 @@ import com.wkc.library.entity.BookScore;
 import java.util.List;
 
 /**
- * @author xiaoniao
- * @date 2023/4/11 13:14
+ * @author Nah
+ * @date 2025/12/11 13:14
  */
 public interface BookScoreService extends IService<BookScore> {
     List<Book> recommend(Integer userId);

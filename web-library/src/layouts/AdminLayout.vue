@@ -64,6 +64,7 @@ onMounted(() => {
   background-color: #f5f5f5;
   border-right: 1px solid #eee;
   overflow: hidden;
+  font-size: 16px; /* Increase font size for sidebar */
 }
 
 .admin-content {
@@ -75,7 +76,7 @@ onMounted(() => {
 }
 
 .admin-header {
-  height: 60px;
+  height: 70px; /* Increase header height */
   background: #fff;
   border-bottom: 1px solid #eee;
   padding: 0 40px;
@@ -91,7 +92,7 @@ onMounted(() => {
 }
 
 .page-title {
-  font-size: 14px;
+  font-size: 18px; /* Increase font size */
   font-weight: 600;
   letter-spacing: 1px;
   color: #000;
@@ -100,8 +101,8 @@ onMounted(() => {
 .user-info {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
+  gap: 12px;
+  font-size: 16px; /* Increase font size */
 }
 
 .user-name {
@@ -111,9 +112,9 @@ onMounted(() => {
 
 .user-role {
   color: #999;
-  font-size: 12px;
+  font-size: 13px; /* Slightly larger role text */
   background: #f5f5f5;
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
 }
 

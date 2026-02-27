@@ -233,8 +233,7 @@ const rateBook = async (level: number) => {
     const res = await myAxios.put('/bookLike/like', {
       userId: userId,
       userName: username,
-      bookId: 4, // Grid Systems ID
-      bookName: "Grid Systems",
+      bookName: "平面设计中的网格系统",
       likeLevel: level
     });
 

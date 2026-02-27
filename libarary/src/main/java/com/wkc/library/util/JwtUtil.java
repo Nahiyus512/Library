@@ -6,6 +6,10 @@ import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.io.Encoders;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -14,18 +18,46 @@ import java.security.Key;
 
 
 /**
- * @author xiaoniao
- * @date 2024/5/31 15:10
+ * @author Nah
+ * @date 2025/12/31 15:10
  */
 @Component
 @ToString
 @Slf4j
 public class JwtUtil {
 
+    @Resource
+    private RedisUtil redisUtil;
+
     /**
      * 密钥
      */
-    private static final Key secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private Key secretKey;
+
+    @PostConstruct
+    public void init() {
+        String key = "jwt_secret_key";
+        if (redisUtil.hasKey(key)) {
+            try {
+                String secretString = (String) redisUtil.get(key);
+                byte[] keyBytes = Decoders.BASE64.decode(secretString);
+                secretKey = Keys.hmacShaKeyFor(keyBytes);
+                log.info("从 Redis 加载 JWT 密钥成功");
+            } catch (Exception e) {
+                log.error("从 Redis 加载 JWT 密钥失败，重新生成", e);
+                generateAndSaveKey(key);
+            }
+        } else {
+            generateAndSaveKey(key);
+        }
+    }
+
+    private void generateAndSaveKey(String key) {
+        secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        String secretString = Encoders.BASE64.encode(secretKey.getEncoded());
+        redisUtil.set(key, secretString);
+        log.info("生成新的 JWT 密钥并保存到 Redis");
+    }
 
     /**
      * 生成用户token

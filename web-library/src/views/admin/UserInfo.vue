@@ -27,11 +27,9 @@
         <el-table-column fixed prop="id" label="用户ID" width="150" align="center" />
         <el-table-column prop="name" label="用户名" width="150" />
         <el-table-column prop="password" label="密码" width="180" />
-        <el-table-column prop="age" label="年龄" width="120" align="center" />
-        <el-table-column prop="address" label="地址" min-width="200" />
         <el-table-column fixed="right" label="操作" width="180" align="center">
           <template #default="scope">
-            <el-button link color="#000" size="small" @click="changeUser(scope.row)">
+            <el-button link color="#909399" size="small" @click="changeUser(scope.row)">
               <el-icon><Edit /></el-icon> 修改
             </el-button>
             <el-button link type="danger" size="small" @click="deleteUser(scope.row)">
@@ -68,12 +66,6 @@
       <el-form-item label="密码">
         <el-input v-model="form.password" autocomplete="off" show-password />
       </el-form-item>
-      <el-form-item label="年龄">
-        <el-input v-model="form.age" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="地址">
-        <el-input v-model="form.address" autocomplete="off" />
-      </el-form-item>
     </el-form>
     <template #footer>
       <div class="dialog-footer">
@@ -90,12 +82,6 @@
       </el-form-item>
       <el-form-item label="密码">
         <el-input v-model="addForm.password" autocomplete="off" show-password />
-      </el-form-item>
-      <el-form-item label="年龄">
-        <el-input v-model="addForm.age" autocomplete="off" />
-      </el-form-item>
-      <el-form-item label="地址">
-        <el-input v-model="addForm.address" autocomplete="off" />
       </el-form-item>
     </el-form>
     <template #footer>
@@ -152,17 +138,13 @@ const tableData = ref([])
 
 const addForm = reactive({
   userName:'',
-  password:'',
-  age:'',
-  address:''
+  password:''
 })
 
 const form = reactive({
   userId:'',
   userName:'',
-  password:'',
-  age:'',
-  address:''
+  password:''
 })
 
 //分页数据
@@ -191,8 +173,6 @@ const changeUser = (row)=>{
   form.userId=row.id
   form.userName=row.name
   form.password=row.password
-  form.age=row.age
-  form.address=row.address
 }
 
 const deleteUser = (row)=>{
@@ -219,9 +199,7 @@ async function clickUpdateOk(){
     let updateResult = await myAxios.put('http://localhost:8080/user/change',{
       id:form.userId,
       name:form.userName,
-      password:form.password,
-      age:form.age,
-      address:form.address,
+      password:form.password
     })
     //console.log(updateResult)
     if(updateResult.data.code === 200) {
@@ -274,9 +252,7 @@ async function clickAddUser() {
     }
     let res = await myAxios.post("http://localhost:8080/user/logon",{
       name:addForm.userName,
-      password:addForm.password,
-      age:addForm.age,
-      address:addForm.address
+      password:addForm.password
     })
     console.log(res)
     if(res.data.code === 200){
@@ -288,10 +264,8 @@ async function clickAddUser() {
   }catch (e) {
     console.log(e)
   }
-  addForm.age=''
   addForm.userName=''
   addForm.password=''
-  addForm.address=''
   dialogAddFormVisible.value = false
 }
 
@@ -312,10 +286,6 @@ async function clickAddUser() {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
     flex-shrink: 0;
 
     .header-left {

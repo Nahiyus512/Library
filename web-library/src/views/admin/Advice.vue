@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="advice-container">
     <div class="page-header">
       <div class="header-left">
         <h2 class="page-title">意见反馈</h2>
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="content-container">
+    <div class="content-card">
       <el-tabs v-model="activeTab" @tab-change="handleTabChange" class="custom-tabs">
         <el-tab-pane label="留言建议" name="suggestion">
           <el-table :data="suggestionData" style="width: 100%;" height="100%" stripe border>
@@ -32,7 +32,7 @@
                     <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
                     <el-table-column label="操作" width="100" align="center">
                       <template #default="scope">
-                        <el-button color="#000" link @click="refMsg(scope.row)">
+                        <el-button color="#000" link size="small" @click="refMsg(scope.row)">
                           <el-icon><EditPen /></el-icon> 回复
                         </el-button>
                       </template>
@@ -44,7 +44,7 @@
             <el-table-column prop="userName" label="用户" />
             <el-table-column label="留言数量" width="120" align="center">
               <template #default="scope">
-                <el-tag effect="plain" round>{{ scope.row.items.length }} 条</el-tag>
+                <el-tag effect="plain" round type="info" style="color: #000; border-color: #000;">{{ scope.row.items.length }} 条</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -69,7 +69,7 @@
                     <el-table-column prop="replyTime" label="回复时间" width="180" align="center" />
                     <el-table-column label="操作" width="100" align="center">
                       <template #default="scope">
-                        <el-button color="#000" link @click="refMsg(scope.row)">
+                        <el-button color="#000" link size="small" @click="refMsg(scope.row)">
                           <el-icon><EditPen /></el-icon> 回复
                         </el-button>
                       </template>
@@ -81,7 +81,7 @@
             <el-table-column prop="userName" label="用户" />
             <el-table-column label="评论数量" width="120" align="center">
               <template #default="scope">
-                <el-tag effect="plain" round>{{ scope.row.items.length }} 条</el-tag>
+                <el-tag effect="plain" round type="info" style="color: #000; border-color: #000;">{{ scope.row.items.length }} 条</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -234,50 +234,49 @@ async function clickOk() {
 }
 </script>
 
-<style scoped>
-.page-container {
-  padding: 20px;
+<style lang="scss" scoped>
+.advice-container {
+  padding: 24px;
+  background-color: #f5f7fa;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
-  box-sizing: border-box;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-}
-
-.page-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.page-subtitle {
-  display: block;
-  margin-top: 5px;
-  color: #909399;
-  font-size: 14px;
-}
-
-.content-container {
-  flex: 1;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-shrink: 0;
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0;
+        margin-bottom: 8px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+        color: #909399;
+      }
+    }
+  }
+
+  .content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 
 .custom-tabs {

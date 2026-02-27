@@ -14,7 +14,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * @author TraeAI
+ * @author Nah
  * @date 2025/12/18
  */
 @RestController
@@ -64,7 +64,6 @@ public class BookLikeController {
                 map.put("bookAuthor", book.getBookAuthor());
                 map.put("bookPublic", book.getBookPublic());
                 map.put("bookClassify", book.getBookClassify());
-                map.put("bookNum", book.getBookNum());
                 map.put("likeLevel", like.getLikeLevel());
                 result.add(map);
             }

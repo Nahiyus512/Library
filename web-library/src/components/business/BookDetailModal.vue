@@ -101,7 +101,6 @@ const bookData = reactive({
   bookPublic: '',
   bookClassify: '',
   bookImage: '',
-  bookNum: 0,
   bookAuthor: '',
 });
 
@@ -129,7 +128,6 @@ const initData = async () => {
   bookData.bookPublic = props.book.bookPublic || 'Unknown';
   bookData.bookClassify = props.book.bookClassify || props.book.category || 'General';
   bookData.bookImage = props.book.cover || props.book.bookImge || props.book.bookImage;
-  bookData.bookNum = props.book.bookNum !== undefined ? props.book.bookNum : 999;
 
   ratingData.bookId = Number(bookData.bookId);
   ratingData.bookName = bookData.bookName;
@@ -247,7 +245,7 @@ const findRating = async () => {
 .dialog-cover img {
   width: 100%;
   border-radius: 4px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  box-shadow: none;
 }
 
 .dialog-details {

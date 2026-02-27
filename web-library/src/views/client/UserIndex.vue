@@ -1,5 +1,6 @@
 <template>
-  <div class="dashboard-grid">
+  <div class="page-container">
+    <div class="dashboard-grid">
     <!-- Weather Card -->
     <div class="card weather-card">
       <div class="card-header">
@@ -62,42 +63,60 @@
     </div>
 
     <!-- Bottom Row: Leaderboards -->
-    <!-- Top Liked Books -->
-    <div class="card list-card leaderboard-card">
-      <div class="card-header">
-        <h3>图书喜爱榜</h3>
-        <span class="card-meta">TOP 10</span>
+    <div class="bottom-leaderboards">
+      <div class="card list-card leaderboard-card">
+        <div class="card-header">
+          <h3>图书喜欢榜</h3>
+          <span class="card-meta">TOP 10</span>
+        </div>
+        <div class="card-body">
+          <ul class="clean-list">
+            <li v-for="(book, index) in topLikedBooks" :key="`like-${book.bookId}`">
+              <span class="rank" :class="index < 3 ? 'top-rank' : ''">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span class="text">{{ book.bookName }}</span>
+              <span class="badge love">{{ book.count }} 喜欢</span>
+            </li>
+            <li v-if="topLikedBooks.length === 0" class="empty-state">暂无数据</li>
+          </ul>
+        </div>
       </div>
-      <div class="card-body">
-        <ul class="clean-list">
-          <li v-for="(book, index) in topLikedBooks" :key="book.bookId">
-            <span class="rank" :class="index < 3 ? 'top-rank' : ''">{{ String(index + 1).padStart(2, '0') }}</span>
-            <span class="text">{{ book.bookName }}</span>
-            <span class="badge love">{{ book.count }} 喜欢</span>
-          </li>
-          <li v-if="topLikedBooks.length === 0" class="empty-state">暂无数据</li>
-        </ul>
-      </div>
-    </div>
 
-    <!-- Top Commented Books -->
-    <div class="card list-card leaderboard-card">
-      <div class="card-header">
-        <h3>书籍热评榜</h3>
-        <span class="card-meta">TOP 10</span>
+      <div class="card list-card leaderboard-card">
+        <div class="card-header">
+          <h3>图书还行榜</h3>
+          <span class="card-meta">TOP 10</span>
+        </div>
+        <div class="card-body">
+          <ul class="clean-list">
+            <li v-for="(book, index) in topSosoBooks" :key="`soso-${book.bookId}`">
+              <span class="rank" :class="index < 3 ? 'top-rank' : ''">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span class="text">{{ book.bookName }}</span>
+              <span class="badge">{{ book.count }} 还行</span>
+            </li>
+            <li v-if="topSosoBooks.length === 0" class="empty-state">暂无数据</li>
+          </ul>
+        </div>
       </div>
-      <div class="card-body">
-        <ul class="clean-list">
-          <li v-for="(book, index) in topCommentedBooks" :key="book.bookId">
-            <span class="rank" :class="index < 3 ? 'top-rank' : ''">{{ String(index + 1).padStart(2, '0') }}</span>
-            <span class="text">{{ book.bookName }}</span>
-            <span class="badge comment">{{ book.count }} 评论</span>
-          </li>
-          <li v-if="topCommentedBooks.length === 0" class="empty-state">暂无数据</li>
-        </ul>
+
+      <div class="card list-card leaderboard-card">
+        <div class="card-header">
+          <h3>书籍热评榜</h3>
+          <span class="card-meta">TOP 10</span>
+        </div>
+        <div class="card-body">
+          <ul class="clean-list">
+            <li v-for="(book, index) in topCommentedBooks" :key="`comment-${book.bookId}`">
+              <span class="rank" :class="index < 3 ? 'top-rank' : ''">{{ String(index + 1).padStart(2, '0') }}</span>
+              <span class="text">{{ book.bookName }}</span>
+              <span class="badge comment">{{ book.count }} 评论</span>
+            </li>
+            <li v-if="topCommentedBooks.length === 0" class="empty-state">暂无数据</li>
+          </ul>
+        </div>
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script setup lang="ts">
@@ -132,6 +151,7 @@ const systemStats = reactive({
 
 const likedBooks = ref<any[]>([]);
 const topLikedBooks = ref<any[]>([]);
+const topSosoBooks = ref<any[]>([]);
 const topCommentedBooks = ref<any[]>([]);
 
 const chartContainer = ref<HTMLDivElement | null>(null);
@@ -202,6 +222,8 @@ const fetchData = async () => {
   if (!username) return;
 
   try {
+    let bookNameMap = new Map<number, string>();
+
     // 1. Get User Info to get ID
     const userRes = await myAxios.get(`/user/getUserByName?name=${username}`);
     if (userRes.data.code === 200) {
@@ -235,6 +257,9 @@ const fetchData = async () => {
     const booksRes = await myAxios.get('/book/all');
     if (booksRes.data.code === 200) {
       systemStats.totalBooks = booksRes.data.data.length;
+      bookNameMap = new Map(
+        (booksRes.data.data || []).map((b: any) => [Number(b.bookId), b.bookName])
+      );
     }
     
     const classRes = await myAxios.get('/class/get');
@@ -243,9 +268,10 @@ const fetchData = async () => {
     }
 
     // 5. Get Leaderboards
-    const topLikeRes = await myAxios.get('/bookLike/top');
-    if (topLikeRes.data.code === 200) {
-      topLikedBooks.value = topLikeRes.data.data;
+    const allLikeRes = await myAxios.get('/bookLike/getAll');
+    if (allLikeRes.data.code === 200) {
+      topLikedBooks.value = buildLikeRanking(allLikeRes.data.data || [], 2, bookNameMap);
+      topSosoBooks.value = buildLikeRanking(allLikeRes.data.data || [], 1, bookNameMap);
     }
 
     const topCommentRes = await myAxios.get('/advice/topCommented');
@@ -256,6 +282,26 @@ const fetchData = async () => {
   } catch (e) {
     console.error('Error fetching dashboard data:', e);
   }
+};
+
+const buildLikeRanking = (allLikes: any[], targetLevel: number, bookNameMap: Map<number, string>) => {
+  const countMap = new Map<number, number>();
+
+  allLikes.forEach((record: any) => {
+    if (record.likeLevel === targetLevel) {
+      const bookId = Number(record.bookId);
+      countMap.set(bookId, (countMap.get(bookId) || 0) + 1);
+    }
+  });
+
+  return Array.from(countMap.entries())
+    .map(([bookId, count]) => ({
+      bookId,
+      bookName: bookNameMap.get(bookId) || `书籍#${bookId}`,
+      count,
+    }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10);
 };
 
 async function fetchWeatherData(apiKey: string, cityCode: string) {
@@ -274,6 +320,12 @@ async function fetchWeatherData(apiKey: string, cityCode: string) {
 </script>
 
 <style scoped>
+.page-container {
+  width: 100%;
+  padding: 20px 24px 24px;
+  box-sizing: border-box;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -420,8 +472,14 @@ async function fetchWeatherData(apiKey: string, cityCode: string) {
 
 /* Leaderboard Cards */
 .leaderboard-card {
-  grid-column: span 2;
-  min-height: 450px;
+  min-height: 380px;
+}
+
+.bottom-leaderboards {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
 }
 
 @media (max-width: 1024px) {
@@ -431,14 +489,25 @@ async function fetchWeatherData(apiKey: string, cityCode: string) {
   .chart-card {
     grid-column: span 2;
   }
+  .bottom-leaderboards {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 @media (max-width: 768px) {
+  .page-container {
+    padding: 16px;
+  }
+
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
   .chart-card {
     grid-column: span 1;
+  }
+
+  .bottom-leaderboards {
+    grid-template-columns: 1fr;
   }
 }
 </style>

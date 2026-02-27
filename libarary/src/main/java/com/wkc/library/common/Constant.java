@@ -1,8 +1,8 @@
 package com.wkc.library.common;
 
 /**
- * @author xiaoniao
- * @date 2024/5/30 22:12
+ * @author Nah
+ * @date 2025/12/30 22:12
  * @deprecated 常量类
  */
 

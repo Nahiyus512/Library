@@ -7,8 +7,8 @@ import java.util.List;
 
 
 /**
- * @author xiaoniao
- * @date 2024/5/30 20:07
+ * @author Nah
+ * @date 2025/12/30 20:07
  */
 public interface AdviceService extends IService<Advice> {
 

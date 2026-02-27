@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-page-container">
+  <div class="book-class-container">
     <!-- Header -->
     <div class="page-header">
       <div class="header-left">
@@ -24,35 +24,33 @@
     </div>
 
     <!-- Content -->
-    <div class="page-content">
-      <div class="content-card">
-        <el-table :data="tableData" style="width: 100%; flex: 1;" height="100%" stripe>
-          <el-table-column type="index" label="序号" width="80" align="center" />
-          <el-table-column prop="classify" label="分类名称" />
-          <el-table-column label="操作" width="180" align="center">
-            <template #default="scope">
-              <el-button color="#000" link @click="changeClass(scope.row)">
-                <el-icon><Edit /></el-icon> 编辑
-              </el-button>
-              <el-button type="danger" link @click="deleteClass(scope.row)">
-                <el-icon><Delete /></el-icon> 删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+    <div class="content-card">
+      <el-table :data="tableData" style="width: 100%; flex: 1;" height="100%" stripe>
+        <el-table-column type="index" label="序号" width="80" align="center" />
+        <el-table-column prop="classify" label="分类名称" />
+        <el-table-column label="操作" width="180" align="center">
+          <template #default="scope">
+            <el-button link style="color: #000" size="small" @click="changeClass(scope.row)">
+              <el-icon><Edit /></el-icon> 编辑
+            </el-button>
+            <el-button link style="color: #666" size="small" @click="deleteClass(scope.row)">
+              <el-icon><Delete /></el-icon> 删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-        <div class="pagination-container">
-          <el-pagination
-            v-model:current-page="dataInfo.pageNum"
-            v-model:page-size="dataInfo.pageSize"
-            :page-sizes="[5, 10, 15, 20]"
-            layout="total, sizes, prev, pager, next, jumper"
-            :total="dataInfo.allNum"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            background
-          />
-        </div>
+      <div class="pagination-container">
+        <el-pagination
+          v-model:current-page="dataInfo.pageNum"
+          v-model:page-size="dataInfo.pageSize"
+          :page-sizes="[5, 10, 15, 20]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="dataInfo.allNum"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          background
+        />
       </div>
     </div>
 
@@ -246,8 +244,8 @@ const clickAddOk = async () => {
 };
 </script>
 
-<style scoped lang="scss">
-.admin-page-container {
+<style lang="scss" scoped>
+.book-class-container {
   padding: 24px;
   background-color: #f5f7fa;
   height: 100%;
@@ -261,19 +259,17 @@ const clickAddOk = async () => {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
     flex-shrink: 0;
 
     .header-left {
       .page-title {
-        font-size: 20px;
+        font-size: 24px;
         font-weight: 600;
         color: #303133;
-        margin: 0 0 8px 0;
+        margin: 0;
+        margin-bottom: 8px;
       }
+
       .page-subtitle {
         font-size: 14px;
         color: #909399;
@@ -282,8 +278,8 @@ const clickAddOk = async () => {
 
     .header-right {
       display: flex;
-      align-items: center;
       gap: 12px;
+      align-items: center;
 
       .search-input {
         width: 240px;
@@ -291,27 +287,20 @@ const clickAddOk = async () => {
     }
   }
 
-  .page-content {
+  .content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     flex: 1;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
-
-    .content-card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 12px 0 rgba(0,0,0,0.05);
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
+    overflow: hidden;
 
     .pagination-container {
-      margin-top: 20px;
       display: flex;
       justify-content: flex-end;
+      margin-top: 20px;
       flex-shrink: 0;
     }
   }
@@ -321,16 +310,20 @@ const clickAddOk = async () => {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 0;
-
+  padding: 20px 0;
+  
   .warning-icon {
     font-size: 24px;
     color: #e6a23c;
   }
-
+  
   span {
     font-size: 16px;
     color: #606266;
   }
+}
+
+.custom-form {
+  padding: 10px 0;
 }
 </style>

@@ -17,7 +17,7 @@
             <div class="cover-area">
               <CssBookCover 
                 :title="book.bookName" 
-                :author="book.bookAuthor || 'Unknown'" 
+                :author="book.bookAuthor || 'Nah'" 
                 :id="book.bookId"
               />
             </div>

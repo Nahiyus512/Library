@@ -6,7 +6,7 @@ import com.wkc.library.entity.BookClass;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * @author rong
+ * @author Nah
  * @Description
  * @date 2025/12/8 13:36
  */

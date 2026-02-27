@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.filter.HiddenHttpMethodFilter;
 
 /**
- * @author xiaoniao
- * @date 2022/10/22 10:59
+ * @author Nah
+ * @date 2025/12/22 10:59
  */
 @Configuration(proxyBeanMethods = false)
 public class WebConfig {

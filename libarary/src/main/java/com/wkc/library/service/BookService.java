@@ -7,8 +7,8 @@ import java.util.List;
 
 
 /**
- * @author xiaoniao
- * @date 2023/2/17 13:32
+ * @author Nah
+ * @date 2025/12/17 13:32
  */
 public interface BookService extends IService<Book> {
     //添加书本

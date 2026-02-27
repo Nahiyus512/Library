@@ -3,8 +3,8 @@ package com.wkc.library.common;
 import lombok.Data;
 
 /**
- * @author xiaoniao
- * @date 2024/5/26 16:01
+ * @author Nah
+ * @date 2025/12/26 16:01
  * @desc 这个类用于收集分页的数据
  */
 @Data

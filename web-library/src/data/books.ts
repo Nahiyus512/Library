@@ -140,7 +140,7 @@ export const books: BookItem[] = [
     title: "Life 3.0", 
     titleCN: "生命3.0", 
     quote: "生命是自我复制的信息处理系统。", 
-    author: "迈克斯·泰格马克", 
+    author: "麦克斯·泰格马克", 
     categories: ["科幻"], 
     colorTheme: "#000000",
     textColor: "#FFFFFF",

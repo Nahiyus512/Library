@@ -9,7 +9,7 @@
     </select>
 
     <insert id="logon" parameterType="com.wkc.library.entity.User">
-        insert into user(name,password,age,address) values(#{user.name},#{user.password},#{user.age},#{user.address})
+        insert into user(name,password) values(#{user.name},#{user.password})
     </insert>
 
     <select id="selectByName" resultType="com.wkc.library.entity.User">
@@ -17,7 +17,7 @@
     </select>
 
     <update id="updateInfo" parameterType="com.wkc.library.entity.User">
-        update user set name = #{user.name},password = #{user.password},age = #{user.age},address = #{user.address} where id = #{user.id}
+        update user set name = #{user.name},password = #{user.password} where id = #{user.id}
     </update>
 
 

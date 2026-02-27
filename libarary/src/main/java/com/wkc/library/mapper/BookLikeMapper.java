@@ -5,7 +5,7 @@ import com.wkc.library.entity.BookLike;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
- * @author TraeAI
+ * @author Nah
  * @date 2025/12/18
  */
 @Mapper

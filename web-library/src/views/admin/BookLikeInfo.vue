@@ -1,5 +1,5 @@
 <template>
-  <div class="page-container">
+  <div class="book-like-container">
     <div class="page-header">
       <div class="header-left">
         <h2 class="page-title">书架管理</h2>
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div class="content-container">
+    <div class="content-card">
       <el-table :data="tableData" style="width: 100%; flex: 1;" height="100%" stripe border>
         <el-table-column type="expand">
           <template #default="props">
@@ -22,16 +22,16 @@
                 <el-table-column prop="bookName" label="图书名称" min-width="200" />
                 <el-table-column prop="likeLevel" label="状态" width="120" align="center">
                   <template #default="scope">
-                    <el-tag v-if="scope.row.likeLevel === 2" type="success">喜欢💗</el-tag>
-                    <el-tag v-else-if="scope.row.likeLevel === 1" type="warning">还行👌</el-tag>
-                    <el-tag v-else type="info">不行🙅‍♀️</el-tag>
+                    <el-tag v-if="scope.row.likeLevel === 2" type="success" size="small">喜欢💗</el-tag>
+                    <el-tag v-else-if="scope.row.likeLevel === 1" type="warning" size="small">还行👌</el-tag>
+                    <el-tag v-else type="info" size="small">不行🙅‍♀️</el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column label="操作" width="120" align="center">
                   <template #default="scope">
                     <el-popconfirm title="确定要删除这条记录吗？" @confirm="handleDelete(scope.row)">
                       <template #reference>
-                        <el-button type="danger" link>
+                        <el-button type="danger" link size="small">
                           <el-icon><Delete /></el-icon> 删除
                         </el-button>
                       </template>
@@ -45,7 +45,7 @@
         <el-table-column prop="userName" label="用户名" />
         <el-table-column label="收藏数量" width="120" align="center">
           <template #default="scope">
-            <el-tag effect="plain" round>{{ scope.row.books.length }} 本</el-tag>
+            <el-tag effect="plain" round type="info" style="color: #000; border-color: #000;">{{ scope.row.books.length }} 本</el-tag>
           </template>
         </el-table-column>
       </el-table>
@@ -109,49 +109,48 @@ const handleDelete = async (row: any) => {
 }
 </script>
 
-<style scoped>
-.page-container {
-  padding: 20px;
+<style lang="scss" scoped>
+.book-like-container {
+  padding: 24px;
+  background-color: #f5f7fa;
   height: 100%;
   display: flex;
   flex-direction: column;
-  background-color: #f5f7fa;
-  box-sizing: border-box;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-}
-
-.page-title {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.page-subtitle {
-  display: block;
-  margin-top: 5px;
-  color: #909399;
-  font-size: 14px;
-}
-
-.content-container {
-  flex: 1;
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-shrink: 0;
+
+    .header-left {
+      .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0;
+        margin-bottom: 8px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+        color: #909399;
+      }
+    }
+  }
+
+  .content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 }
 </style>

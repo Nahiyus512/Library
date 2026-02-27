@@ -10,8 +10,8 @@ import java.util.Properties;
 import com.google.code.kaptcha.Constants;
 
 /**
- * @author xiaoniao
- * @date 2024/5/30 19:45
+ * @author Nah
+ * @date 2025/12/30 19:45
  * @desc 验证码
  */
 @Configuration

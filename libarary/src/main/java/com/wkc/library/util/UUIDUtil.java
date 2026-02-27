@@ -5,8 +5,8 @@ import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 /**
- * @author xiaoniao
- * @date 2024/5/31 14:40
+ * @author Nah
+ * @date 2025/12/31 14:40
  */
 public class UUIDUtil {
     public static String generateUUID() {

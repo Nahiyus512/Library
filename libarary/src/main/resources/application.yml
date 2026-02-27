@@ -8,6 +8,6 @@ spring:thymeleaf:cache: false
 
 spring:
   profiles:
-    active: rong
+    active: nah
 
 

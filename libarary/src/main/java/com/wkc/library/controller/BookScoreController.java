@@ -20,8 +20,8 @@ import java.util.List;
 
 
 /**
- * @author xiaoniao
- * @date 2023/4/10 16:00
+ * @author Nah
+ * @date 2025/12/10 16:00
  */
 @RequestMapping("/bookScore")
 @RestController

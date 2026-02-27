@@ -9,8 +9,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @author xiaoniao
- * @date 2024/6/1 17:18
+ * @author Nah
+ * @date 2025/12/1 17:18
  */
 @ControllerAdvice
 public class GlobalException {
@@ -18,9 +18,9 @@ public class GlobalException {
     @ExceptionHandler(MyException.class)
     @ResponseBody
     public R<Map<String,Object>> myException(MyException e) {
-        Map<String,Object> map = new HashMap<>();
-        map.put("code",e.getCode());
-        map.put("msg",e.getMessage());
-        return R.success(map);
+        R<Map<String, Object>> r = new R<>();
+        r.setCode(Integer.valueOf(e.getCode()));
+        r.setMsg(e.getMessage());
+        return r;
     }
 }

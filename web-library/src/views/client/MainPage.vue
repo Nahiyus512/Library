@@ -207,7 +207,7 @@ const prepareBatch = () => {
     id: -1 - loopCount.value, // unique negative ID
     title: 'Interactive Widget',
     titleCN: 'Interactive Widget',
-    author: '',
+    author: 'System',
     quote: '',
     categories: [],
     colorTheme: '#fff',

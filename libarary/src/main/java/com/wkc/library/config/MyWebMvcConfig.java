@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * @author xiaoniao
- * @date 2024/5/30 12:37
+ * @author Nah
+ * @date 2025/12/30 12:37
  */
 @Configuration
 public class MyWebMvcConfig implements WebMvcConfigurer {

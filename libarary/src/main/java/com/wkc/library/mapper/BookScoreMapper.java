@@ -10,8 +10,8 @@ import java.util.List;
 
 
 /**
- * @author xiaoniao
- * @date 2023/4/11 13:13
+ * @author Nah
+ * @date 2025/12/11 13:13
  */
 @Mapper
 public interface BookScoreMapper extends BaseMapper<BookScore> {

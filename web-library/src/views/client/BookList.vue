@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="top-bar">
       <div class="search-wrapper">
@@ -14,7 +14,7 @@
             <el-icon><Search /></el-icon>
           </template>
         </el-input>
-        <button class="action-btn primary search-btn" @click="handleSearch">搜索</button>
+        <el-button color="#000" class="search-btn" @click="handleSearch">搜索</el-button>
       </div>
     </div>
 
@@ -50,7 +50,6 @@
         layout="prev, pager, next"
         :total="pageInfo.allNum"
         @current-change="handleCurrentChange"
-        background
         class="minimal-pagination"
       />
     </div>
@@ -134,22 +133,11 @@ const handleMouseLeave = (e: MouseEvent) => {
 const bookData = reactive({
   bookId: '',
   bookName: '',
-  bookPrice: '',
   bookPublic: '',
   bookClassify: '',
   bookImage: '',
   bookImge: '',
   bookDesc: '',
-  bookNum: 0
-})
-
-const borrowData = reactive({
-  userName: '',
-  bookId: '',
-  bookName: '',
-  borrowTime: '',
-  beginTime: '',
-  endTime: ''
 })
 
 const tableData = ref([])
@@ -160,7 +148,6 @@ onMounted(async () => {
   }
   getBook()
   let username = cookie.get('username')
-  borrowData.userName = username
   
   const userId = cookie.get('userId')
   if (userId) {
@@ -192,7 +179,6 @@ const clickBook = (book: any) => {
   bookData.bookName = book.bookName
   bookData.bookPublic = book.bookPublic
   bookData.bookClassify = book.bookClassify
-  bookData.bookNum = book.bookNum
   bookData.bookAuthor = book.bookAuthor || 'Unknown' // Pass author
   centerDialogVisible.value = true
 
@@ -250,7 +236,7 @@ const borrow = async () => {
       console.log(e)
     }
   } else {
-    ElMessage.error("借书失败")
+    ElMessage.error("鍊熶功澶辫触")
   }
 }
 
@@ -304,7 +290,7 @@ const inputScore = async () => {
 }
 
 .top-bar {
-  padding: 20px 20px 0;
+  padding: 20px 20px 8px;
   display: flex;
   justify-content: center;
 }
@@ -313,16 +299,61 @@ const inputScore = async () => {
   display: flex;
   gap: 10px;
   width: 100%;
-  max-width: 500px;
+  max-width: 560px;
 }
 
 .search-input {
   flex: 1;
+  --el-input-height: 32px;
+}
+
+.search-input :deep(.el-input__wrapper) {
+  min-height: 32px !important;
+  padding: 0 12px !important;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px #dcdfe6 inset;
+  transition: box-shadow 0.2s ease;
+}
+
+.search-input :deep(.el-input__inner) {
+  height: 32px;
+  line-height: 32px;
+}
+
+.search-input :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #c0c4cc inset;
+}
+
+.search-input :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+}
+
+.search-btn {
+  padding: 6px 18px;
+  border-radius: 10px;
+  font-weight: 600;
+  background: #000;
+  border-color: #000;
+  color: #fff;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.search-btn:hover,
+.search-btn:focus-visible {
+  background: #fff;
+  border-color: #000;
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.search-btn:active {
+  transform: translateY(0);
 }
 
 .scroll-container {
   flex: 1;
-  overflow: hidden;
+  overflow-y: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -332,9 +363,8 @@ const inputScore = async () => {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 15px;
-  overflow: hidden;
+  gap: 20px;
+  padding-bottom: 20px;
 }
 
 .book-card {
@@ -344,7 +374,6 @@ const inputScore = async () => {
   transition: transform 0.3s ease;
   height: 100%;
   min-height: 0;
-  justify-content: center;
 }
 
 .book-card:hover {
@@ -352,11 +381,12 @@ const inputScore = async () => {
 }
 
 .book-cover-wrapper {
-  flex: 1;
   width: 100%;
-  background: transparent;
+  aspect-ratio: 2/3;
+  background: #f5f7fa;
+  border-radius: 4px;
   overflow: hidden;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.05);
   transition: box-shadow 0.3s ease;
   display: flex;
@@ -371,11 +401,9 @@ const inputScore = async () => {
 }
 
 .book-cover {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   transition: transform 0.5s ease;
 }
 
@@ -397,8 +425,35 @@ const inputScore = async () => {
   padding: 20px;
   flex-shrink: 0;
   border-top: 1px solid rgba(0,0,0,0.05);
-  background-color: #fff;
+  background: transparent;
+}
+
+.minimal-pagination :deep(.btn-prev),
+.minimal-pagination :deep(.btn-next),
+.minimal-pagination :deep(.el-pager li) {
+  background: transparent !important;
+  color: #000 !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.minimal-pagination :deep(.el-pager li.is-active) {
+  color: #000 !important;
+  font-weight: 700;
+}
+
+.minimal-pagination :deep(.el-pager li:hover),
+.minimal-pagination :deep(.btn-prev:hover),
+.minimal-pagination :deep(.btn-next:hover) {
+  color: #000 !important;
+}
+
+.minimal-pagination :deep(.btn-prev:disabled),
+.minimal-pagination :deep(.btn-next:disabled) {
+  color: #909399 !important;
 }
 
 /* Dialog Styles Removed as they are now in the component */
 </style>
+
+

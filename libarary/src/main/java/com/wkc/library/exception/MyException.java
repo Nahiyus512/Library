@@ -3,8 +3,8 @@ package com.wkc.library.exception;
 import lombok.Getter;
 
 /**
- * @author xiaoniao
- * @date 2024/6/1 17:15
+ * @author Nah
+ * @date 2025/12/1 17:15
  */
 @Getter
 public class MyException extends RuntimeException{
