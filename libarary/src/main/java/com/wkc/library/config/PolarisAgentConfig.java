@@ -12,12 +12,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class XiaozhiAgentConfig {
+public class PolarisAgentConfig {
     @Autowired
     private MongoChatMemoryStore mongoChatMemoryStore;
 
     @Bean
-    ChatMemoryProvider chatMemoryProviderXiaozhi() {
+    ChatMemoryProvider chatMemoryProviderPolaris() {
         return memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
                 .maxMessages(20)
@@ -31,7 +31,7 @@ private EmbeddingStore embeddingStore;
     @Autowired
     private EmbeddingModel embeddingModel;
     @Bean
-    ContentRetriever contentRetrieverXiaozhiPincone() {
+    ContentRetriever contentRetrieverPolarisPinecone() {
 // 创建一个 EmbeddingStoreContentRetriever 对象，用于从嵌入存储中检索内容
         return EmbeddingStoreContentRetriever
                 .builder()

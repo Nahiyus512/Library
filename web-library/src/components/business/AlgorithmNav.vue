@@ -59,40 +59,47 @@ const navRef = ref<HTMLElement | null>(null);
 const hoveredIndex = ref(-1);
 
 const algorithms = [
-  { 
-    name: '用户协同', 
+  {
+    name: '用户协同',
     path: 'user_cf',
     color: '#B8A99A',
     textColor: '#000',
-    iconPath: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75' 
+    iconPath: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75'
   },
-  { 
-    name: '物品协同', 
+  {
+    name: '物品协同',
     path: 'item_cf',
     color: '#4E5A6A',
     textColor: '#fff',
-    iconPath: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' 
+    iconPath: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
   },
-  { 
-    name: '内容推荐', 
+  {
+    name: '内容推荐',
     path: 'content_based',
     color: '#6C7A89',
     textColor: '#fff',
-    iconPath: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' 
+    iconPath: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z'
   },
-  { 
-    name: '关联规则', 
+  {
+    name: '关联规则',
     path: 'association_rule',
     color: '#8C6D62',
     textColor: '#fff',
-    iconPath: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' 
+    iconPath: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'
   },
-  { 
-    name: '隐语义', 
+  {
+    name: '隐语义',
     path: 'lfm',
     color: '#5C6473',
     textColor: '#fff',
-    iconPath: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12' 
+    iconPath: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12'
+  },
+  {
+    name: 'Agent协同',
+    path: 'agent',
+    color: '#2F6F5E',
+    textColor: '#fff',
+    iconPath: 'M12 2v5 M12 17v5 M4.93 4.93l3.54 3.54 M15.54 15.54l3.53 3.53 M2 12h5 M17 12h5 M4.93 19.07l3.54-3.53 M15.54 8.46l3.53-3.53'
   }
 ];
 

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="split-layout">
     <!-- Left Panel: Algorithm Navigation -->
     <div 
@@ -28,10 +28,10 @@
         <!-- Main Content Area -->
         <div class="content-area beige-grid">
           <!-- Return Button for Right Panel -->
-          <button class="return-btn" @click="expandLeftPanel">⇐</button>
+          <button class="return-btn" @click="expandLeftPanel">←</button>
 
           <div class="bg-watermark">RECOMMEND</div>
-          
+
           <div class="scroll-container expanded-padding">
             <router-view v-slot="{ Component }">
               <transition name="fade" mode="out-in">
@@ -238,8 +238,8 @@ onMounted(() => {
   cursor: pointer;
   transition: transform 0.1s;
   position: absolute;
-  top: 20px;
-  left: 20px;
+  top: 30px;
+  left: 30px;
   z-index: 20;
 }
 .return-btn:active {

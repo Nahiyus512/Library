@@ -10,11 +10,11 @@ import static dev.langchain4j.service.spring.AiServiceWiringMode.EXPLICIT;
         wiringMode = EXPLICIT,
 //        chatModel = "qwenChatModel",
         streamingChatModel = "qwenStreamingChatModel",
-        chatMemoryProvider = "chatMemoryProviderXiaozhi",
+        chatMemoryProvider = "chatMemoryProviderPolaris",
         tools = "selectBookTools",
-        contentRetriever = "contentRetrieverXiaozhiPincone"
+        contentRetriever = "contentRetrieverPolarisPinecone"
 )
-public interface XiaozhiAgent {
-    @SystemMessage(fromResource = "zhaozhi-prompt-template.txt")
+public interface PolarisAgent {
+    @SystemMessage(fromResource = "polaris-prompt-template.txt")
     Flux<String> chat(@MemoryId Long memoryId, @UserMessage String userMessage,@V("userId") String userId);
 }

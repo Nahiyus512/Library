@@ -3,7 +3,7 @@ package com.wkc.library.controller;
 
 import java.util.List;
 
-import com.wkc.library.assistant.XiaozhiAgent;
+import com.wkc.library.assistant.PolarisAgent;
 import com.wkc.library.bean.ChatForm;
 import com.wkc.library.bean.ChatMessages;
 import com.wkc.library.entity.R;
@@ -22,11 +22,11 @@ import reactor.core.publisher.Flux;
 
 
 @RestController
-@RequestMapping("/xiaozhi")
+@RequestMapping("/polaris")
 @CrossOrigin
-public class XiaozhiController {
+public class PolarisController {
     @Autowired
-    private XiaozhiAgent xiaozhiAgent;
+    private PolarisAgent polarisAgent;
 
     @Autowired
     private MongoChatMemoryStore mongoChatMemoryStore;
@@ -35,7 +35,7 @@ public class XiaozhiController {
     public Flux<String> chat(@RequestBody ChatForm chatForm, HttpServletRequest request) {
         try {
             mongoChatMemoryStore.bindUser(chatForm.getMemoryId(), chatForm.getUserId());
-            return xiaozhiAgent.chat(chatForm.getMemoryId(), chatForm.getMessage(),chatForm.getUserId());
+            return polarisAgent.chat(chatForm.getMemoryId(), chatForm.getMessage(),chatForm.getUserId());
         } catch (Exception e) {
             e.printStackTrace();
             return Flux.error(e);

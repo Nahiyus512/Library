@@ -25,8 +25,8 @@
           <!-- Header -->
           <div class="chat-header">
             <div class="header-left">
-              <span class="icon">🤖</span>
-              <span class="title">图书小智</span>
+              <span class="icon">🌟</span>
+              <span class="title">Polaris</span>
             </div>
             <button class="close-btn" @click="close">×</button>
           </div>
@@ -91,7 +91,7 @@ interface ChatSession {
 const messages = ref<Message[]>([
   {
     role: 'system',
-    content: '你好！我是图书小智，你的智能图书助理。<br>我可以帮你找书、推荐书，或者聊聊你感兴趣的话题。'
+    content: '你好！我是 Polaris，你的智能图书助理。<br>我可以帮你找书、推荐书，或者聊聊你感兴趣的话题。'
   }
 ]);
 
@@ -200,7 +200,7 @@ const startNewChat = () => {
   messages.value = [
     {
       role: 'system',
-      content: '你好！我是图书小智，你的智能图书助理。<br>我可以帮你找书、推荐书，或者聊聊你感兴趣的话题。'
+      content: '你好！我是 Polaris，你的智能图书助理。<br>我可以帮你找书、推荐书，或者聊聊你感兴趣的话题。'
     }
   ];
 };
@@ -208,7 +208,7 @@ const startNewChat = () => {
 const fetchHistory = async () => {
   userId.value = cookie.get('userId') || '10001';
   try {
-    const res = await fetch(`http://localhost:8080/xiaozhi/history?userId=${userId.value}`);
+    const res = await fetch(`http://localhost:8080/polaris/history?userId=${userId.value}`);
     const data = await res.json();
     if (data.code === 200 && data.data) {
        // Ensure data.data is an array
@@ -247,7 +247,7 @@ const sendMessage = async () => {
   let currentResponse = '';
 
   try {
-    await fetchEventSource('http://localhost:8080/xiaozhi/chat', {
+    await fetchEventSource('http://localhost:8080/polaris/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
