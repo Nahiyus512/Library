@@ -1,6 +1,8 @@
 package com.wkc.library.service.agent.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.wkc.library.controller.vo.agent.AgentProfileInsightResponse;
+import com.wkc.library.controller.vo.agent.AgentRecommendExplanation;
 import com.wkc.library.controller.vo.agent.AgentRecommendItem;
 import com.wkc.library.controller.vo.agent.AgentRecommendResponse;
 import com.wkc.library.entity.Book;
@@ -13,14 +15,19 @@ import com.wkc.library.mapper.BookScoreMapper;
 import com.wkc.library.service.BookScoreService;
 import com.wkc.library.service.agent.AgentRecommendService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,6 +36,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -68,9 +76,10 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
             strategyBooks.put(strategy, books == null ? Collections.emptyList() : books);
         }
 
-        List<AgentRecommendItem> merged = rankFusion(strategyBooks, weights, intent, limit);
+        ExplanationContext explanationContext = buildExplanationContext(userId);
+        List<AgentRecommendItem> merged = rankFusion(strategyBooks, weights, intent, limit, explanationContext);
         if (merged.isEmpty()) {
-            merged = fallbackByPopularity(limit, intent);
+            merged = fallbackByPopularity(limit, intent, explanationContext);
         }
 
         List<String> decisionPath = buildDecisionPath(intent, profile, weights, !merged.isEmpty());
@@ -86,6 +95,130 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
 
         String traceId = saveTrace(userId, normalizedDemand, intent, weights, decisionPath, merged);
         response.setDecisionTraceId(traceId);
+        return response;
+    }
+
+    @Override
+    public AgentDecisionTrace getDecisionTrace(String traceId) {
+        if (!StringUtils.hasText(traceId)) {
+            return null;
+        }
+        return mongoTemplate.findById(traceId, AgentDecisionTrace.class);
+    }
+
+    @Override
+    public List<AgentDecisionTrace> getLatestDecisionTraces(Integer userId, Integer limit) {
+        if (userId == null) {
+            return Collections.emptyList();
+        }
+        int safeLimit = (limit == null || limit <= 0) ? 3 : Math.min(limit, 10);
+        Query query = new Query();
+        query.addCriteria(Criteria.where("userId").is(userId));
+        query.with(Sort.by(Sort.Direction.DESC, "createdAt"));
+        query.limit(safeLimit);
+        return mongoTemplate.find(query, AgentDecisionTrace.class);
+    }
+
+    @Override
+    public AgentProfileInsightResponse getProfileInsight(Integer userId) {
+        AgentProfileInsightResponse response = new AgentProfileInsightResponse();
+        if (userId == null) {
+            response.setInterestCategoryDistribution(Collections.emptyMap());
+            response.setReadingActiveTrend(Collections.emptyList());
+            response.setScoreRangeDistribution(Collections.emptyMap());
+            response.setHistoryBehaviorStats(Collections.emptyMap());
+            return response;
+        }
+
+        List<BookLike> userLikes = bookLikeMapper.selectList(new LambdaQueryWrapper<BookLike>()
+                .eq(BookLike::getUserId, userId)
+                .ge(BookLike::getLikeLevel, 1));
+        List<BookScore> userScores = bookScoreMapper.selectList(new LambdaQueryWrapper<BookScore>()
+                .eq(BookScore::getUserId, userId));
+
+        Map<Integer, Book> bookById = loadBookMapByIds(userLikes.stream().map(BookLike::getBookId).collect(Collectors.toSet()));
+
+        Map<String, Integer> classCounter = new LinkedHashMap<>();
+        for (BookLike like : userLikes) {
+            Book book = bookById.get(like.getBookId());
+            for (String classify : splitClassify(book == null ? null : book.getBookClassify())) {
+                classCounter.merge(classify, 1, Integer::sum);
+            }
+        }
+        response.setInterestCategoryDistribution(normalizeDistribution(classCounter));
+
+        Map<String, Integer> trend = new TreeMap<>();
+        DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("yyyy-MM");
+        for (BookScore score : userScores) {
+            if (!StringUtils.hasText(score.getTime())) {
+                continue;
+            }
+            LocalDate d = parseDate(score.getTime());
+            if (d != null) {
+                trend.merge(d.format(monthFormatter), 1, Integer::sum);
+            }
+        }
+        for (BookLike like : userLikes) {
+            if (like.getCreateTime() == null) {
+                continue;
+            }
+            LocalDate d = like.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            trend.merge(d.format(monthFormatter), 1, Integer::sum);
+        }
+        List<Map<String, Object>> trendRows = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : trend.entrySet()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("period", entry.getKey());
+            row.put("count", entry.getValue());
+            trendRows.add(row);
+        }
+        response.setReadingActiveTrend(trendRows);
+
+        Map<String, Integer> scoreRange = new LinkedHashMap<>();
+        scoreRange.put("<=2", 0);
+        scoreRange.put("3", 0);
+        scoreRange.put("4", 0);
+        scoreRange.put(">=5", 0);
+        for (BookScore score : userScores) {
+            int value = score.getScore() == null ? 0 : score.getScore();
+            if (value <= 2) {
+                scoreRange.merge("<=2", 1, Integer::sum);
+            } else if (value == 3) {
+                scoreRange.merge("3", 1, Integer::sum);
+            } else if (value == 4) {
+                scoreRange.merge("4", 1, Integer::sum);
+            } else {
+                scoreRange.merge(">=5", 1, Integer::sum);
+            }
+        }
+        response.setScoreRangeDistribution(scoreRange);
+
+        LocalDate since = LocalDate.now().minusDays(30);
+        int recentScores = 0;
+        for (BookScore score : userScores) {
+            LocalDate d = parseDate(score.getTime());
+            if (d != null && !d.isBefore(since)) {
+                recentScores++;
+            }
+        }
+        int recentLikes = 0;
+        for (BookLike like : userLikes) {
+            if (like.getCreateTime() == null) {
+                continue;
+            }
+            LocalDate d = like.getCreateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            if (!d.isBefore(since)) {
+                recentLikes++;
+            }
+        }
+        Map<String, Integer> stats = new LinkedHashMap<>();
+        stats.put("totalScores", userScores.size());
+        stats.put("totalLikes", userLikes.size());
+        stats.put("distinctInterestCategories", classCounter.size());
+        stats.put("recent30dScores", recentScores);
+        stats.put("recent30dLikes", recentLikes);
+        response.setHistoryBehaviorStats(stats);
+
         return response;
     }
 
@@ -230,7 +363,8 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
     private List<AgentRecommendItem> rankFusion(Map<String, List<Book>> strategyBooks,
                                                 Map<String, Double> weights,
                                                 String intent,
-                                                int topN) {
+                                                int topN,
+                                                ExplanationContext explanationContext) {
         Map<Integer, Double> scoreMap = new HashMap<>();
         Map<Integer, Book> bookMap = new HashMap<>();
         Map<Integer, Set<String>> hits = new HashMap<>();
@@ -264,8 +398,9 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
                     Book book = bookMap.get(entry.getKey());
                     List<String> hitStrategies = new ArrayList<>(hits.getOrDefault(entry.getKey(), Collections.emptySet()));
                     Collections.sort(hitStrategies);
-                    String reason = "intent=" + intent + ", strategies=" + String.join("+", hitStrategies);
-                    return new AgentRecommendItem(book, round3(entry.getValue()), reason, hitStrategies);
+                    AgentRecommendExplanation explanation = buildExplanation(book, hitStrategies, intent, explanationContext);
+                    String reason = explanation.getMainReason();
+                    return new AgentRecommendItem(book, round3(entry.getValue()), reason, hitStrategies, explanation);
                 })
                 .collect(Collectors.toList());
     }
@@ -294,7 +429,9 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         return 0.01;
     }
 
-    private List<AgentRecommendItem> fallbackByPopularity(int topN, String intent) {
+    private List<AgentRecommendItem> fallbackByPopularity(int topN,
+                                                          String intent,
+                                                          ExplanationContext explanationContext) {
         List<Book> allBooks = bookMapper.selectList(null);
         if (allBooks == null || allBooks.isEmpty()) {
             return Collections.emptyList();
@@ -314,8 +451,9 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
                 .map(book -> new AgentRecommendItem(
                         book,
                         round3(0.2 + intentBoost(intent, book)),
-                        "fallback_popularity",
-                        Collections.singletonList("fallback_popularity")
+                        "冷启动热度兜底，匹配当前阅读目标",
+                        Collections.singletonList("fallback_popularity"),
+                        buildExplanation(book, Collections.singletonList("fallback_popularity"), intent, explanationContext)
                 ))
                 .collect(Collectors.toList());
     }
@@ -366,6 +504,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
             row.put("score", item.getScore());
             row.put("reason", item.getReason());
             row.put("hitStrategies", item.getHitStrategies());
+            row.put("explanation", item.getExplanation());
             return row;
         }).collect(Collectors.toList());
         trace.setRecommendSnapshot(snapshot);
@@ -380,5 +519,232 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
 
     private double round3(double value) {
         return Math.round(value * 1000.0) / 1000.0;
+    }
+
+    private ExplanationContext buildExplanationContext(Integer userId) {
+        ExplanationContext context = new ExplanationContext();
+        if (userId == null) {
+            context.likeClassShare = Collections.emptyMap();
+            context.highScoreClassShare = Collections.emptyMap();
+            context.popularityByBook = Collections.emptyMap();
+            context.maxPopularity = 1;
+            return context;
+        }
+
+        List<BookLike> userLikes = bookLikeMapper.selectList(new LambdaQueryWrapper<BookLike>()
+                .eq(BookLike::getUserId, userId)
+                .ge(BookLike::getLikeLevel, 1));
+        List<BookScore> userScores = bookScoreMapper.selectList(new LambdaQueryWrapper<BookScore>()
+                .eq(BookScore::getUserId, userId));
+
+        Set<Integer> likedBookIds = userLikes.stream().map(BookLike::getBookId).collect(Collectors.toSet());
+        Set<Integer> highScoreBookIds = userScores.stream()
+                .filter(s -> s.getScore() != null && s.getScore() >= 4)
+                .map(BookScore::getBookId)
+                .collect(Collectors.toSet());
+
+        Set<Integer> unionBookIds = new HashSet<>(likedBookIds);
+        unionBookIds.addAll(highScoreBookIds);
+        Map<Integer, Book> books = loadBookMapByIds(unionBookIds);
+
+        Map<String, Integer> likeClassCounter = new HashMap<>();
+        for (Integer bookId : likedBookIds) {
+            for (String classify : splitClassify(books.get(bookId) == null ? null : books.get(bookId).getBookClassify())) {
+                likeClassCounter.merge(classify, 1, Integer::sum);
+            }
+        }
+        context.likeClassShare = normalizeDistribution(likeClassCounter);
+
+        Map<String, Integer> highScoreClassCounter = new HashMap<>();
+        for (Integer bookId : highScoreBookIds) {
+            for (String classify : splitClassify(books.get(bookId) == null ? null : books.get(bookId).getBookClassify())) {
+                highScoreClassCounter.merge(classify, 1, Integer::sum);
+            }
+        }
+        context.highScoreClassShare = normalizeDistribution(highScoreClassCounter);
+
+        Map<Integer, Integer> popularity = new HashMap<>();
+        List<BookLike> globalLikes = bookLikeMapper.selectList(new LambdaQueryWrapper<BookLike>().ge(BookLike::getLikeLevel, 1));
+        int max = 1;
+        for (BookLike like : globalLikes) {
+            int value = popularity.merge(like.getBookId(), 1, Integer::sum);
+            if (value > max) {
+                max = value;
+            }
+        }
+        context.popularityByBook = popularity;
+        context.maxPopularity = max;
+        return context;
+    }
+
+    private AgentRecommendExplanation buildExplanation(Book book,
+                                                       List<String> hitStrategies,
+                                                       String intent,
+                                                       ExplanationContext context) {
+        AgentRecommendExplanation explanation = new AgentRecommendExplanation();
+        List<String> classifies = splitClassify(book == null ? null : book.getBookClassify());
+        String classifyText = String.join(" / ", classifies);
+
+        double historyPref = avgClassShare(context.highScoreClassShare, classifies);
+        double likeShare = avgClassShare(context.likeClassShare, classifies);
+        double similarUser = collaborativeSignal(hitStrategies);
+        double contentSim = contentSimilaritySignal(intent, classifies);
+        double popularity = popularitySignal(book, context);
+
+        Map<String, Double> raw = new LinkedHashMap<>();
+        raw.put("historyPref", historyPref);
+        raw.put("likeCategoryShare", likeShare);
+        raw.put("similarUserBehavior", similarUser);
+        raw.put("contentSimilarity", contentSim);
+        raw.put("popularity", popularity);
+        Map<String, Double> normalized = normalizeScores(raw);
+        explanation.setWeightContributions(normalized);
+
+        List<String> keyFeatures = new ArrayList<>();
+        keyFeatures.add("阅读目标：" + intent);
+        keyFeatures.add("图书分类：" + classifyText);
+        keyFeatures.add("命中策略：" + (hitStrategies == null || hitStrategies.isEmpty() ? "fallback_popularity" : String.join("+", hitStrategies)));
+        if (normalized.getOrDefault("historyPref", 0.0) >= 0.2) {
+            keyFeatures.add("与你高分历史偏好高度一致");
+        }
+        if (normalized.getOrDefault("similarUserBehavior", 0.0) >= 0.2) {
+            keyFeatures.add("相似用户行为支持该推荐");
+        }
+        explanation.setKeyFeatures(keyFeatures);
+
+        String mainReason = "该书与当前目标" + intent + "匹配，综合了历史偏好、相似用户行为、内容相关性和热度信号。";
+        explanation.setMainReason(mainReason);
+        return explanation;
+    }
+
+    private double collaborativeSignal(List<String> hitStrategies) {
+        if (hitStrategies == null || hitStrategies.isEmpty()) {
+            return 0.1;
+        }
+        int hit = 0;
+        for (String strategy : hitStrategies) {
+            if ("user_cf".equals(strategy) || "item_cf".equals(strategy) || "association_rule".equals(strategy)) {
+                hit++;
+            }
+        }
+        return Math.min(1.0, hit / 2.0);
+    }
+
+    private double contentSimilaritySignal(String intent, List<String> classifies) {
+        if (classifies == null || classifies.isEmpty()) {
+            return 0.1;
+        }
+        String joined = String.join(" ", classifies).toLowerCase(Locale.ROOT);
+        if ("learning".equals(intent) || "professional".equals(intent)) {
+            if (joined.contains("knowledge") || joined.contains("history") || joined.contains("philosophy")) {
+                return 0.9;
+            }
+            return 0.4;
+        }
+        if ("leisure".equals(intent)) {
+            if (joined.contains("classic") || joined.contains("fiction") || joined.contains("sci")) {
+                return 0.9;
+            }
+            return 0.4;
+        }
+        return 0.6;
+    }
+
+    private double popularitySignal(Book book, ExplanationContext context) {
+        if (book == null || book.getBookId() == null || context.maxPopularity <= 0) {
+            return 0.0;
+        }
+        int heat = context.popularityByBook.getOrDefault(book.getBookId(), 0);
+        return round3((double) heat / context.maxPopularity);
+    }
+
+    private Map<String, Double> normalizeDistribution(Map<String, Integer> counter) {
+        if (counter == null || counter.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        double total = counter.values().stream().mapToInt(Integer::intValue).sum();
+        if (total <= 0) {
+            return Collections.emptyMap();
+        }
+        Map<String, Double> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Integer> entry : counter.entrySet()) {
+            result.put(entry.getKey(), round3(entry.getValue() / total));
+        }
+        return result;
+    }
+
+    private Map<String, Double> normalizeScores(Map<String, Double> values) {
+        if (values == null || values.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        double sum = values.values().stream().mapToDouble(Double::doubleValue).sum();
+        if (sum <= 0) {
+            return values;
+        }
+        Map<String, Double> normalized = new LinkedHashMap<>();
+        for (Map.Entry<String, Double> entry : values.entrySet()) {
+            normalized.put(entry.getKey(), round3(entry.getValue() / sum));
+        }
+        return normalized;
+    }
+
+    private Map<Integer, Book> loadBookMapByIds(Set<Integer> bookIds) {
+        if (bookIds == null || bookIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        List<Book> books = bookMapper.selectList(new LambdaQueryWrapper<Book>().in(Book::getBookId, bookIds));
+        return books.stream().collect(Collectors.toMap(Book::getBookId, b -> b, (a, b) -> a));
+    }
+
+    private String normalizeClassify(String classify) {
+        return StringUtils.hasText(classify) ? classify : "unknown";
+    }
+
+    private List<String> splitClassify(String classify) {
+        String normalized = normalizeClassify(classify);
+        if ("unknown".equals(normalized)) {
+            return Collections.singletonList("unknown");
+        }
+        String[] tokens = normalized.split("[,，/|;；、]");
+        List<String> result = new ArrayList<>();
+        for (String token : tokens) {
+            String trimmed = token == null ? "" : token.trim();
+            if (StringUtils.hasText(trimmed)) {
+                result.add(trimmed);
+            }
+        }
+        if (result.isEmpty()) {
+            result.add(normalized);
+        }
+        return result;
+    }
+
+    private double avgClassShare(Map<String, Double> shareMap, List<String> classifies) {
+        if (shareMap == null || shareMap.isEmpty() || classifies == null || classifies.isEmpty()) {
+            return 0.0;
+        }
+        double sum = 0.0;
+        for (String classify : classifies) {
+            sum += shareMap.getOrDefault(classify, 0.0);
+        }
+        return round3(sum / classifies.size());
+    }
+
+    private LocalDate parseDate(String text) {
+        if (!StringUtils.hasText(text)) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(text.trim());
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static class ExplanationContext {
+        private Map<String, Double> likeClassShare;
+        private Map<String, Double> highScoreClassShare;
+        private Map<Integer, Integer> popularityByBook;
+        private int maxPopularity;
     }
 }

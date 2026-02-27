@@ -20,6 +20,7 @@ import ContentBased from "@/views/recommend/ContentBased.vue"
 import AssociationRule from "@/views/recommend/AssociationRule.vue"
 import LFM from "@/views/recommend/LFM.vue"
 import AgentRecommend from "@/views/recommend/AgentRecommend.vue"
+import DecisionTrace from "@/views/recommend/DecisionTrace.vue"
 import Suggest from "@/views/client/Suggest.vue"
 import UserCenter from "@/views/client/UserCenter.vue"
 import CategoryPlaceholder from "@/views/client/CategoryPlaceholder.vue"
@@ -178,6 +179,11 @@ const router = createRouter({
                     path: "/suggest",
                     name: "suggest",
                     component: Suggest
+                },
+                {
+                    path: "/decisionTrace",
+                    name: "decision_trace",
+                    component: DecisionTrace
                 }
             ]
         },

@@ -15,4 +15,5 @@ public class AgentRecommendItem {
     private Double score;
     private String reason;
     private List<String> hitStrategies;
+    private AgentRecommendExplanation explanation;
 }

@@ -9,6 +9,15 @@
         <el-select v-model="selectedGoal" placeholder="请选择阅读目标" class="goal-select">
           <el-option v-for="item in goalOptions" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
+        <el-button
+          class="recommend-btn"
+          type="primary"
+          :loading="detailLoading"
+          :disabled="!result?.decisionTraceId"
+          @click="openDecisionTrace"
+        >
+          查看决策详情
+        </el-button>
         <el-button class="recommend-btn" type="primary" :loading="loading" @click="runRecommend">更新推荐</el-button>
       </div>
     </div>
@@ -43,7 +52,9 @@
       <div class="right-panel card">
         <div class="right-head">
           <span>推荐结果</span>
-          <span class="time">{{ lastUpdated || '未刷新' }}</span>
+          <div class="head-actions">
+            <span class="time">{{ lastUpdated || '未刷新' }}</span>
+          </div>
         </div>
 
         <div v-if="result && result.recommendedBooks.length > 0" class="book-grid">
@@ -71,6 +82,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useCookies } from '@vueuse/integrations/useCookies'
+import { useRouter } from 'vue-router'
 import myAxios from '@/api/index'
 import CssBookCover from '@/components/common/CssBookCover.vue'
 import BookDetailModal from '@/components/business/BookDetailModal.vue'
@@ -86,6 +98,11 @@ interface RecommendItem {
   score: number
   reason: string
   hitStrategies: string[]
+  explanation?: {
+    mainReason: string
+    keyFeatures: string[]
+    weightContributions: Record<string, number>
+  }
 }
 
 interface AgentResponse {
@@ -99,7 +116,9 @@ interface AgentResponse {
 }
 
 const cookies = useCookies()
+const router = useRouter()
 const loading = ref(false)
+const detailLoading = ref(false)
 const userId = ref<number | null>(null)
 const result = ref<AgentResponse | null>(null)
 const showDialog = ref(false)
@@ -143,8 +162,30 @@ const strategyDescText = (_desc: string) => {
 }
 
 const localReason = (item: RecommendItem) => {
+  if (item.explanation?.mainReason) {
+    return item.explanation.mainReason
+  }
   const strategies = item.hitStrategies.map(strategyText).join(' + ')
   return `命中策略：${strategies || '混合'}`
+}
+
+const openDecisionTrace = async () => {
+  if (!result.value?.decisionTraceId) {
+    ElMessage.warning('暂无可查看的决策记录')
+    return
+  }
+  try {
+    detailLoading.value = true
+    await router.push({
+      path: '/decisionTrace',
+      query: {
+        traceId: result.value.decisionTraceId,
+        userId: userId.value ? String(userId.value) : ''
+      }
+    })
+  } finally {
+    detailLoading.value = false
+  }
 }
 
 const loadUser = async () => {
@@ -320,6 +361,7 @@ onMounted(async () => {
   overflow: hidden;
 }
 .right-head { display: flex; justify-content: space-between; font-weight: 600; }
+.head-actions { display: flex; align-items: center; gap: 8px; }
 .time { color: #697369; font-size: 12px; }
 
 .book-grid {
