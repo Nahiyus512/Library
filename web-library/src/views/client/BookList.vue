@@ -84,7 +84,7 @@ const ratingData = reactive({
 const centerDialogVisible = ref(false)
 
 const pageInfo = reactive({
-  pageSize: 24,
+  pageSize: 16,
   pageNum: 1,
   allNum: 20,
   bookName: ''
@@ -353,7 +353,7 @@ const inputScore = async () => {
 
 .scroll-container {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -363,8 +363,10 @@ const inputScore = async () => {
   flex: 1;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 20px;
-  padding-bottom: 20px;
+  height: 100%;
+  overflow: hidden;
 }
 
 .book-card {

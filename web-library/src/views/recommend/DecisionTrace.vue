@@ -6,8 +6,8 @@
         <p>查看当前策略、决策流程、推荐解释、策略调整记录和用户兴趣画像。</p>
       </div>
       <div class="ops">
-        <el-button plain @click="goBack">返回推荐页</el-button>
-        <el-button type="primary" :loading="loading" @click="reloadAll">刷新数据</el-button>
+        <el-button class="trace-btn trace-btn-back" @click="goBack">返回推荐页</el-button>
+        <el-button class="trace-btn trace-btn-refresh" :loading="loading" @click="reloadAll">刷新数据</el-button>
       </div>
     </div>
 
@@ -450,6 +450,42 @@ onBeforeUnmount(() => {
 .top h2 { margin: 0; font-size: 20px; }
 .top p { margin: 4px 0 0; color: #666; font-size: 13px; }
 .ops { display: flex; gap: 8px; }
+:deep(.trace-btn.el-button) {
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+:deep(.trace-btn-back.el-button) {
+  background: #fff;
+  border-color: #000;
+  color: #000;
+}
+:deep(.trace-btn-back.el-button:hover) {
+  background: #f5f5f5;
+  border-color: #000;
+  color: #000;
+}
+:deep(.trace-btn-refresh.el-button) {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+:deep(.trace-btn-refresh.el-button:hover) {
+  background: #fff;
+  border-color: #000;
+  color: #000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+:deep(.trace-btn-refresh.el-button:active) {
+  background: #111;
+  border-color: #111;
+  color: #fff;
+  transform: translateY(1px);
+}
+:deep(.trace-btn.el-button.is-loading),
+:deep(.trace-btn.el-button.is-disabled) {
+  opacity: 0.85;
+}
 .grid {
   min-height: 0;
   overflow: hidden;

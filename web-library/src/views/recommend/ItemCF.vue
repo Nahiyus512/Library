@@ -94,22 +94,30 @@ const openDetail = (book: any) => {
 
 <style scoped>
 .page-container {
-  padding: 40px;
+  padding: 28px 24px;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: #050510; /* Deep Space Background */
   background-image: 
     radial-gradient(circle at 50% 0%, #2a1b3d 0%, transparent 70%),
     linear-gradient(0deg, #050510 0%, #1a1a2e 100%);
   color: #fff;
   font-family: 'Montserrat', sans-serif;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
 }
 
 .header {
-  margin-bottom: 30px;
+  margin-bottom: 0;
   text-align: center;
   position: relative;
   z-index: 2;
+}
+.content-wrapper {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .page-title {
@@ -131,34 +139,27 @@ const openDetail = (book: any) => {
 
 .flow-layout {
   position: relative;
-  display: flex;
-  justify-content: center;
-  flex-wrap: nowrap;
-  gap: 60px; /* Wider gap for connector */
-  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 14px;
+  width: 100%;
   margin: 0 auto;
-  overflow-x: auto;
-  padding: 60px 0;
+  overflow: hidden;
+  padding: 8px 2px 24px;
+  align-content: start;
 }
 
 /* The neon stream line */
 .timeline-line {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #00f2ff, #bc13fe, transparent);
-  z-index: 0;
-  box-shadow: 0 0 15px rgba(188, 19, 254, 0.5);
+  display: none;
 }
 
 .flow-item {
   position: relative;
-  width: 260px;
-  flex-shrink: 0;
+  width: 100%;
   z-index: 1;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  min-width: 0;
 }
 
 .flow-item:hover {
@@ -167,18 +168,7 @@ const openDetail = (book: any) => {
 }
 
 .connector-dot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 16px;
-  height: 16px;
-  background: #000;
-  border: 3px solid #00f2ff;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  box-shadow: 0 0 10px #00f2ff;
-  transition: all 0.3s;
+  display: none;
 }
 
 .flow-item:hover .connector-dot {
@@ -189,24 +179,18 @@ const openDetail = (book: any) => {
 
 /* Stagger items up and down */
 .flow-item.left {
-  transform: translateY(-80px);
+  transform: none;
 }
 .flow-item.right {
-  transform: translateY(80px);
+  transform: none;
 }
 
-.flow-item.left:hover { transform: translateY(-90px) scale(1.05); }
-.flow-item.right:hover { transform: translateY(70px) scale(1.05); }
+.flow-item.left:hover { transform: scale(1.03); }
+.flow-item.right:hover { transform: scale(1.03); }
 
 /* Connecting lines to the main stream */
 .flow-item::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  width: 2px;
-  height: 80px;
-  background: linear-gradient(to bottom, #00f2ff, rgba(0,242,255,0.1));
-  z-index: -1;
+  content: none;
 }
 
 .flow-item.left::after {
@@ -224,9 +208,10 @@ const openDetail = (book: any) => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 15px;
-  display: flex;
-  gap: 15px;
-  height: 140px;
+  display: grid;
+  grid-template-rows: 340px 1fr;
+  gap: 12px;
+  min-height: 600px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   overflow: hidden;
   position: relative;
@@ -244,9 +229,8 @@ const openDetail = (book: any) => {
 }
 
 .mini-cover {
-  width: 80px;
-  height: 100%;
-  flex-shrink: 0;
+  width: 100%;
+  height: 340px;
   border-radius: 4px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0,0,0,0.5);
@@ -259,10 +243,10 @@ const openDetail = (book: any) => {
 }
 
 .item-info {
-  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 .reason {

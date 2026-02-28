@@ -8,7 +8,7 @@
     <div class="content-wrapper">
       <div class="bundle-layout" v-if="books.length > 0">
         <div 
-          v-for="(book, index) in books" 
+          v-for="book in books" 
           :key="book.bookId" 
           class="bundle-card"
           @click="openDetail(book)"
@@ -93,9 +93,10 @@ const openDetail = (book: any) => {
 
 <style scoped>
 .page-container {
-  padding: 40px;
+  padding: 28px 24px;
   height: 100%;
   overflow-y: auto;
+  overflow-x: hidden;
   background-color: #001529; /* Dark Blue Blueprint Background */
   background-image: 
     linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
@@ -103,15 +104,21 @@ const openDetail = (book: any) => {
   background-size: 20px 20px;
   color: #fff;
   font-family: 'Consolas', 'Monaco', monospace; /* Technical font */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 12px;
 }
 
 .header {
-  margin-bottom: 40px;
+  margin-bottom: 0;
   text-align: center;
   border-bottom: 2px dashed #1890ff;
   padding-bottom: 20px;
   display: inline-block;
   width: 100%;
+}
+.content-wrapper {
+  min-height: 0;
 }
 
 .page-title {
@@ -129,29 +136,28 @@ const openDetail = (book: any) => {
 }
 
 .bundle-layout {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 30px;
-  justify-content: center;
-  max-width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  width: 100%;
   margin: 0 auto;
-  overflow-x: auto;
-  padding: 20px 0;
+  overflow: hidden;
+  padding: 10px 2px 18px;
+  align-content: start;
 }
 
 .bundle-card {
-  width: 20%;
-  min-width: 240px;
+  width: 100%;
+  min-width: 0;
   background: rgba(24, 144, 255, 0.05);
   border: 1px solid #1890ff;
-  padding: 20px;
+  padding: 16px;
   cursor: pointer;
   transition: all 0.3s;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  flex-shrink: 0;
   position: relative;
 }
 
