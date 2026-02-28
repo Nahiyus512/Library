@@ -20,7 +20,7 @@ public class PolarisAgentConfig {
     ChatMemoryProvider chatMemoryProviderPolaris() {
         return memoryId -> MessageWindowChatMemory.builder()
                 .id(memoryId)
-                .maxMessages(20)
+                .maxMessages(8)
                 .chatMemoryStore(mongoChatMemoryStore)
                 .build();
     }

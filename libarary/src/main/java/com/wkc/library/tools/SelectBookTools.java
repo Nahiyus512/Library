@@ -1,20 +1,19 @@
 package com.wkc.library.tools;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.wkc.library.entity.Book;
-import com.wkc.library.entity.User;
 import com.wkc.library.service.BookScoreService;
 import com.wkc.library.service.BookService;
 import com.wkc.library.service.UserService;
-import com.wkc.library.util.UserContext;
 import dev.langchain4j.agent.tool.Tool;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author Nah
@@ -24,6 +23,14 @@ import java.util.Map;
 @Slf4j
 @Component
 public class SelectBookTools {
+
+    @Data
+    @AllArgsConstructor
+    public static class BookToolItem {
+        private String bookName;
+        private String bookAuthor;
+        private String bookClassify;
+    }
 
     @Autowired
     private BookService bookService;
@@ -39,9 +46,9 @@ public class SelectBookTools {
             value = "当用户输入图书名称、书名关键词或描述想找某一本或某一类书籍时调用该工具。" +
                     "工具会根据关键词在图书名称中进行模糊匹配，返回符合条件的图书列表。"
     )
-    public List<Book> searchBooksByName(String keyword) {
+    public List<BookToolItem> searchBooksByName(String keyword) {
         log.info("调用根据图书名称模糊匹配图书工具");
-        return bookService.searchBookByLike(keyword);
+        return toToolItems(bookService.searchBookByLike(keyword));
     }
 
     @Tool(
@@ -49,9 +56,9 @@ public class SelectBookTools {
             value = "当用户明确说明想查看某一分类下的图书时调用该工具，例如计算机、文学、历史等。" +
                     "工具会根据分类名称查询并返回该分类下的图书列表。"
     )
-    public List<Book> getBooksByCategory(String categoryName) {
+    public List<BookToolItem> getBooksByCategory(String categoryName) {
         log.info("调用根据分类名称查询图书工具");
-        return bookService.searchBookByCategoryName(categoryName);
+        return toToolItems(bookService.searchBookByCategoryName(categoryName));
     }
 
     @Tool(
@@ -62,10 +69,17 @@ public class SelectBookTools {
                     "不得编造不存在的书籍或作者信息。" +
                     "推荐结果应从返回的图书列表中选择，并说明推荐理由。"
     )
-    public List<Book> recommend() {
+    public List<BookToolItem> recommend() {
         log.info("调用获取全部图书列表工具");
-        return bookService.list();
+        return toToolItems(bookService.list());
     }
 
+    private List<BookToolItem> toToolItems(List<Book> books) {
+        if (books == null || books.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return books.stream()
+                .map(book -> new BookToolItem(book.getBookName(), book.getBookAuthor(), book.getBookClassify()))
+                .collect(Collectors.toList());
+    }
 }
-
