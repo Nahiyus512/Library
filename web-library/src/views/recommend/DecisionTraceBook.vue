@@ -238,7 +238,8 @@ const contributionText = (key: string) => {
     likeCategoryShare: '兴趣分类匹配',
     similarUserBehavior: '相似用户行为',
     contentSimilarity: '内容相似度',
-    popularity: '热度信号'
+    popularity: '热度信号',
+    featureAnalytics: '特色页分析信号'
   }
   return map[key] || key
 }

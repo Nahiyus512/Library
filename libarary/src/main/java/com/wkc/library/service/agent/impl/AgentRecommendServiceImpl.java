@@ -9,6 +9,7 @@ import com.wkc.library.entity.Book;
 import com.wkc.library.entity.BookLike;
 import com.wkc.library.entity.BookScore;
 import com.wkc.library.entity.agent.AgentDecisionTrace;
+import com.wkc.library.entity.feature.FeaturePageEvent;
 import com.wkc.library.mapper.BookLikeMapper;
 import com.wkc.library.mapper.BookMapper;
 import com.wkc.library.mapper.BookScoreMapper;
@@ -45,6 +46,8 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
     private static final List<String> STRATEGIES = Arrays.asList(
             "user_cf", "item_cf", "content_based", "lfm", "association_rule"
     );
+    private static final int FEATURE_ANALYTICS_LOOKBACK_DAYS = 30;
+    private static final double FEATURE_BOOST_MAX = 0.08;
 
     @Autowired
     private BookScoreService bookScoreService;
@@ -82,7 +85,13 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
             merged = fallbackByPopularity(limit, intent, explanationContext);
         }
 
-        List<String> decisionPath = buildDecisionPath(intent, profile, weights, !merged.isEmpty());
+        List<String> decisionPath = buildDecisionPath(
+                intent,
+                profile,
+                weights,
+                !merged.isEmpty(),
+                explanationContext.featureAnalyticsByBook != null && !explanationContext.featureAnalyticsByBook.isEmpty()
+        );
         String strategyDesc = buildStrategyDescription(intent, profile, weights);
 
         AgentRecommendResponse response = new AgentRecommendResponse();
@@ -384,7 +393,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
                 }
                 double rankScore = (double) (size - i) / size;
                 double weighted = rankScore * weights.getOrDefault(strategy, 0.0);
-                double boosted = weighted + intentBoost(intent, book);
+                double boosted = weighted + intentBoost(intent, book) + featureAnalyticsBoost(book, explanationContext);
                 scoreMap.merge(book.getBookId(), boosted, Double::sum);
                 bookMap.put(book.getBookId(), book);
                 hits.computeIfAbsent(book.getBookId(), k -> new HashSet<>()).add(strategy);
@@ -429,6 +438,17 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         return 0.01;
     }
 
+    private double featureAnalyticsBoost(Book book, ExplanationContext context) {
+        if (book == null || book.getBookId() == null || context == null || context.featureAnalyticsByBook == null) {
+            return 0.0;
+        }
+        FeatureAnalyticsScore score = context.featureAnalyticsByBook.get(book.getBookId());
+        if (score == null) {
+            return 0.0;
+        }
+        return round3(FEATURE_BOOST_MAX * score.normalizedScore);
+    }
+
     private List<AgentRecommendItem> fallbackByPopularity(int topN,
                                                           String intent,
                                                           ExplanationContext explanationContext) {
@@ -461,7 +481,8 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
     private List<String> buildDecisionPath(String intent,
                                            Map<String, Integer> profile,
                                            Map<String, Double> weights,
-                                           boolean hasResult) {
+                                           boolean hasResult,
+                                           boolean featureBoostEnabled) {
         List<String> path = new ArrayList<>();
         path.add("intent_recognition=" + intent);
         path.add("profile(scoreCount=" + profile.getOrDefault("scoreCount", 0)
@@ -469,6 +490,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
                 + ", classifyDiversity=" + profile.getOrDefault("classifyDiversity", 0) + ")");
         path.add("strategy=hybrid_strategy");
         path.add("weights=" + weights);
+        path.add("feature_analytics_boost=" + (featureBoostEnabled ? "on(window=30d,max=0.08)" : "off"));
         path.add("result=" + (hasResult ? "hit" : "empty_fallback"));
         return path;
     }
@@ -521,6 +543,13 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         return Math.round(value * 1000.0) / 1000.0;
     }
 
+    private double safeRate(int numerator, int denominator) {
+        if (denominator <= 0 || numerator <= 0) {
+            return 0D;
+        }
+        return (double) numerator / denominator;
+    }
+
     private ExplanationContext buildExplanationContext(Integer userId) {
         ExplanationContext context = new ExplanationContext();
         if (userId == null) {
@@ -528,6 +557,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
             context.highScoreClassShare = Collections.emptyMap();
             context.popularityByBook = Collections.emptyMap();
             context.maxPopularity = 1;
+            context.featureAnalyticsByBook = Collections.emptyMap();
             return context;
         }
 
@@ -574,6 +604,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         }
         context.popularityByBook = popularity;
         context.maxPopularity = max;
+        context.featureAnalyticsByBook = buildFeatureAnalyticsScores();
         return context;
     }
 
@@ -590,6 +621,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         double similarUser = collaborativeSignal(hitStrategies);
         double contentSim = contentSimilaritySignal(intent, classifies);
         double popularity = popularitySignal(book, context);
+        double featureAnalytics = featureAnalyticsSignal(book, context);
 
         Map<String, Double> raw = new LinkedHashMap<>();
         raw.put("historyPref", historyPref);
@@ -597,6 +629,7 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         raw.put("similarUserBehavior", similarUser);
         raw.put("contentSimilarity", contentSim);
         raw.put("popularity", popularity);
+        raw.put("featureAnalytics", featureAnalytics);
         Map<String, Double> normalized = normalizeScores(raw);
         explanation.setWeightContributions(normalized);
 
@@ -610,13 +643,27 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         if (normalized.getOrDefault("similarUserBehavior", 0.0) >= 0.2) {
             keyFeatures.add("相似用户行为支持该推荐");
         }
+        if (normalized.getOrDefault("featureAnalytics", 0.0) >= 0.15) {
+            FeatureAnalyticsScore score = (book == null || book.getBookId() == null || context.featureAnalyticsByBook == null)
+                    ? null
+                    : context.featureAnalyticsByBook.get(book.getBookId());
+            if (score != null) {
+                keyFeatures.add("特色页分析加权：完成率 " + (int) Math.round(score.completeRate * 100)
+                        + "%，高分率 " + (int) Math.round(score.like2Rate * 100)
+                        + "%，接受率 " + (int) Math.round(score.acceptRate * 100) + "%");
+            } else {
+                keyFeatures.add("特色页分析高表现信号支持该推荐");
+            }
+        }
         explanation.setKeyFeatures(keyFeatures);
 
-        String mainReason = "该书与当前目标" + intent + "匹配，综合了历史偏好、相似用户行为、内容相关性和热度信号。";
+        String mainReason = "该书与当前目标 " + intent + " 匹配，综合了历史偏好、相似用户行为、内容相关性与热度信号。";
+        if (normalized.getOrDefault("featureAnalytics", 0.0) >= 0.15) {
+            mainReason = mainReason + " 同时参考了特色页分析中的高表现数据，提升了推荐权重。";
+        }
         explanation.setMainReason(mainReason);
         return explanation;
     }
-
     private double collaborativeSignal(List<String> hitStrategies) {
         if (hitStrategies == null || hitStrategies.isEmpty()) {
             return 0.1;
@@ -656,6 +703,106 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         }
         int heat = context.popularityByBook.getOrDefault(book.getBookId(), 0);
         return round3((double) heat / context.maxPopularity);
+    }
+
+    private double featureAnalyticsSignal(Book book, ExplanationContext context) {
+        if (book == null || book.getBookId() == null || context == null || context.featureAnalyticsByBook == null) {
+            return 0.0;
+        }
+        FeatureAnalyticsScore score = context.featureAnalyticsByBook.get(book.getBookId());
+        return score == null ? 0.0 : score.normalizedScore;
+    }
+
+    private Map<Integer, FeatureAnalyticsScore> buildFeatureAnalyticsScores() {
+        Date from = Date.from(LocalDate.now().minusDays(FEATURE_ANALYTICS_LOOKBACK_DAYS - 1L)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant());
+        Query query = new Query(Criteria.where("createdAt").gte(from));
+        List<FeaturePageEvent> events = mongoTemplate.find(query, FeaturePageEvent.class);
+        if (events == null || events.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        Map<Integer, List<FeaturePageEvent>> byBook = events.stream()
+                .filter(e -> e.getBookId() != null && e.getBookId() > 0)
+                .collect(Collectors.groupingBy(FeaturePageEvent::getBookId));
+        if (byBook.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        int maxEnterUv = 1;
+        Map<Integer, Integer> enterUvByBook = new HashMap<>();
+        for (Map.Entry<Integer, List<FeaturePageEvent>> entry : byBook.entrySet()) {
+            int enterUv = (int) entry.getValue().stream()
+                    .filter(e -> "enter".equals(e.getEventType()))
+                    .map(FeaturePageEvent::getUserId)
+                    .filter(this::validUserId)
+                    .distinct()
+                    .count();
+            enterUvByBook.put(entry.getKey(), enterUv);
+            if (enterUv > maxEnterUv) {
+                maxEnterUv = enterUv;
+            }
+        }
+
+        Map<Integer, FeatureAnalyticsScore> rawScores = new HashMap<>();
+        double maxRaw = 0.0;
+        for (Map.Entry<Integer, List<FeaturePageEvent>> entry : byBook.entrySet()) {
+            Integer bookId = entry.getKey();
+            List<FeaturePageEvent> bucket = entry.getValue();
+
+            long enterSessions = bucket.stream()
+                    .filter(e -> "enter".equals(e.getEventType()) && StringUtils.hasText(e.getSessionId()))
+                    .map(FeaturePageEvent::getSessionId)
+                    .distinct()
+                    .count();
+            long completeSessions = bucket.stream()
+                    .filter(e -> ("rate".equals(e.getEventType()) || "checkpoint".equals(e.getEventType())) && StringUtils.hasText(e.getSessionId()))
+                    .map(FeaturePageEvent::getSessionId)
+                    .distinct()
+                    .count();
+            List<FeaturePageEvent> rateEvents = bucket.stream()
+                    .filter(e -> "rate".equals(e.getEventType()))
+                    .collect(Collectors.toList());
+            long like2Count = rateEvents.stream()
+                    .filter(e -> Integer.valueOf(2).equals(e.getLikeLevel()))
+                    .count();
+            long acceptUv = bucket.stream()
+                    .filter(e -> "recommend_accept".equals(e.getEventType()))
+                    .map(FeaturePageEvent::getUserId)
+                    .filter(this::validUserId)
+                    .distinct()
+                    .count();
+
+            double completeRate = safeRate((int) completeSessions, (int) enterSessions);
+            double like2Rate = safeRate((int) like2Count, rateEvents.size());
+            double acceptRate = safeRate((int) acceptUv, enterUvByBook.getOrDefault(bookId, 0));
+            double enterUvNorm = (double) enterUvByBook.getOrDefault(bookId, 0) / maxEnterUv;
+            double raw = 0.40 * acceptRate + 0.30 * like2Rate + 0.20 * completeRate + 0.10 * enterUvNorm;
+
+            FeatureAnalyticsScore score = new FeatureAnalyticsScore();
+            score.completeRate = round3(completeRate);
+            score.like2Rate = round3(like2Rate);
+            score.acceptRate = round3(acceptRate);
+            score.enterUv = enterUvByBook.getOrDefault(bookId, 0);
+            score.rawScore = round3(raw);
+            rawScores.put(bookId, score);
+            if (raw > maxRaw) {
+                maxRaw = raw;
+            }
+        }
+
+        if (maxRaw <= 0.0) {
+            return Collections.emptyMap();
+        }
+        for (FeatureAnalyticsScore score : rawScores.values()) {
+            score.normalizedScore = round3(score.rawScore / maxRaw);
+        }
+        return rawScores;
+    }
+
+    private boolean validUserId(Integer userId) {
+        return userId != null && userId > 0;
     }
 
     private Map<String, Double> normalizeDistribution(Map<String, Integer> counter) {
@@ -746,5 +893,16 @@ public class AgentRecommendServiceImpl implements AgentRecommendService {
         private Map<String, Double> highScoreClassShare;
         private Map<Integer, Integer> popularityByBook;
         private int maxPopularity;
+        private Map<Integer, FeatureAnalyticsScore> featureAnalyticsByBook;
+    }
+
+    private static class FeatureAnalyticsScore {
+        private int enterUv;
+        private double completeRate;
+        private double like2Rate;
+        private double acceptRate;
+        private double rawScore;
+        private double normalizedScore;
     }
 }
+

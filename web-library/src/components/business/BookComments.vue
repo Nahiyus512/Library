@@ -38,7 +38,7 @@
         resize="none"
       />
       <div class="button-wrapper">
-        <el-button type="primary" size="small" @click="inputBtn" :disabled="!inputValue.trim()">
+        <el-button class="post-comment-btn" size="small" @click="inputBtn" :disabled="!inputValue.trim()">
           发表评论
         </el-button>
       </div>
@@ -141,7 +141,7 @@ async function postComment() {
   margin-bottom: 5px;
 }
 .username {
-  color: #409EFF;
+  color: #000;
   font-weight: bold;
 }
 .message-content {
@@ -170,9 +170,26 @@ async function postComment() {
   margin-bottom: 4px;
 }
 .admin-badge {
-  background: #f0f9eb;
-  color: #67c23a;
+  background: #000;
+  color: #fff;
   padding: 0 4px;
   border-radius: 2px;
+}
+
+.reply-content {
+  color: #111;
+}
+
+.post-comment-btn {
+  --el-button-bg-color: #000;
+  --el-button-border-color: #000;
+  --el-button-text-color: #fff;
+  --el-button-hover-bg-color: #1f1f1f;
+  --el-button-hover-border-color: #1f1f1f;
+  --el-button-active-bg-color: #000;
+  --el-button-active-border-color: #000;
+  --el-button-disabled-bg-color: #bdbdbd;
+  --el-button-disabled-border-color: #bdbdbd;
+  --el-button-disabled-text-color: #fff;
 }
 </style>

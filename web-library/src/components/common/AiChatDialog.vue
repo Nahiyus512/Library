@@ -79,7 +79,7 @@ import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { marked } from 'marked';
 import { useCookies } from '@vueuse/integrations/useCookies';
 import myAxios from '@/api/index';
-import { books } from '@/data/books';
+import { books, type BookItem } from '@/data/books';
 
 const props = defineProps<{
   visible: boolean;
@@ -104,6 +104,15 @@ interface BackendBook {
   bookId: number;
   bookName: string;
   bookAuthor: string;
+}
+
+interface FeatureDashboardBookItem {
+  bookId?: number;
+  bookName: string;
+  enterUv?: number;
+  completeRate?: number;
+  like2Count?: number;
+  acceptRate?: number;
 }
 
 interface FeatureOption {
@@ -268,6 +277,59 @@ function normalizeName(name: string): string {
   return name.toLowerCase().replace(/\s+/g, '');
 }
 
+function formatDate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function findLocalFeatureBookByName(name: string): BookItem | null {
+  const n = normalizeName(name);
+  const hit = books.find((b) => {
+    const cn = normalizeName(b.titleCN || '');
+    const en = normalizeName(b.title || '');
+    return cn === n || en === n || cn.includes(n) || en.includes(n) || n.includes(cn) || n.includes(en);
+  });
+  return hit || null;
+}
+
+async function fetchFeatureRankedBooks(): Promise<Array<{ book: BookItem; metric?: FeatureDashboardBookItem }>> {
+  const today = new Date();
+  const fromDate = new Date(today);
+  fromDate.setDate(today.getDate() - 29);
+
+  try {
+    const res = await myAxios.get('/feature/dashboard/books', {
+      params: {
+        from: formatDate(fromDate),
+        to: formatDate(today),
+        sort: 'acceptRate',
+        limit: 100
+      }
+    });
+    const rows = (res?.data?.data || []) as FeatureDashboardBookItem[];
+    const ranked: Array<{ book: BookItem; metric?: FeatureDashboardBookItem }> = [];
+    const used = new Set<string>();
+
+    rows.forEach((row) => {
+      const local = findLocalFeatureBookByName(String(row.bookName || '').trim());
+      if (!local || used.has(local.path)) return;
+      used.add(local.path);
+      ranked.push({ book: local, metric: row });
+    });
+
+    books.forEach((book) => {
+      if (used.has(book.path)) return;
+      ranked.push({ book });
+    });
+
+    return ranked;
+  } catch {
+    return books.map((book) => ({ book }));
+  }
+}
+
 function sanitizeKeyword(raw: string): string {
   return raw.replace(/[《》"'“”]/g, '').trim();
 }
@@ -408,9 +470,22 @@ async function queryBookByName(keyword: string): Promise<BackendBook[]> {
 }
 
 async function handleFeatureRecommend(): Promise<void> {
-  const picks = books.slice(0, 6);
-  const lines = picks.map((b) => `- [${b.titleCN || b.title}](${b.path}) · ${b.author}`);
-  pushSystemMessage(['这些书有特色页面，你可以点击跳转：', '', ...lines].join('\n'));
+  const picks = await fetchFeatureRankedBooks();
+  const lines = picks.slice(0, 6).map(({ book, metric }) => {
+    if (!metric) {
+      return `- [${book.titleCN || book.title}](${book.path}) · ${book.author}`;
+    }
+    const completeRate = `${Math.round((Number(metric.completeRate || 0) || 0) * 100)}%`;
+    const acceptRate = `${Math.round((Number(metric.acceptRate || 0) || 0) * 100)}%`;
+    return `- [${book.titleCN || book.title}](${book.path}) · ${book.author}（完成率 ${completeRate}，接受率 ${acceptRate}）`;
+  });
+  pushSystemMessage([
+    '这些书有特色页面，已按“特色页分析高表现”优先排序；该信号也会同步用于阅读决策推荐加权：',
+    '',
+    ...lines,
+    '',
+    '- [进入阅读决策](/readingDecision)'
+  ].join('\n'));
 }
 
 async function handleBookSearch(keyword: string): Promise<void> {

@@ -29,10 +29,10 @@
         <el-table-column prop="password" label="密码" width="180" />
         <el-table-column fixed="right" label="操作" width="180" align="center">
           <template #default="scope">
-            <el-button link color="#909399" size="small" @click="changeUser(scope.row)">
+            <el-button link style="color: #000" size="small" @click="changeUser(scope.row)">
               <el-icon><Edit /></el-icon> 修改
             </el-button>
-            <el-button link type="danger" size="small" @click="deleteUser(scope.row)">
+            <el-button link style="color: #666" size="small" @click="deleteUser(scope.row)">
               <el-icon><Delete /></el-icon> 删除
             </el-button>
           </template>

@@ -102,7 +102,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="editDialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="updateUser">保存修改</el-button>
+          <el-button color="#000" @click="updateUser">保存修改</el-button>
         </div>
       </template>
     </el-dialog>

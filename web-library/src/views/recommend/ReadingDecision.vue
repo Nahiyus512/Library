@@ -5,9 +5,12 @@
         <h2>阅读决策</h2>
         <p>AI 引导你逐步选择偏好，再输出推荐结果。</p>
       </div>
-      <el-button class="ai-style-btn trace-btn" :disabled="!latestTraceId" @click="openDecisionTrace(latestTraceId)">
-        查看推荐依据
-      </el-button>
+      <div class="header-actions">
+        <el-button class="card-white-btn trace-btn" @click="resetConversation">重置对话</el-button>
+        <el-button class="ai-style-btn trace-btn" :disabled="!latestTraceId" @click="openDecisionTrace(latestTraceId)">
+          查看推荐依据
+        </el-button>
+      </div>
     </div>
 
     <div ref="chatRef" class="chat card">
@@ -111,6 +114,15 @@ interface BookClassItem {
   classify: string
 }
 
+interface FeatureDashboardBookItem {
+  bookId?: number
+  bookName: string
+  enterUv?: number
+  completeRate?: number
+  like2Count?: number
+  acceptRate?: number
+}
+
 interface Book {
   bookId: number
   bookName: string
@@ -128,6 +140,7 @@ interface RecommendItem {
   explanation?: {
     mainReason?: string
     keyFeatures?: string[]
+    weightContributions?: Record<string, number>
   }
 }
 
@@ -171,6 +184,8 @@ const bookshelfState = ref<Record<number, boolean>>({})
 const bookshelfSyncing = ref<Record<number, boolean>>({})
 const featureBatchCursor = ref(0)
 const featureBatchNames = ref<string[]>([])
+const featurePriorityNames = ref<string[]>([])
+const featureAnalyticsByBook = ref<Record<string, FeatureDashboardBookItem>>({})
 
 const showDialog = ref(false)
 const selectedBook = ref<Book | null>(null)
@@ -247,6 +262,13 @@ const featureBookNames = Object.keys(featureRouteByBookName)
 
 const buttonGridStyle = computed(() => ({ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))' }))
 
+const formatDate = (d: Date) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 const persistState = () => {
   const payload = {
     messages: messages.value,
@@ -314,6 +336,28 @@ const ask = (question: string, options: OptionItem[], nextStep: Step) => {
   step.value = nextStep
 }
 
+const initConversation = () => {
+  messages.value = []
+  msgId.value = 1
+  step.value = 'feature_entry'
+  latestTraceId.value = ''
+  selections.value = {
+    goal: 'goal_default',
+    classify: '不限',
+    hot: 'no',
+    similar: 'no'
+  }
+  rerollCursor.value = 0
+  bookshelfState.value = {}
+  bookshelfSyncing.value = {}
+  featureBatchCursor.value = 0
+  featureBatchNames.value = []
+
+  pushText('ai', '你好，我会通过几个选择帮你快速做阅读决策。')
+  pushText('ai', '开始前，你想先查看特色阅读页面吗？')
+  ask('是否先体验特色阅读页面？', featureEntryOptions, 'feature_entry')
+}
+
 const startGoalFlow = () => {
   pushText('ai', '好的，我们进入阅读目标选择。')
   ask('你更希望这次阅读达到什么目标？', goalOptions, 'goal')
@@ -331,9 +375,11 @@ const localReason = (item: RecommendItem) => {
   }
   const hits = (item.hitStrategies || []).map((x) => strategyMap[x] || '综合策略')
   const classify = item.book.bookClassify ? `，分类偏向：${item.book.bookClassify}` : ''
+  const featureAnalytics = Number(item.explanation?.weightContributions?.featureAnalytics || 0)
+  const featureNote = featureAnalytics >= 0.15 ? '，并结合了特色页分析高表现信号' : ''
   if (hits.length === 0) return `基于你的阅读目标进行综合匹配${classify}。`
-  if (hits.length === 1) return `主要依据「${hits[0]}」进行匹配${classify}。`
-  return `综合「${hits.slice(0, 2).join(' + ')}」策略进行推荐${classify}。`
+  if (hits.length === 1) return `主要依据「${hits[0]}」进行匹配${classify}${featureNote}。`
+  return `综合「${hits.slice(0, 2).join(' + ')}」策略进行推荐${classify}${featureNote}。`
 }
 
 const getFeatureRoute = (bookName: string) => {
@@ -343,15 +389,49 @@ const getFeatureRoute = (bookName: string) => {
 const isFeatureBook = (book: Book) => Boolean(getFeatureRoute(book.bookName))
 const isFeatureStageMessage = (msg: ChatMessage) => msg.traceId === FEATURE_STAGE_TRACE
 
+const loadFeatureAnalyticsPriority = async () => {
+  try {
+    const today = new Date()
+    const fromDate = new Date(today)
+    fromDate.setDate(today.getDate() - 29)
+    const res = await myAxios.get('/feature/dashboard/books', {
+      params: {
+        from: formatDate(fromDate),
+        to: formatDate(today),
+        sort: 'acceptRate',
+        limit: 100
+      }
+    })
+    const rows = (res.data?.data || []) as FeatureDashboardBookItem[]
+    const map: Record<string, FeatureDashboardBookItem> = {}
+    rows.forEach((row) => {
+      const name = String(row.bookName || '').trim()
+      if (name) map[name] = row
+    })
+    featureAnalyticsByBook.value = map
+
+    const ranked = rows
+      .map((x) => String(x.bookName || '').trim())
+      .filter((name) => name.length > 0 && featureBookNames.includes(name))
+    const deduped = Array.from(new Set(ranked))
+    const missing = featureBookNames.filter((name) => !deduped.includes(name))
+    featurePriorityNames.value = [...deduped, ...missing]
+  } catch {
+    featurePriorityNames.value = [...featureBookNames]
+    featureAnalyticsByBook.value = {}
+  }
+}
+
 const refreshFeatureBatch = () => {
-  if (featureBookNames.length === 0) {
+  const base = featurePriorityNames.value.length > 0 ? featurePriorityNames.value : featureBookNames
+  if (base.length === 0) {
     featureBatchNames.value = []
     return
   }
-  const start = featureBatchCursor.value % featureBookNames.length
-  const doubled = [...featureBookNames, ...featureBookNames]
-  featureBatchNames.value = doubled.slice(start, start + Math.min(4, featureBookNames.length))
-  featureBatchCursor.value = (featureBatchCursor.value + 4) % featureBookNames.length
+  const start = featureBatchCursor.value % base.length
+  const doubled = [...base, ...base]
+  featureBatchNames.value = doubled.slice(start, start + Math.min(4, base.length))
+  featureBatchCursor.value = (featureBatchCursor.value + 4) % base.length
 }
 
 const buildFeatureBatchCards = (): RecommendItem[] => {
@@ -363,7 +443,13 @@ const buildFeatureBatchCards = (): RecommendItem[] => {
       bookClassify: '特色阅读'
     },
     score: 0,
-    reason: '该书提供特色交互阅读页面，可直接进入体验。',
+    reason: (() => {
+      const metric = featureAnalyticsByBook.value[name]
+      if (!metric) return '该书提供特色交互阅读页面，可直接进入体验。'
+      const completeRate = `${Math.round((Number(metric.completeRate || 0) || 0) * 100)}%`
+      const acceptRate = `${Math.round((Number(metric.acceptRate || 0) || 0) * 100)}%`
+      return `该书在特色页分析表现较高（完成率 ${completeRate}，接受率 ${acceptRate}），可优先体验。`
+    })(),
     hitStrategies: ['feature_stage']
   }))
 }
@@ -594,6 +680,10 @@ const runRecommend = async (feedback = 'none') => {
     latestTraceId.value = data.decisionTraceId
 
     pushText('ai', '已根据你的选择生成推荐结果。')
+    const boostedCount = displayCards.filter((item) => Number(item.explanation?.weightContributions?.featureAnalytics || 0) >= 0.15).length
+    if (boostedCount > 0) {
+      pushText('ai', `说明：本轮有 ${boostedCount} 本书因“特色页分析（完成率/高分率/接受率）”获得更高权重，推荐依据中可查看具体信号贡献。`)
+    }
     pushCards(displayCards, data.decisionTraceId)
     pushText('ai', '这批结果是否满意？可以继续调整方向。')
     ask('继续怎么调？', feedbackOptions, 'feedback')
@@ -617,7 +707,7 @@ const selectOption = async (option: OptionItem) => {
         return
       }
       refreshFeatureBatch()
-      pushText('ai', '这里先给你 4 本有特色交互页的书，你可以直接进入体验。')
+      pushText('ai', '这里先给你 4 本有特色交互页的书，已按特色页分析高表现数据优先展示，你可以直接进入体验。')
       pushFeatureBatchCards()
       ask('可直接点击上方书籍卡片进入特色页面，或继续操作：', featurePickActionOptions, 'feature_pick')
     } else {
@@ -821,13 +911,20 @@ const consumeFeatureRatingFeedback = async () => {
   }
 }
 
+const resetConversation = async () => {
+  sessionStorage.removeItem(SESSION_KEY)
+  sessionStorage.removeItem(FEATURE_RETURN_KEY)
+  initConversation()
+  persistState()
+  await scrollToBottom()
+  ElMessage.success('对话已重置')
+}
+
 onMounted(async () => {
-  await Promise.all([loadUserId(), loadClassifies()])
+  await Promise.all([loadUserId(), loadClassifies(), loadFeatureAnalyticsPriority()])
   const restored = restoreState()
   if (!restored) {
-    pushText('ai', '你好，我会通过几个选择帮你快速做阅读决策。')
-    pushText('ai', '开始前，你想先查看特色阅读页面吗？')
-    ask('是否先体验特色阅读页面？', featureEntryOptions, 'feature_entry')
+    initConversation()
     persistState()
   }
   await syncBookshelfStatusFromMessages()
@@ -865,6 +962,12 @@ watch(messages, async () => {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .header h2 {

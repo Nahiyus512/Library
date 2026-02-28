@@ -31,7 +31,7 @@
                   <template #default="scope">
                     <el-popconfirm title="确定要删除这条记录吗？" @confirm="handleDelete(scope.row)">
                       <template #reference>
-                        <el-button type="danger" link size="small">
+                        <el-button link style="color: #666" size="small">
                           <el-icon><Delete /></el-icon> 删除
                         </el-button>
                       </template>

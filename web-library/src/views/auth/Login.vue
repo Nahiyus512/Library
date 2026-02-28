@@ -280,7 +280,7 @@ async function loginClick() {
           cookie.set('adminId','pass')
         },1000)
       } else {
-        ElMessage.success("欢迎回来")
+        ElMessage.success({ message: "欢迎回来", duration: 1200 })
         setTimeout(()=>{
           router.push("/home")
         },1000)
