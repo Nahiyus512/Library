@@ -20,7 +20,8 @@ import ContentBased from "@/views/recommend/ContentBased.vue"
 import AssociationRule from "@/views/recommend/AssociationRule.vue"
 import LFM from "@/views/recommend/LFM.vue"
 import ReadingDecision from "@/views/recommend/ReadingDecision.vue"
-import DecisionTrace from "@/views/recommend/DecisionTrace.vue"
+import DecisionTraceAll from "@/views/recommend/DecisionTraceAll.vue"
+import DecisionTraceBook from "@/views/recommend/DecisionTraceBook.vue"
 import Suggest from "@/views/client/Suggest.vue"
 import UserCenter from "@/views/client/UserCenter.vue"
 import CategoryPlaceholder from "@/views/client/CategoryPlaceholder.vue"
@@ -183,7 +184,12 @@ const router = createRouter({
                 {
                     path: "/decisionTrace",
                     name: "decision_trace",
-                    component: DecisionTrace
+                    component: DecisionTraceAll
+                },
+                {
+                    path: "/decisionTrace/book",
+                    name: "decision_trace_book",
+                    component: DecisionTraceBook
                 }
             ]
         },

@@ -201,11 +201,10 @@ let chartResizeObserver: ResizeObserver | null = null
 
 const traceId = ref(String(route.query.traceId || ''))
 const userId = ref(Number(route.query.userId || 0))
-const scope = ref(String(route.query.scope || 'all'))
 const targetBookId = ref(Number(route.query.bookId || 0))
 const targetBookName = ref(String(route.query.bookName || ''))
 const profileTab = ref('interest')
-const isBookMode = computed(() => scope.value === 'book' && !!targetBookId.value)
+const isBookMode = computed(() => false)
 const selectedBookRow = computed(() => {
   if (!trace.value || !isBookMode.value) return null
   return (trace.value.recommendSnapshot || []).find((x) => Number(x.bookId) === targetBookId.value) || null

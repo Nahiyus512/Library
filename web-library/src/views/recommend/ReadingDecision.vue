@@ -679,12 +679,12 @@ const selectOption = async (option: OptionItem) => {
 
 const openDecisionTrace = async (traceId?: string, bookId?: number, bookName?: string) => {
   if (!traceId) return
+  const path = bookId ? '/decisionTrace/book' : '/decisionTrace'
   await router.push({
-    path: '/decisionTrace',
+    path,
     query: {
       traceId,
       userId: String(userId.value || ''),
-      scope: bookId ? 'book' : 'all',
       bookId: bookId ? String(bookId) : '',
       bookName: bookName || ''
     }

@@ -28,7 +28,7 @@
         <!-- Main Content Area -->
         <div class="content-area beige-grid">
           <!-- Return Button for Right Panel -->
-          <button class="return-btn" @click="expandLeftPanel">←</button>
+          <button class="return-btn" :class="{ 'item-cf-return-btn': isItemCFRoute }" @click="expandLeftPanel">←</button>
 
           <div class="bg-watermark">RECOMMEND</div>
 
@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import AlgorithmNav from '@/components/business/AlgorithmNav.vue';
 import { transitionState } from '@/store/transitionStore';
@@ -62,6 +62,7 @@ import { transitionState } from '@/store/transitionStore';
 const router = useRouter();
 const route = useRoute();
 const activeSide = ref<string | null>('left'); // Default to left panel expanded
+const isItemCFRoute = computed(() => route.path === '/bookRecommend/item_cf');
 
 const expandLeftPanel = () => {
   activeSide.value = 'left';
@@ -244,6 +245,11 @@ onMounted(() => {
 }
 .return-btn:active {
   transform: scale(0.95);
+}
+
+.return-btn.item-cf-return-btn {
+  top: 44px;
+  left: 48px;
 }
 
 .fade-enter-active,

@@ -157,6 +157,14 @@ const topCommentedBooks = ref<any[]>([]);
 const chartContainer = ref<HTMLDivElement | null>(null);
 let myChart: echarts.ECharts | null = null;
 
+const parseCategories = (classify?: string | null): string[] => {
+  if (!classify) return [];
+  return classify
+    .split(/[,\uFF0C]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
 const initChart = (data: { name: string, value: number }[]) => {
   if (!chartContainer.value) return;
   
@@ -238,8 +246,14 @@ const fetchData = async () => {
         // Process data for chart (Group by Category)
         const categoryMap = new Map<string, number>();
         likedBooks.value.forEach(book => {
-          const category = book.bookClassify || '其他';
-          categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+          const categories = parseCategories(book.bookClassify);
+          if (categories.length === 0) {
+            categoryMap.set('其他', (categoryMap.get('其他') || 0) + 1);
+            return;
+          }
+          categories.forEach((category) => {
+            categoryMap.set(category, (categoryMap.get(category) || 0) + 1);
+          });
         });
         
         const chartData = Array.from(categoryMap.entries()).map(([name, value]) => ({ name, value }));
