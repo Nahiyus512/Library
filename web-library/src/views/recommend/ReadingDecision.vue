@@ -39,7 +39,7 @@
                   <el-button
                     size="small"
                     class="ai-style-btn card-feature-btn"
-                    @click="openFeatureExperience({ bookName: item.book.bookName, from: 'feature_stage' })"
+                    @click="openFeatureExperience({ bookName: item.book.bookName, from: 'feature_stage', traceId: msg.traceId })"
                   >
                     进入特色页面
                   </el-button>
@@ -65,7 +65,7 @@
                     v-if="isFeatureBook(item.book)"
                     size="small"
                     class="ai-style-btn card-feature-btn"
-                    @click="openFeatureExperience({ bookId: item.book.bookId, bookName: item.book.bookName, from: 'card' })"
+                    @click="openFeatureExperience({ bookId: item.book.bookId, bookName: item.book.bookName, from: 'card', traceId: msg.traceId })"
                   >
                     特色介绍
                   </el-button>
@@ -696,7 +696,38 @@ const openDetail = (book: Book) => {
   showDialog.value = true
 }
 
-const openFeatureExperience = async (book: { bookId?: number; bookName: string; from?: 'card' | 'feature_stage' }) => {
+const buildEventId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return `evt_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`
+}
+
+const reportRecommendAccept = async (book: Book) => {
+  if (!userId.value) return
+  try {
+    await myAxios.post('/feature/events/batch', {
+      events: [
+        {
+          eventId: buildEventId(),
+          userId: userId.value,
+          sessionId: `rd_${Date.now()}`,
+          traceId: latestTraceId.value || undefined,
+          bookId: book.bookId,
+          bookName: book.bookName,
+          routePath: '/readingDecision',
+          source: 'reading_decision_card',
+          eventType: 'recommend_accept',
+          createdAt: new Date().toISOString()
+        }
+      ]
+    })
+  } catch {
+    // avoid affecting bookshelf flow when event report fails
+  }
+}
+
+const openFeatureExperience = async (book: { bookId?: number; bookName: string; from?: 'card' | 'feature_stage'; traceId?: string }) => {
   const routePath = getFeatureRoute(book.bookName)
   if (!routePath) {
     ElMessage.warning('该书暂无特色交互页')
@@ -711,7 +742,13 @@ const openFeatureExperience = async (book: { bookId?: number; bookName: string; 
       at: Date.now()
     })
   )
-  await router.push(routePath)
+  await router.push({
+    path: routePath,
+    query: {
+      source: book.from === 'feature_stage' ? 'reading_decision_feature_stage' : 'reading_decision_card',
+      traceId: book.traceId || latestTraceId.value || ''
+    }
+  })
 }
 
 const toggleBookshelf = async (book: Book) => {
@@ -732,6 +769,9 @@ const toggleBookshelf = async (book: Book) => {
     })
     if (res.data?.code === 200) {
       bookshelfState.value[book.bookId] = !inShelf
+      if (!inShelf) {
+        await reportRecommendAccept(book)
+      }
       ElMessage.success(inShelf ? '已移出书架' : '已加入书架')
       return
     }
