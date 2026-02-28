@@ -255,7 +255,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
@@ -316,7 +316,31 @@ const scrollToSection = (index: number) => {
   }
 };
 
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在离开人类史时间线，你的文明判断会中断，并会影响后续推荐。建议先完成底部评分再跳出时间线。\n\n确定要退出吗？',
+      '文明演化提示',
+      {
+        confirmButtonText: '跳出时间线',
+        cancelButtonText: '继续演化',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

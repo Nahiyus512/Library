@@ -143,12 +143,36 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
 
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在离开电幕场景，你的思想轨迹记录会中断，并会影响后续推荐。建议先完成底部评分再退出。\n\n确定要离开监控区吗？',
+      '老大哥提示',
+      {
+        confirmButtonText: '退出监控区',
+        cancelButtonText: '继续观察',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

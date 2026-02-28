@@ -217,7 +217,7 @@
              <button class="dune-opt" @click="rateBook(2)">香料 (2)</button>
          </div>
       </div>
-      <button v-else class="nav-return-btn footer-exit" @click="goBackHome">
+      <button v-else class="footer-exit" @click="goBackHome">
         <span>LEAVE ARRAKIS</span>
       </button>
     </footer>
@@ -230,7 +230,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
@@ -267,7 +267,31 @@ const rateBook = async (level: number) => {
     ElMessage.error('Spice Agony');
   }
 };
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在离开厄拉科斯，你的香料试炼将中断，并会影响后续推荐。建议先完成底部评定再撤离。\n\n确定要退出沙丘吗？',
+      '厄拉科斯警告',
+      {
+        confirmButtonText: '撤离沙丘',
+        cancelButtonText: '继续试炼',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

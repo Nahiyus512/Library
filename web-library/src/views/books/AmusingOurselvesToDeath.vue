@@ -219,7 +219,7 @@ import { ref, onMounted, computed, reactive, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
@@ -257,7 +257,31 @@ const rateBook = async (level: number) => {
   }
 };
 
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在关闭电视将中断你的节目反馈，并会影响后续推荐。建议先完成底部频道评分再关机。\n\n你确定要关机退出吗？',
+      '频道中断警告',
+      {
+        confirmButtonText: '关机退出',
+        cancelButtonText: '继续看完',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 
@@ -400,7 +424,8 @@ const calculateStaticOpacity = () => {
     }
 };
 
-const turnOffTv = () => {
+const turnOffTv = async () => {
+    if (!await ensureRatedBeforeExit()) return;
     isPoweredOff.value = true;
     setTimeout(() => {
         router.back();

@@ -200,7 +200,7 @@ import { ref, onMounted, onUnmounted, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
@@ -407,7 +407,33 @@ const getWindLineStyle = (n: number) => {
 };
 
 // Navigation & Scroll
-const goBack = () => router.back();
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在回到现实会中断你的良质体悟，并会影响后续推荐。建议先完成底部评分再离开。\n\n确定要结束这段修行吗？',
+      '良质提醒',
+      {
+        confirmButtonText: '回到现实',
+        cancelButtonText: '继续观照',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBack = async () => {
+  if (!await ensureRatedBeforeExit()) return;
+  router.back();
+};
 
 let observer: IntersectionObserver;
 let navObserver: IntersectionObserver;

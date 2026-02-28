@@ -211,7 +211,7 @@
                 <button class="alignment-opt" @click="rateBook(2)">超级智能 (2)</button>
             </div>
          </div>
-         <button v-else class="return-btn footer-exit" @click="goBack">
+         <button v-else class="footer-exit" @click="goBack">
             <span>DISCONNECT SIMULATION</span>
          </button>
       </footer>
@@ -225,7 +225,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
@@ -284,7 +284,31 @@ const futureScenarios = [
   { title: '自我毁灭', desc: '超级智能未能诞生，人类自我毁灭。', type: 'destruction' }
 ];
 
-const goBack = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在退出生命3.0推演，你的对齐判断将中断，并会影响后续推荐。建议先完成底部评分再退出。\n\n确定要停止模拟吗？',
+      '对齐协议警告',
+      {
+        confirmButtonText: '停止模拟',
+        cancelButtonText: '继续推演',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBack = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

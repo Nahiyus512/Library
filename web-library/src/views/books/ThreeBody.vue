@@ -124,7 +124,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const router = useRouter();
 const cookies = useCookies();
@@ -234,7 +234,31 @@ const scrollToSection = (index: number) => {
   }
 };
 
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在退出三体游戏将无法接收主的旨意，并会影响后续推荐。建议先完成底部选择后再离开。\n\n你确定要退出吗？',
+      'ETO 通讯警告',
+      {
+        confirmButtonText: '退出并失联',
+        cancelButtonText: '继续接收',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

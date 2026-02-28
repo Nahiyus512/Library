@@ -28,6 +28,7 @@
 
           <div class="nav-side nav-right">
             <RouterLink to="/bookRecommend" class="nav-item" active-class="active">推荐</RouterLink>
+            <RouterLink to="/readingDecision" class="nav-item" active-class="active">阅读决策</RouterLink>
             <RouterLink to="/suggest" class="nav-item" active-class="active">建议</RouterLink>
             <RouterLink to="/user" class="nav-item" active-class="active">个人中心</RouterLink>
             <span class="nav-item nav-spacer" aria-hidden="true">·</span>

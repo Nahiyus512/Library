@@ -11,7 +11,7 @@
       :style="globalBgStyle"
     ></div>
 
-    <button class="return-btn" v-if="isExpanded" @click.stop="emit('collapse')">⇐</button>
+    <button class="return-btn" v-if="isExpanded" @click.stop="emit('collapse')">←</button>
 
     <!-- Algorithms Flex Container -->
     <div class="categories-container" @mouseleave="hoveredIndex = -1">
@@ -88,18 +88,11 @@ const algorithms = [
     iconPath: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71 M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71'
   },
   {
-    name: '隐语义',
+    name: '隐语义模型',
     path: 'lfm',
     color: '#5C6473',
     textColor: '#fff',
     iconPath: 'M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z M3.27 6.96L12 12.01l8.73-5.05 M12 22.08V12'
-  },
-  {
-    name: 'Agent协同',
-    path: 'agent',
-    color: '#2F6F5E',
-    textColor: '#fff',
-    iconPath: 'M12 2v5 M12 17v5 M4.93 4.93l3.54 3.54 M15.54 15.54l3.53 3.53 M2 12h5 M17 12h5 M4.93 19.07l3.54-3.53 M15.54 8.46l3.53-3.53'
   }
 ];
 
@@ -367,3 +360,4 @@ const getTextColor = (algo: any, index: number) => {
   transform: rotate(360deg);
 }
 </style>
+

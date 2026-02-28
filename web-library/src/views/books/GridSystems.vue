@@ -210,7 +210,7 @@ import { useRouter } from 'vue-router';
 import GridSystemsCover from '@/components/business/covers/GridSystemsCover.vue';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 
 const pageWrapper = ref<HTMLElement | null>(null);
 const router = useRouter();
@@ -267,7 +267,31 @@ const scrollTo = (id: string) => {
   if (el) el.scrollIntoView({ behavior: 'smooth' });
 };
 
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在退出网格实验会让版式判断不完整，并会影响后续推荐。建议先完成底部评分再离开。\n\n确定要退出网格系统吗？',
+      '版式校准中断',
+      {
+        confirmButtonText: '退出网格',
+        cancelButtonText: '继续排版',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

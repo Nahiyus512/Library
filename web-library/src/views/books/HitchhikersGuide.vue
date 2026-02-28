@@ -222,7 +222,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import myAxios from "@/api/index";
 import { useCookies } from '@vueuse/integrations/useCookies';
-import { ElMessage } from "element-plus";
+import { ElMessage, ElMessageBox } from "element-plus";
 import HitchhikersGuideCover from '@/components/business/covers/HitchhikersGuideCover.vue';
 
 const router = useRouter();
@@ -268,7 +268,31 @@ const stars = ref(Array.from({ length: 50 }, () => ({
   animationDelay: Math.random() * 2
 })));
 
-const goBackHome = () => {
+const ensureRatedBeforeExit = async () => {
+  if (hasRated.value) return true;
+  try {
+    await ElMessageBox.confirm(
+      '现在退出银河漫游，你将丢失关键条目反馈，并会影响后续推荐。建议先完成底部评分再离开。\n\n确定要抛下《指南》吗？',
+      'DON\'T PANIC 提示',
+      {
+        confirmButtonText: '退出宇宙',
+        cancelButtonText: '继续漫游',
+        customClass: 'bw-exit-confirm',
+        confirmButtonClass: 'bw-exit-confirm-btn',
+        cancelButtonClass: 'bw-exit-cancel-btn',
+        closeOnClickModal: false,
+        closeOnPressEscape: false,
+        autofocus: false
+      }
+    );
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+const goBackHome = async () => {
+  if (!await ensureRatedBeforeExit()) return;
   router.back();
 };
 

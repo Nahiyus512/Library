@@ -2,16 +2,63 @@
   <div class="trace-page">
     <div class="top card">
       <div>
-        <h2>决策透明化看板</h2>
-        <p>查看当前策略、决策流程、推荐解释、策略调整记录和用户兴趣画像。</p>
+        <h2>{{ isBookMode ? '单本推荐依据' : '决策透明化看板' }}</h2>
+        <p v-if="isBookMode">
+          {{ targetBookName || '当前书籍' }} 的推荐解释、命中策略与信号贡献。
+        </p>
+        <p v-else>查看当前策略、决策流程、推荐解释、策略调整记录和用户兴趣画像。</p>
       </div>
       <div class="ops">
+        <el-button v-if="isBookMode" class="trace-btn trace-btn-back" @click="openAllTrace">查看全部依据</el-button>
         <el-button class="trace-btn trace-btn-back" @click="goBack">返回推荐页</el-button>
         <el-button class="trace-btn trace-btn-refresh" :loading="loading" @click="reloadAll">刷新数据</el-button>
       </div>
     </div>
 
-    <div v-if="trace" class="grid">
+    <div v-if="trace && isBookMode" class="single-grid">
+      <div v-if="selectedBookRow" class="card single-card">
+        <h3>{{ selectedBookRow.bookName }}</h3>
+        <div class="single-reason">{{ selectedBookRow.explanation?.mainReason || selectedBookRow.reason }}</div>
+      </div>
+      <div v-if="selectedBookRow" class="card single-card">
+        <h3>命中策略</h3>
+        <div class="strategy-list">
+          <div v-if="!(selectedBookRow.hitStrategies || []).length" class="empty-note">暂无策略命中</div>
+          <div v-for="(s, idx) in (selectedBookRow.hitStrategies || [])" :key="idx" class="strategy-item">
+            <div class="strategy-item-head">
+              <span class="strategy-index">{{ idx + 1 }}</span>
+              <b>{{ strategyText(s) }}</b>
+            </div>
+            <p class="strategy-item-desc">{{ strategyHint(s) }}</p>
+          </div>
+        </div>
+      </div>
+      <div v-if="selectedBookRow" class="card single-card">
+        <h3>信号贡献</h3>
+        <div class="section-body">
+          <div
+            v-for="(v, k) in (selectedBookRow.explanation?.weightContributions || {})"
+            :key="k"
+            class="line"
+          >
+            <span>{{ contributionText(k) }}</span><b>{{ Math.round((v || 0) * 100) }}%</b>
+          </div>
+        </div>
+      </div>
+      <div v-if="selectedBookRow" class="card single-card">
+        <h3>关键依据</h3>
+        <div class="feature-list">
+          <div v-if="!(selectedBookRow.explanation?.keyFeatures || []).length" class="empty-note">暂无关键依据</div>
+          <div v-for="(f, idx) in (selectedBookRow.explanation?.keyFeatures || [])" :key="idx" class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ f }}</span>
+          </div>
+        </div>
+      </div>
+      <el-empty v-if="!selectedBookRow" description="未找到该书的推荐依据" />
+    </div>
+
+    <div v-else-if="trace" class="grid">
       <div class="card section area-strategy">
         <h3>当前推荐策略</h3>
         <div class="section-body">
@@ -111,11 +158,14 @@ interface Trace {
   weights: Record<string, number>
   decisionPath: string[]
   recommendSnapshot: Array<{
+    bookId?: number
     bookName: string
     reason: string
+    hitStrategies?: string[]
     explanation?: {
       mainReason?: string
       keyFeatures?: string[]
+      weightContributions?: Record<string, number>
     }
   }>
   createdAt: string
@@ -151,7 +201,15 @@ let chartResizeObserver: ResizeObserver | null = null
 
 const traceId = ref(String(route.query.traceId || ''))
 const userId = ref(Number(route.query.userId || 0))
+const scope = ref(String(route.query.scope || 'all'))
+const targetBookId = ref(Number(route.query.bookId || 0))
+const targetBookName = ref(String(route.query.bookName || ''))
 const profileTab = ref('interest')
+const isBookMode = computed(() => scope.value === 'book' && !!targetBookId.value)
+const selectedBookRow = computed(() => {
+  if (!trace.value || !isBookMode.value) return null
+  return (trace.value.recommendSnapshot || []).find((x) => Number(x.bookId) === targetBookId.value) || null
+})
 
 const intentText = (intent: string) => {
   const map: Record<string, string> = {
@@ -175,6 +233,18 @@ const strategyText = (strategy: string) => {
   return map[strategy] || strategy
 }
 
+const strategyHint = (strategy: string) => {
+  const map: Record<string, string> = {
+    hybrid_strategy: '融合多路信号，平衡准确率与多样性。',
+    user_cf: '基于相似读者的历史行为进行匹配。',
+    item_cf: '根据与你关注书籍相近的内容进行联想。',
+    content_based: '依据书籍内容特征与兴趣标签对齐。',
+    association_rule: '利用共现与行为关联关系补充推荐。',
+    lfm: '通过隐语义兴趣向量捕捉潜在偏好。'
+  }
+  return map[strategy] || '该策略参与了本次综合推荐计算。'
+}
+
 const statText = (key: string) => {
   const map: Record<string, string> = {
     totalScores: '累计评分次数',
@@ -182,6 +252,17 @@ const statText = (key: string) => {
     distinctInterestCategories: '兴趣分类数',
     recent30dScores: '近30天评分',
     recent30dLikes: '近30天点赞'
+  }
+  return map[key] || key
+}
+
+const contributionText = (key: string) => {
+  const map: Record<string, string> = {
+    historyPref: '历史高分偏好',
+    likeCategoryShare: '兴趣分类匹配',
+    similarUserBehavior: '相似用户行为',
+    contentSimilarity: '内容相似度',
+    popularity: '热度信号'
   }
   return map[key] || key
 }
@@ -404,7 +485,18 @@ const reloadAll = async () => {
 }
 
 const goBack = () => {
-  router.push('/bookRecommend/agent')
+  router.push('/readingDecision')
+}
+
+const openAllTrace = () => {
+  router.push({
+    path: '/decisionTrace',
+    query: {
+      traceId: traceId.value,
+      userId: String(userId.value || ''),
+      scope: 'all'
+    }
+  })
 }
 
 onMounted(async () => {
@@ -442,7 +534,7 @@ onBeforeUnmount(() => {
   display: grid;
   grid-template-rows: auto 1fr;
   gap: 10px;
-  overflow: hidden;
+  overflow-y: auto;
   overflow-x: hidden;
 }
 .card { background: #fff; border: 1px solid #dcded9; border-radius: 8px; padding: 10px; min-height: 0; }
@@ -493,11 +585,97 @@ onBeforeUnmount(() => {
   display: grid;
   gap: 10px;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(250px, 1.15fr) minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     "strategy flow"
     "profile latest"
     "profile explain";
+}
+.single-grid {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  align-content: start;
+}
+.single-card {
+  min-height: 180px;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 8px;
+  overflow: hidden;
+}
+.single-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+.single-reason {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #35443b;
+}
+.strategy-list {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.strategy-item {
+  border: 1px solid #d7e2dc;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f7fbf9 0%, #f2f7f4 100%);
+  padding: 8px 10px;
+}
+.strategy-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #1f3f35;
+}
+.strategy-index {
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2f6b57;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+}
+.strategy-item-desc {
+  margin: 6px 0 0;
+  color: #4e5f57;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.feature-list {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+}
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 8px;
+  border: 1px solid #e3ebe6;
+  border-radius: 8px;
+  background: #fafcfb;
+  font-size: 13px;
+  color: #30443b;
+  line-height: 1.45;
+}
+.feature-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #3e7a68;
+  margin-top: 5px;
+  flex: 0 0 auto;
 }
 .area-strategy { grid-area: strategy; }
 .area-flow { grid-area: flow; }
@@ -512,7 +690,10 @@ onBeforeUnmount(() => {
 }
 .section h3 { margin: 0; font-size: 15px; }
 .section-body { min-height: 0; overflow-y: auto; overflow-x: hidden; padding-right: 2px; }
-.area-strategy .section-body { overflow: hidden; }
+.area-strategy .section-body {
+  overflow: hidden;
+  padding-bottom: 0;
+}
 .area-profile .section-body { overflow: hidden; display: flex; min-height: 0; }
 .line { display: flex; justify-content: space-between; margin-top: 6px; font-size: 13px; gap: 8px; }
 .weights { margin-top: 8px; display: grid; gap: 6px; }
@@ -533,6 +714,7 @@ onBeforeUnmount(() => {
 .latest-item { margin-top: 8px; border-bottom: 1px dashed #e5e9e6; padding-bottom: 6px; font-size: 13px; }
 .sub-title { margin-top: 10px; font-size: 12px; color: #677267; font-weight: 700; }
 .empty { color: #9aa39a; font-size: 13px; margin-top: 6px; }
+.empty-note { color: #7f8a83; font-size: 13px; }
 .chart { width: 100%; max-width: 100%; height: 240px; margin-top: 6px; }
 .profile-tabs { flex: 1; min-height: 0; display: flex; flex-direction: column; width: 100%; }
 .profile-tabs :deep(.el-tabs__header) { flex: 0 0 auto; margin: 0 0 8px; }
@@ -545,9 +727,14 @@ onBeforeUnmount(() => {
 .profile-tabs :deep(.el-tabs__active-bar) { background-color: #000; }
 @media (max-width: 1100px) {
   .trace-page { grid-template-rows: auto 1fr; }
+  .single-grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
   .grid {
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(5, minmax(220px, auto));
+    grid-template-rows: minmax(280px, auto) repeat(4, minmax(220px, auto));
     grid-template-areas:
       "strategy"
       "flow"

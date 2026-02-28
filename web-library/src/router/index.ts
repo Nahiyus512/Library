@@ -19,7 +19,7 @@ import ItemCF from "@/views/recommend/ItemCF.vue"
 import ContentBased from "@/views/recommend/ContentBased.vue"
 import AssociationRule from "@/views/recommend/AssociationRule.vue"
 import LFM from "@/views/recommend/LFM.vue"
-import AgentRecommend from "@/views/recommend/AgentRecommend.vue"
+import ReadingDecision from "@/views/recommend/ReadingDecision.vue"
 import DecisionTrace from "@/views/recommend/DecisionTrace.vue"
 import Suggest from "@/views/client/Suggest.vue"
 import UserCenter from "@/views/client/UserCenter.vue"
@@ -163,12 +163,12 @@ const router = createRouter({
                             name: "lfm",
                             component: LFM
                         },
-                        {
-                            path: "agent",
-                            name: "agent_recommend",
-                            component: AgentRecommend
-                        }
                     ]
+                },
+                {
+                    path: "/readingDecision",
+                    name: "reading_decision",
+                    component: ReadingDecision
                 },
                 {
                     path: "/user",
