@@ -27,6 +27,11 @@
         <el-icon><Star /></el-icon>
         <span>书架管理</span>
       </el-menu-item>
+
+      <el-menu-item index="/featureAnalytics">
+        <el-icon><DataAnalysis /></el-icon>
+        <span>特色页分析</span>
+      </el-menu-item>
       
       <el-menu-item index="/advice">
         <el-icon><ChatDotRound /></el-icon>
@@ -48,10 +53,10 @@ import {
   User,
   Notebook,
   CollectionTag,
-  Tickets,
   ChatDotRound,
   Setting,
   Star,
+  DataAnalysis,
 } from '@element-plus/icons-vue'
 
 const route = useRoute();
