@@ -28,6 +28,19 @@
             <button class="close-btn" @click="close">×</button>
           </div>
 
+          <div class="feature-toolbar">
+            <button
+              v-for="item in featureOptions"
+              :key="item.id"
+              class="feature-btn"
+              :class="{ active: pendingFeature === item.id }"
+              :disabled="isLoading"
+              @click="onFeatureClick(item.id)"
+            >
+              {{ item.label }}
+            </button>
+          </div>
+
           <div class="chat-content" ref="chatContentRef" @click="handleBubbleClick">
             <div v-for="(msg, index) in messages" :key="index" :class="['message', msg.role]">
               <div class="avatar">{{ msg.role === 'system' ? '🌟' : 'User' }}</div>
@@ -40,25 +53,13 @@
           </div>
 
           <div class="bottom-controls">
-            <div class="quick-actions">
-              <button
-                v-for="option in featureOptions"
-                :key="option.id"
-                class="quick-action-btn"
-                :disabled="isLoading"
-                @click="onOptionClick(option.command)"
-              >
-                {{ option.label }}
-              </button>
-            </div>
-
             <div class="chat-input-area">
               <input
                 v-model="inputMessage"
                 type="text"
                 class="chat-input"
                 :disabled="isLoading"
-                placeholder="输入问题或数字选项"
+                placeholder="输入你的需求，例如：推荐特色页面 / 检索系统图书库 三体"
                 @keyup.enter="sendMessage"
               />
               <button class="send-btn" :disabled="isLoading" @click="sendMessage">
@@ -78,8 +79,6 @@ import { useRouter } from 'vue-router';
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { marked } from 'marked';
 import { useCookies } from '@vueuse/integrations/useCookies';
-import myAxios from '@/api/index';
-import { books, type BookItem } from '@/data/books';
 
 const props = defineProps<{
   visible: boolean;
@@ -100,44 +99,31 @@ interface ChatSession {
   content: string;
 }
 
-interface BackendBook {
-  bookId: number;
-  bookName: string;
-  bookAuthor: string;
-}
-
-interface FeatureDashboardBookItem {
-  bookId?: number;
-  bookName: string;
-  enterUv?: number;
-  completeRate?: number;
-  like2Count?: number;
-  acceptRate?: number;
-}
+type FeatureId =
+  | 'featured_recommend'
+  | 'system_search'
+  | 'user_data_query'
+  | 'preference_manage'
+  | 'score_manage'
+  | 'book_suggestion'
+  | 'feedback_advice';
 
 interface FeatureOption {
-  id: string;
+  id: FeatureId;
   label: string;
-  command: string;
 }
-
-type PendingAction = 'search' | 'advice' | 'score' | 'like' | null;
-
-type ConfirmContext =
-  | { type: 'advice'; info: string }
-  | { type: 'score'; keyword: string; score: number }
-  | { type: 'like'; keyword: string; likeLevel: number; likeLabel: string };
 
 const router = useRouter();
 const cookie = useCookies();
 
 const featureOptions: FeatureOption[] = [
-  { id: 'recommend', label: '1 推荐特色页面', command: '1' },
-  { id: 'search', label: '2 检索图书', command: '2' },
-  { id: 'chat', label: '3 自由聊天', command: '3' },
-  { id: 'advice', label: '4 缺书建议', command: '4' },
-  { id: 'score', label: '5 图书评分', command: '5' },
-  { id: 'like', label: '6 喜好调整', command: '6' }
+  { id: 'featured_recommend', label: '特色推荐' },
+  { id: 'system_search', label: '系统检索' },
+  { id: 'user_data_query', label: '用户数据' },
+  { id: 'preference_manage', label: '喜好管理' },
+  { id: 'score_manage', label: '评分管理' },
+  { id: 'book_suggestion', label: '图书建议' },
+  { id: 'feedback_advice', label: '反馈建议' }
 ];
 
 const messages = ref<Message[]>([{ role: 'system', content: buildWelcomeMessage() }]);
@@ -146,22 +132,14 @@ const inputMessage = ref('');
 const isLoading = ref(false);
 const chatContentRef = ref<HTMLElement | null>(null);
 const userId = ref<string>('');
-const userName = ref<string>('');
 const memoryId = ref<number>(Date.now());
-const pendingAction = ref<PendingAction>(null);
-const confirmContext = ref<ConfirmContext | null>(null);
+const pendingFeature = ref<FeatureId | null>(null);
 
 function buildWelcomeMessage(): string {
   return [
-    '你好，我是 Polaris 图书助手。',
-    '',
-    '你可以选择下列功能或提出问题：',
-    '1. 推荐有特色页面的书（可点击跳转）',
-    '2. 检索系统里有什么书',
-    '3. 自由聊天',
-    '4. 提交缺书/特色页面建议（入库）',
-    '5. 给书评分（1-5分）',
-    '6. 调整喜好（不想看/一般/想看）',
+    '你好，我是 Polaris，图书馆 AI 助手。',
+    '我负责协助你完成检索、推荐、评分/喜好管理以及建议反馈。',
+    '请点击上方功能按钮，我会先引导你补充信息，再执行对应功能。'
   ].join('\n');
 }
 
@@ -176,18 +154,48 @@ async function scrollToBottom(): Promise<void> {
   }
 }
 
-function pushSystemMessage(content: string): void {
-  messages.value.push({ role: 'system', content });
-}
-
 function close(): void {
   emit('close');
 }
 
-function onOptionClick(command: string): void {
+function pushSystemMessage(content: string): void {
+  messages.value.push({ role: 'system', content });
+  void scrollToBottom();
+}
+
+function onFeatureClick(featureId: FeatureId): void {
   if (isLoading.value) return;
-  inputMessage.value = command;
-  void sendMessage();
+
+  if (featureId === 'featured_recommend') {
+    pendingFeature.value = null;
+    messages.value.push({ role: 'user', content: '特色推荐' });
+    void scrollToBottom();
+    void requestChat('特色推荐');
+    return;
+  }
+
+  pendingFeature.value = featureId;
+  if (featureId === 'system_search') {
+    pushSystemMessage('已选择【系统图书检索】。请提供书名或关键词，例如：三体。');
+    return;
+  }
+  if (featureId === 'user_data_query') {
+    pushSystemMessage('已选择【用户数据查询】。请描述要查的内容，例如：我的喜好和评分。');
+    return;
+  }
+  if (featureId === 'preference_manage') {
+    pushSystemMessage('已选择【喜好管理】。请输入：书名 + 喜好（想看/还行/不想看），例如：三体 想看。');
+    return;
+  }
+  if (featureId === 'score_manage') {
+    pushSystemMessage('已选择【评分管理】。请输入：书名 + 分数(1-5)，例如：三体 5。');
+    return;
+  }
+  if (featureId === 'book_suggestion') {
+    pushSystemMessage('已选择【图书建议】。请输入建议内容，例如：图书建议《三体》建议补充新版。');
+    return;
+  }
+  pushSystemMessage('已选择【反馈建议】。请输入建议内容，例如：希望增加按作者筛选。');
 }
 
 function getHistoryTitle(session: ChatSession): string {
@@ -231,6 +239,7 @@ function handleBubbleClick(event: MouseEvent): void {
 function loadSession(session: ChatSession): void {
   if (isLoading.value) return;
   memoryId.value = session.memoryId;
+  pendingFeature.value = null;
   try {
     if (!session.content) {
       messages.value = [{ role: 'system', content: buildWelcomeMessage() }];
@@ -254,14 +263,12 @@ function loadSession(session: ChatSession): void {
 function startNewChat(): void {
   if (isLoading.value) return;
   memoryId.value = Date.now();
-  pendingAction.value = null;
-  confirmContext.value = null;
+  pendingFeature.value = null;
   messages.value = [{ role: 'system', content: buildWelcomeMessage() }];
 }
 
 async function fetchHistory(): Promise<void> {
   userId.value = cookie.get('userId') || '10001';
-  userName.value = cookie.get('username') || `user_${userId.value}`;
   try {
     const res = await fetch(`http://localhost:8080/polaris/history?userId=${userId.value}`);
     const data = await res.json();
@@ -273,501 +280,109 @@ async function fetchHistory(): Promise<void> {
   }
 }
 
-function normalizeName(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, '');
+function stripQuotes(text: string): string {
+  return text.replace(/[《》"'“”]/g, '').trim();
 }
 
-function formatDate(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function findLocalFeatureBookByName(name: string): BookItem | null {
-  const n = normalizeName(name);
-  const hit = books.find((b) => {
-    const cn = normalizeName(b.titleCN || '');
-    const en = normalizeName(b.title || '');
-    return cn === n || en === n || cn.includes(n) || en.includes(n) || n.includes(cn) || n.includes(en);
-  });
-  return hit || null;
-}
-
-async function fetchFeatureRankedBooks(): Promise<Array<{ book: BookItem; metric?: FeatureDashboardBookItem }>> {
-  const today = new Date();
-  const fromDate = new Date(today);
-  fromDate.setDate(today.getDate() - 29);
-
-  try {
-    const res = await myAxios.get('/feature/dashboard/books', {
-      params: {
-        from: formatDate(fromDate),
-        to: formatDate(today),
-        sort: 'acceptRate',
-        limit: 100
-      }
-    });
-    const rows = (res?.data?.data || []) as FeatureDashboardBookItem[];
-    const ranked: Array<{ book: BookItem; metric?: FeatureDashboardBookItem }> = [];
-    const used = new Set<string>();
-
-    rows.forEach((row) => {
-      const local = findLocalFeatureBookByName(String(row.bookName || '').trim());
-      if (!local || used.has(local.path)) return;
-      used.add(local.path);
-      ranked.push({ book: local, metric: row });
-    });
-
-    books.forEach((book) => {
-      if (used.has(book.path)) return;
-      ranked.push({ book });
-    });
-
-    return ranked;
-  } catch {
-    return books.map((book) => ({ book }));
-  }
-}
-
-function sanitizeKeyword(raw: string): string {
-  return raw.replace(/[《》"'“”]/g, '').trim();
-}
-
-function findFeaturePath(bookName: string): string | null {
-  const n = normalizeName(bookName);
-  const local = books.find((b) => {
-    const cn = normalizeName(b.titleCN || '');
-    const en = normalizeName(b.title || '');
-    return cn.includes(n) || en.includes(n) || n.includes(cn) || n.includes(en);
-  });
-  return local?.path || null;
-}
-
-function getCurrentUserId(): number {
-  const parsed = Number(userId.value || cookie.get('userId') || 10001);
-  return Number.isNaN(parsed) ? 10001 : parsed;
-}
-
-function parseLikeLevel(raw: string): number | null {
-  const map: Record<string, number> = {
-    '0': 0,
-    '1': 1,
-    '2': 2,
-    不想看: 0,
-    一般: 1,
-    还行: 1,
-    想看: 2,
-    喜欢: 2
-  };
-  return map[raw.trim()] ?? null;
-}
-
-function likeLabel(level: number): string {
-  if (level === 2) return '想看';
-  if (level === 1) return '一般';
-  return '不想看';
-}
-
-function isConfirmYes(text: string): boolean {
-  const t = text.trim().toLowerCase();
-  return ['1', '是', '确认', '确定', '好', '好的', 'yes', 'y'].includes(t);
-}
-
-function isConfirmNo(text: string): boolean {
-  const t = text.trim().toLowerCase();
-  return ['2', '否', '取消', '不用', 'no', 'n'].includes(t);
-}
-
-function parseScoreInput(raw: string): { keyword: string; score: number } | null {
-  const match = raw.match(/^(.+?)\s*([1-5])\s*分?$/);
+function parsePreferenceInput(text: string): { bookName: string; levelText: string } | null {
+  const match = text.trim().match(/^(.+?)\s*(想看|还行|一般|不想看|喜欢|0|1|2)$/);
   if (!match) return null;
-  return { keyword: sanitizeKeyword(match[1]), score: Number(match[2]) };
+  const levelMap: Record<string, string> = {
+    想看: '想看',
+    喜欢: '想看',
+    还行: '还行',
+    一般: '还行',
+    不想看: '不想看',
+    '0': '不想看',
+    '1': '还行',
+    '2': '想看'
+  };
+  const bookName = stripQuotes(match[1]);
+  if (!bookName) return null;
+  return { bookName, levelText: levelMap[match[2]] };
 }
 
-function parseLikeInput(raw: string): { keyword: string; likeLevel: number; likeLabel: string } | null {
-  const m = raw.match(/^(.+?)(想看|不想看|一般|还行|喜欢|[012])$/);
-  if (!m) return null;
-  const keyword = sanitizeKeyword(m[1]);
-  const lvl = parseLikeLevel(m[2]);
-  if (lvl === null) return null;
-  return { keyword, likeLevel: lvl, likeLabel: likeLabel(lvl) };
-}
-
-function parseNaturalAdvice(raw: string): string | null {
-  const t = raw.trim();
-  if (!t) return null;
-  const hasAdviceVerb = /(补充|增加|新增|缺少|没有|想要|补上|加入)/.test(t);
-  const hasBookHint = /(书|图书|页面|特色|数据)/.test(t);
-  if (hasAdviceVerb && hasBookHint) return t;
-  if (/^补充.+/.test(t)) return t;
-  return null;
-}
-
-function extractBookFromAdviceText(raw: string): string | null {
-  const text = raw.trim();
-  const wrapped = text.match(/《([^》]+)》/);
-  if (wrapped?.[1]) return wrapped[1].trim();
-
-  const compact = text.replace(/\s+/g, '');
-  if (/^[A-Za-z0-9\u4e00-\u9fa5]{2,30}$/.test(compact)) {
-    return compact;
+function parseScoreInput(text: string): { bookName: string; score: number } | null {
+  const simple = text.trim().match(/^(.+?)\s*([1-5])\s*分?$/);
+  if (simple) {
+    const bookName = stripQuotes(simple[1]);
+    if (!bookName) return null;
+    return { bookName, score: Number(simple[2]) };
   }
 
-  const verbLead = compact.match(/^(补充|增加|新增|补上|想要|加入|添加)([A-Za-z0-9\u4e00-\u9fa5]{2,30})$/);
-  if (verbLead?.[2]) return verbLead[2].trim();
-
-  return null;
+  const natural = text.trim().match(/给?\s*《?(.+?)》?\s*(?:评分|打分|评为?)\s*([1-5])\s*分?/);
+  if (!natural) return null;
+  const bookName = stripQuotes(natural[1]);
+  if (!bookName) return null;
+  return { bookName, score: Number(natural[2]) };
 }
 
-function normalizeAdviceInfo(raw: string): string {
-  const text = raw.trim();
-  if (!text) return '';
-
-  const book = extractBookFromAdviceText(text);
-  const hasPageHint = /(特色页面|页面)/.test(text);
-  const hasDataHint = /(图书数据|数据|图书)/.test(text);
-  const hasAdviceVerb = /(补充|增加|新增|缺少|没有|想要|补上|加入|添加)/.test(text);
-
-  if (book && !hasAdviceVerb && !hasPageHint && !hasDataHint) {
-    return `建议补充《${book}》的图书数据与特色页面。`;
+function resolvePendingCommand(rawText: string): { command: string | null; error?: string } {
+  const text = rawText.trim();
+  if (!pendingFeature.value) return { command: text };
+  if (!text) return { command: null, error: '请输入内容，或输入“取消”退出当前功能。' };
+  if (text === '取消') {
+    pendingFeature.value = null;
+    return { command: null, error: '已取消当前功能选择。' };
   }
-  if (book && hasAdviceVerb && !hasPageHint && !hasDataHint) {
-    return `建议补充《${book}》的图书数据与特色页面。`;
+
+  if (pendingFeature.value === 'featured_recommend') {
+    pendingFeature.value = null;
+    if (text.includes('换一批') || text.includes('再来一批')) return { command: '换一批' };
+    if (/(特色推荐|特色页面|推荐书|推荐几本|给我推荐)/.test(text)) return { command: text };
+    return { command: `推荐几本书：${text}` };
   }
-  if (book && hasPageHint && !hasDataHint) {
-    return `建议补充《${book}》的特色页面。`;
+
+  if (pendingFeature.value === 'system_search') {
+    pendingFeature.value = null;
+    if (/(系统图书库|系统书库|检索|搜索|查找)/.test(text) && text.includes('书')) return { command: text };
+    return { command: `检索系统图书库《${stripQuotes(text)}》` };
   }
-  if (book && hasDataHint && !hasPageHint) {
-    return `建议补充《${book}》的图书数据。`;
+
+  if (pendingFeature.value === 'user_data_query') {
+    pendingFeature.value = null;
+    if (/(我的数据|用户数据|喜好表|评分表|我的喜好|我的评分|我的书库)/.test(text)) return { command: text };
+    return { command: `查询我的喜好表和评分表：${text}` };
   }
-  if (!/^建议[:：]?/.test(text)) {
-    return `建议：${text}`;
-  }
-  return text;
-}
 
-function askConfirmAdvice(info: string): void {
-  const normalized = normalizeAdviceInfo(info);
-  confirmContext.value = { type: 'advice', info: normalized };
-  pushSystemMessage(`是否要提交这条建议并入库？\n> ${normalized}\n\n1. 是，提交\n2. 否，取消`);
-}
-
-function askConfirmScore(keyword: string, score: number): void {
-  confirmContext.value = { type: 'score', keyword, score };
-  pushSystemMessage(`是否给《${keyword}》评分 ${score} 分？\n\n1. 是，提交评分\n2. 否，取消`);
-}
-
-function askConfirmLike(keyword: string, level: number, label: string): void {
-  confirmContext.value = { type: 'like', keyword, likeLevel: level, likeLabel: label };
-  pushSystemMessage(`是否将《${keyword}》设置为“${label}”？\n\n1. 是，更新喜好\n2. 否，取消`);
-}
-
-async function queryBookByName(keyword: string): Promise<BackendBook[]> {
-  const res = await myAxios.get('/book/get', { params: { name: keyword } });
-  const list = res?.data?.data;
-  return Array.isArray(list) ? (list as BackendBook[]) : [];
-}
-
-async function handleFeatureRecommend(): Promise<void> {
-  const picks = await fetchFeatureRankedBooks();
-  const lines = picks.slice(0, 6).map(({ book, metric }) => {
-    if (!metric) {
-      return `- [${book.titleCN || book.title}](${book.path}) · ${book.author}`;
+  if (pendingFeature.value === 'preference_manage') {
+    const parsed = parsePreferenceInput(text);
+    if (!parsed) {
+      return { command: null, error: '格式不正确，请输入：书名 + 喜好（想看/还行/不想看），例如：三体 想看。' };
     }
-    const completeRate = `${Math.round((Number(metric.completeRate || 0) || 0) * 100)}%`;
-    const acceptRate = `${Math.round((Number(metric.acceptRate || 0) || 0) * 100)}%`;
-    return `- [${book.titleCN || book.title}](${book.path}) · ${book.author}（完成率 ${completeRate}，接受率 ${acceptRate}）`;
-  });
-  pushSystemMessage([
-    '这些书有特色页面，已按“特色页分析高表现”优先排序；该信号也会同步用于阅读决策推荐加权：',
-    '',
-    ...lines,
-    '',
-    '- [进入阅读决策](/readingDecision)'
-  ].join('\n'));
-}
-
-async function handleBookSearch(keyword: string): Promise<void> {
-  if (!keyword) {
-    pushSystemMessage('请输入检索关键词。');
-    return;
-  }
-  isLoading.value = true;
-  try {
-    const list = await queryBookByName(keyword);
-    if (!list.length) {
-      pushSystemMessage(`未检索到“${keyword}”。你可以输入“补充${keyword}”提交建议。`);
-      return;
-    }
-    const lines = list.slice(0, 8).map((b) => {
-      const path = findFeaturePath(b.bookName);
-      const jump = path ? ` | [特色页面](${path})` : '';
-      return `- ${b.bookName} · ${b.bookAuthor || '未知作者'}${jump}`;
-    });
-    pushSystemMessage([`检索到 ${list.length} 本相关图书：`, '', ...lines].join('\n'));
-  } catch {
-    pushSystemMessage('检索失败，请稍后再试。');
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function executeAdvice(info: string): Promise<void> {
-  isLoading.value = true;
-  try {
-    const res = await myAxios.post('/advice/input', {
-      info,
-      userName: userName.value || cookie.get('username') || `user_${getCurrentUserId()}`
-    });
-    if (res?.data?.code === 200) {
-      pushSystemMessage('建议已记录到系统数据库。');
-    } else {
-      pushSystemMessage(`建议提交失败：${res?.data?.msg || '未知错误'}`);
-    }
-  } catch {
-    pushSystemMessage('建议提交失败，请稍后重试。');
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function executeScore(keyword: string, score: number): Promise<void> {
-  isLoading.value = true;
-  try {
-    const booksList = await queryBookByName(keyword);
-    const matched = booksList[0];
-    if (!matched) {
-      pushSystemMessage(`未找到“${keyword}”，无法评分。`);
-      return;
-    }
-    const res = await myAxios.put('/bookScore/updateScore', {
-      userId: getCurrentUserId(),
-      bookId: matched.bookId,
-      score
-    });
-    if (res?.data?.code === 200) {
-      pushSystemMessage(`已为《${matched.bookName}》打分：${score} 分。`);
-    } else {
-      pushSystemMessage(`评分失败：${res?.data?.msg || '未知错误'}`);
-    }
-  } catch {
-    pushSystemMessage('评分失败，请稍后重试。');
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function executeLike(keyword: string, level: number, label: string): Promise<void> {
-  isLoading.value = true;
-  try {
-    const booksList = await queryBookByName(keyword);
-    const matched = booksList[0];
-    if (!matched) {
-      pushSystemMessage(`未找到“${keyword}”，无法更新喜好。`);
-      return;
-    }
-    const res = await myAxios.put('/bookLike/like', {
-      userId: getCurrentUserId(),
-      userName: userName.value || cookie.get('username') || `user_${getCurrentUserId()}`,
-      bookId: matched.bookId,
-      bookName: matched.bookName,
-      likeLevel: level
-    });
-    if (res?.data?.code === 200) {
-      pushSystemMessage(`已将《${matched.bookName}》设置为“${label}”。`);
-    } else {
-      pushSystemMessage(`喜好更新失败：${res?.data?.msg || '未知错误'}`);
-    }
-  } catch {
-    pushSystemMessage('喜好更新失败，请稍后重试。');
-  } finally {
-    isLoading.value = false;
-  }
-}
-
-async function handlePendingConfirm(text: string): Promise<boolean> {
-  if (!confirmContext.value) return false;
-  if (!isConfirmYes(text) && !isConfirmNo(text)) {
-    pushSystemMessage('请回复 `1`（确认）或 `2`（取消）。');
-    return true;
+    pendingFeature.value = null;
+    return { command: `把《${parsed.bookName}》设为${parsed.levelText}` };
   }
 
-  const context = confirmContext.value;
-  confirmContext.value = null;
-  if (isConfirmNo(text)) {
-    pushSystemMessage('已取消。你可以继续输入其他需求。');
-    return true;
-  }
-
-  if (context.type === 'advice') {
-    await executeAdvice(context.info);
-    return true;
-  }
-  if (context.type === 'score') {
-    await executeScore(context.keyword, context.score);
-    return true;
-  }
-  await executeLike(context.keyword, context.likeLevel, context.likeLabel);
-  return true;
-}
-
-async function handleFeatureInput(content: string): Promise<boolean> {
-  const text = content.trim();
-  if (!text) return true;
-
-  if (await handlePendingConfirm(text)) {
-    return true;
-  }
-
-  const normalized = text.replace(/\s+/g, '').toLowerCase();
-  if (['菜单', 'help', '功能', '选项', '0'].includes(normalized)) {
-    pendingAction.value = null;
-    confirmContext.value = null;
-    pushSystemMessage(buildWelcomeMessage());
-    return true;
-  }
-
-  if (pendingAction.value === 'search') {
-    pendingAction.value = null;
-    await handleBookSearch(text);
-    return true;
-  }
-  if (pendingAction.value === 'advice') {
-    pendingAction.value = null;
-    askConfirmAdvice(text);
-    return true;
-  }
-  if (pendingAction.value === 'score') {
-    pendingAction.value = null;
+  if (pendingFeature.value === 'score_manage') {
     const parsed = parseScoreInput(text);
     if (!parsed) {
-      pushSystemMessage('格式示例：`三体 5分`。');
-      return true;
+      return { command: null, error: '格式不正确，请输入：书名 + 1-5 分，例如：三体 5。' };
     }
-    askConfirmScore(parsed.keyword, parsed.score);
-    return true;
-  }
-  if (pendingAction.value === 'like') {
-    pendingAction.value = null;
-    const parsed = parseLikeInput(text);
-    if (!parsed) {
-      pushSystemMessage('格式示例：`三体想看` 或 `三体 一般`。');
-      return true;
-    }
-    askConfirmLike(parsed.keyword, parsed.likeLevel, parsed.likeLabel);
-    return true;
+    pendingFeature.value = null;
+    return { command: `给《${parsed.bookName}》评分${parsed.score}分` };
   }
 
-  if (text === '1' || text === '推荐') {
-    await handleFeatureRecommend();
-    return true;
-  }
-  if (text === '2' || text.startsWith('2 ')) {
-    const keyword = text.slice(1).trim();
-    if (!keyword) {
-      pendingAction.value = 'search';
-      pushSystemMessage('请输入要检索的书名关键字。');
-    } else {
-      await handleBookSearch(keyword);
-    }
-    return true;
-  }
-  if (text === '3' || text === '自由聊天' || text === '系统交互') {
-    pushSystemMessage('已进入自由聊天模式。你可以直接提问。');
-    return true;
-  }
-  if (text === '4' || text.startsWith('4 ')) {
-    const adviceText = text.slice(1).trim();
-    if (!adviceText) {
-      pendingAction.value = 'advice';
-      pushSystemMessage('请说出你想补充的书籍或特色页面需求。');
-    } else {
-      askConfirmAdvice(adviceText);
-    }
-    return true;
-  }
-  if (text === '5' || text.startsWith('5 ')) {
-    const payload = text.slice(1).trim();
-    if (!payload) {
-      pendingAction.value = 'score';
-      pushSystemMessage('请输入评分，例如：`三体 5分`。');
-    } else {
-      const parsed = parseScoreInput(payload);
-      if (!parsed) {
-        pushSystemMessage('评分格式错误，请用：`书名 分数`。');
-      } else {
-        askConfirmScore(parsed.keyword, parsed.score);
-      }
-    }
-    return true;
-  }
-  if (text === '6' || text.startsWith('6 ')) {
-    const payload = text.slice(1).trim();
-    if (!payload) {
-      pendingAction.value = 'like';
-      pushSystemMessage('请输入喜好，例如：`三体想看`、`三体一般`、`三体不想看`。');
-    } else {
-      const parsed = parseLikeInput(payload);
-      if (!parsed) {
-        pushSystemMessage('喜好格式错误，请用：`书名 + 想看/一般/不想看`。');
-      } else {
-        askConfirmLike(parsed.keyword, parsed.likeLevel, parsed.likeLabel);
-      }
-    }
-    return true;
+  if (pendingFeature.value === 'book_suggestion') {
+    pendingFeature.value = null;
+    if (/(图书建议|缺书建议|缺书|补书|上架建议|建议补充)/.test(text)) return { command: text };
+    return { command: `图书建议：${text}` };
   }
 
-  if (/^检索\s+/.test(text)) {
-    await handleBookSearch(text.replace(/^检索\s+/, '').trim());
-    return true;
-  }
-  if (/^建议\s+/.test(text)) {
-    askConfirmAdvice(text.replace(/^建议\s+/, '').trim());
-    return true;
-  }
-
-  const scoreNatural = parseScoreInput(text);
-  if (scoreNatural) {
-    askConfirmScore(scoreNatural.keyword, scoreNatural.score);
-    return true;
-  }
-
-  const likeNatural = parseLikeInput(text);
-  if (likeNatural) {
-    askConfirmLike(likeNatural.keyword, likeNatural.likeLevel, likeNatural.likeLabel);
-    return true;
-  }
-
-  const adviceNatural = parseNaturalAdvice(text);
-  if (adviceNatural) {
-    askConfirmAdvice(adviceNatural);
-    return true;
-  }
-
-  return false;
+  pendingFeature.value = null;
+  if (/(反馈建议|提出建议|系统建议|产品建议)/.test(text)) return { command: text };
+  return { command: `反馈建议：${text}` };
 }
 
-async function sendMessage(): Promise<void> {
-  const content = inputMessage.value.trim();
-  if (!content || isLoading.value) return;
-
-  messages.value.push({ role: 'user', content });
-  inputMessage.value = '';
-  await scrollToBottom();
-
-  const handled = await handleFeatureInput(content);
-  if (handled) {
-    await scrollToBottom();
-    return;
-  }
-
+async function requestChat(command: string): Promise<void> {
   isLoading.value = true;
   const aiMessageIndex = messages.value.push({ role: 'system', content: '' }) - 1;
   let currentResponse = '';
+  const controller = new AbortController();
 
   try {
     await fetchEventSource('http://localhost:8080/polaris/chat', {
+      signal: controller.signal,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -775,7 +390,7 @@ async function sendMessage(): Promise<void> {
       },
       body: JSON.stringify({
         memoryId: memoryId.value,
-        message: content,
+        message: command,
         userId: userId.value
       }),
       onmessage(msg) {
@@ -786,6 +401,7 @@ async function sendMessage(): Promise<void> {
       },
       onclose() {
         isLoading.value = false;
+        controller.abort();
         void fetchHistory();
       },
       onerror(err) {
@@ -797,6 +413,23 @@ async function sendMessage(): Promise<void> {
   } catch {
     isLoading.value = false;
   }
+}
+
+async function sendMessage(): Promise<void> {
+  const content = inputMessage.value.trim();
+  if (!content || isLoading.value) return;
+
+  messages.value.push({ role: 'user', content });
+  inputMessage.value = '';
+  await scrollToBottom();
+
+  const resolved = resolvePendingCommand(content);
+  if (!resolved.command) {
+    if (resolved.error) pushSystemMessage(resolved.error);
+    return;
+  }
+
+  await requestChat(resolved.command);
 }
 
 watch(
@@ -975,6 +608,40 @@ onMounted(() => {
   transform: scale(1.1);
 }
 
+.feature-toolbar {
+  padding: 10px 12px;
+  border-bottom: 1px solid #000;
+  background: #f6f6f6;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feature-btn {
+  border: 1px solid #000;
+  background: #fff;
+  color: #000;
+  border-radius: 14px;
+  font-size: 12px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.feature-btn:hover {
+  background: #000;
+  color: #fff;
+}
+
+.feature-btn.active {
+  background: #000;
+  color: #fff;
+}
+
+.feature-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .chat-content {
   flex: 1;
   padding: 20px;
@@ -1125,3 +792,4 @@ onMounted(() => {
   transform: none;
 }
 </style>
+

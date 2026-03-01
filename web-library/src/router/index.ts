@@ -43,6 +43,7 @@ import BookLikeInfo from "@/views/admin/BookLikeInfo.vue"
 import Advice from "@/views/admin/Advice.vue"
 import BookClass from "@/views/admin/BookClass.vue";
 import FeatureAnalytics from "@/views/admin/FeatureAnalytics.vue";
+import AgenticAiAnalytics from "@/views/admin/AgenticAiAnalytics.vue";
 
 // Book Content Views
 import AmusingOurselvesToDeath from "@/views/books/AmusingOurselvesToDeath.vue";
@@ -234,6 +235,11 @@ const router = createRouter({
                     path: "/featureAnalytics",
                     name: "featureAnalytics",
                     component: FeatureAnalytics
+                },
+                {
+                    path: "/agenticAiAnalytics",
+                    name: "agenticAiAnalytics",
+                    component: AgenticAiAnalytics
                 },
                 {
                     path:"/admin",

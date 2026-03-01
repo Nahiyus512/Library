@@ -11,7 +11,7 @@ import static dev.langchain4j.service.spring.AiServiceWiringMode.EXPLICIT;
 //        chatModel = "qwenChatModel",
         streamingChatModel = "qwenStreamingChatModel",
         chatMemoryProvider = "chatMemoryProviderPolaris",
-        tools = "selectBookTools",
+        tools = {"polarisSystemTools"},
         contentRetriever = "contentRetrieverPolarisPinecone"
 )
 public interface PolarisAgent {

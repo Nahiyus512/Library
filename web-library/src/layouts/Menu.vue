@@ -3,26 +3,22 @@
     <div class="menu-header">
       <h3>系统管理</h3>
     </div>
-    <el-menu
-        class="minimal-menu"
-        :default-active="activePath"
-        router
-    >
+    <el-menu class="minimal-menu" :default-active="activePath" router>
       <el-menu-item index="/userInfo">
         <el-icon><User /></el-icon>
         <span>用户管理</span>
       </el-menu-item>
-      
+
       <el-menu-item index="/bookInfo">
         <el-icon><Notebook /></el-icon>
         <span>图书管理</span>
       </el-menu-item>
-      
+
       <el-menu-item index="/bookClass">
         <el-icon><CollectionTag /></el-icon>
         <span>分类管理</span>
       </el-menu-item>
-      
+
       <el-menu-item index="/bookLikeInfo">
         <el-icon><Star /></el-icon>
         <span>书架管理</span>
@@ -32,12 +28,17 @@
         <el-icon><DataAnalysis /></el-icon>
         <span>特色页分析</span>
       </el-menu-item>
-      
+
+      <el-menu-item index="/agenticAiAnalytics">
+        <el-icon><TrendCharts /></el-icon>
+        <span>AgenticAI分析</span>
+      </el-menu-item>
+
       <el-menu-item index="/advice">
         <el-icon><ChatDotRound /></el-icon>
         <span>意见反馈</span>
       </el-menu-item>
-      
+
       <el-menu-item index="/sysInfo">
         <el-icon><Setting /></el-icon>
         <span>系统设置</span>
@@ -47,8 +48,8 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   User,
   Notebook,
@@ -57,10 +58,11 @@ import {
   Setting,
   Star,
   DataAnalysis,
+  TrendCharts
 } from '@element-plus/icons-vue'
 
-const route = useRoute();
-const activePath = computed(() => route.path);
+const route = useRoute()
+const activePath = computed(() => route.path)
 </script>
 
 <style scoped>
@@ -73,15 +75,13 @@ const activePath = computed(() => route.path);
   overflow-y: auto;
 }
 
-/* Hide scrollbar for Chrome, Safari and Opera */
 .admin-menu::-webkit-scrollbar {
   display: none;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
 .admin-menu {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .menu-header {
@@ -97,7 +97,7 @@ const activePath = computed(() => route.path);
   letter-spacing: 2px;
   color: #333;
   margin: 0;
-  text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
 }
 
 .minimal-menu {
@@ -116,14 +116,14 @@ const activePath = computed(() => route.path);
 
 :deep(.el-menu-item:hover) {
   color: #000 !important;
-  background: rgba(0,0,0,0.03) !important;
+  background: rgba(0, 0, 0, 0.03) !important;
 }
 
 :deep(.el-menu-item.is-active) {
   color: #000 !important;
   background: #fff !important;
   font-weight: 600;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 :deep(.el-icon) {
@@ -131,3 +131,4 @@ const activePath = computed(() => route.path);
   margin-right: 10px;
 }
 </style>
+

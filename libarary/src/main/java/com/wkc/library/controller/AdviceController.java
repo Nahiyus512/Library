@@ -82,16 +82,18 @@ public class AdviceController {
         List<Advice> adviceList = adviceService.list(wrapper);
         
         if (!adviceList.isEmpty()) {
-            List<String> bookIds = adviceList.stream()
+            List<Integer> intIds = adviceList.stream()
                 .map(Advice::getBookId)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(id -> !id.isEmpty())
+                .filter(id -> id.matches("\\d+"))
+                .map(Integer::parseInt)
                 .distinct()
                 .collect(Collectors.toList());
-            
-            // Convert String IDs to Integer if necessary, but assuming BookService takes serializable or we query
-            // BookId in Book is Integer. Advice has String.
-            List<Integer> intIds = bookIds.stream()
-                .map(Integer::parseInt)
-                .collect(Collectors.toList());
+            if (intIds.isEmpty()) {
+                return R.success(adviceList);
+            }
                 
             List<Book> books = bookService.listByIds(intIds);
             Map<Integer, String> bookNameMap = books.stream()
